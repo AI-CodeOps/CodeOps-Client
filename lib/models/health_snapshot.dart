@@ -147,6 +147,16 @@ class PageResponse<T> {
     required this.isLast,
   });
 
+  /// Creates an empty [PageResponse] with no content.
+  factory PageResponse.empty() => PageResponse(
+        content: [],
+        page: 0,
+        size: 0,
+        totalElements: 0,
+        totalPages: 0,
+        isLast: true,
+      );
+
   /// Deserializes a [PageResponse] from a JSON map.
   factory PageResponse.fromJson(
     Map<String, dynamic> json,

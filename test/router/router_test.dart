@@ -2,6 +2,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:codeops/router.dart';
+import 'package:codeops/services/auth/auth_service.dart';
 
 void main() {
   group('Router', () {
@@ -70,8 +71,8 @@ void main() {
       }
     });
 
-    test('isAuthenticated defaults to false', () {
-      expect(isAuthenticated.value, false);
+    test('authNotifier defaults to unknown', () {
+      expect(authNotifier.state, AuthState.unknown);
     });
   });
 }

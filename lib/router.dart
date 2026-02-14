@@ -1,27 +1,49 @@
 /// GoRouter configuration with all 24 application routes.
 ///
-/// Uses a [ValueNotifier] for auth state (replaced by real auth in COC-002).
-/// Unauthenticated users are redirected to `/login`.
+/// Uses an [AuthNotifier] listenable connected to [AuthService] for
+/// reactive auth state. Unauthenticated users are redirected to `/login`.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'pages/login_page.dart';
 import 'pages/placeholder_page.dart';
+import 'services/auth/auth_service.dart';
 
-/// Temporary auth state notifier — replaced by real auth in COC-002.
-final ValueNotifier<bool> isAuthenticated = ValueNotifier<bool>(false);
+/// Listenable adapter that bridges [AuthService] state to GoRouter.
+///
+/// Updates [GoRouter.refreshListenable] whenever the auth state changes.
+class AuthNotifier extends ChangeNotifier {
+  AuthState _state = AuthState.unknown;
+
+  /// The current authentication state.
+  AuthState get state => _state;
+
+  /// Updates the auth state and notifies the router.
+  set state(AuthState newState) {
+    if (_state != newState) {
+      _state = newState;
+      notifyListeners();
+    }
+  }
+}
+
+/// Global auth notifier instance used by the router.
+///
+/// [AuthService] updates this when auth state changes.
+final AuthNotifier authNotifier = AuthNotifier();
 
 /// The application router with all 24 routes.
 final GoRouter router = GoRouter(
   initialLocation: '/login',
-  refreshListenable: isAuthenticated,
+  refreshListenable: authNotifier,
   redirect: (BuildContext context, GoRouterState state) {
-    final loggedIn = isAuthenticated.value;
-    final loggingIn = state.matchedLocation == '/login';
+    final authenticated = authNotifier.state == AuthState.authenticated;
+    final onLogin = state.matchedLocation == '/login';
 
-    if (!loggedIn && !loggingIn) return '/login';
-    if (loggedIn && loggingIn) return '/';
+    if (!authenticated && !onLogin) return '/login';
+    if (authenticated && onLogin) return '/';
     return null;
   },
   routes: [
@@ -29,7 +51,7 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/login',
       name: 'login',
-      builder: (context, state) => const PlaceholderPage(title: 'Login'),
+      builder: (context, state) => const LoginPage(),
     ),
     // 2. Setup Wizard
     GoRoute(
