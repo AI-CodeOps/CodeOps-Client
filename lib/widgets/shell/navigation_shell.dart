@@ -140,6 +140,13 @@ class _Sidebar extends ConsumerWidget {
                 ),
                 _SectionHeader('MAINTAIN', collapsed),
                 _NavItem(
+                  icon: Icons.view_kanban_outlined,
+                  label: 'Jira Browser',
+                  path: '/bugs/jira',
+                  currentPath: currentPath,
+                  collapsed: collapsed,
+                ),
+                _NavItem(
                   icon: Icons.task_outlined,
                   label: 'Tasks',
                   path: '/tasks',

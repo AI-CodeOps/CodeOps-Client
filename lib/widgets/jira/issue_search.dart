@@ -19,10 +19,12 @@ import '../../theme/colors.dart';
 /// the text field with common JQL patterns.
 class IssueSearch extends ConsumerStatefulWidget {
   /// The Jira project key used to scope preset JQL queries.
-  final String projectKey;
+  ///
+  /// When `null`, presets will not be project-scoped.
+  final String? projectKey;
 
   /// Creates an [IssueSearch].
-  const IssueSearch({super.key, required this.projectKey});
+  const IssueSearch({super.key, this.projectKey});
 
   @override
   ConsumerState<IssueSearch> createState() => _IssueSearchState();
@@ -33,18 +35,22 @@ class _IssueSearchState extends ConsumerState<IssueSearch> {
   String? _activePreset;
 
   /// Preset filter definitions mapping label to JQL template.
-  late final Map<String, String> _presets = {
-    'My Open Issues':
-        'project = ${widget.projectKey} AND assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC',
-    'Unassigned Bugs':
-        'project = ${widget.projectKey} AND issuetype = Bug AND assignee is EMPTY ORDER BY priority DESC',
-    'High Priority':
-        'project = ${widget.projectKey} AND priority in (Highest, High) AND statusCategory != Done ORDER BY priority DESC',
-    'Sprint Backlog':
-        'project = ${widget.projectKey} AND sprint in openSprints() ORDER BY rank ASC',
-    'Recently Updated':
-        'project = ${widget.projectKey} ORDER BY updated DESC',
-  };
+  Map<String, String> get _presets {
+    final pk = widget.projectKey;
+    final prefix = pk != null ? 'project = $pk AND ' : '';
+    return {
+      'My Open Issues':
+          '${prefix}assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC',
+      'Unassigned Bugs':
+          '${prefix}issuetype = Bug AND assignee is EMPTY ORDER BY priority DESC',
+      'High Priority':
+          '${prefix}priority in (Highest, High) AND statusCategory != Done ORDER BY priority DESC',
+      'Sprint Backlog':
+          '${prefix.isNotEmpty ? prefix : ''}sprint in openSprints() ORDER BY rank ASC',
+      'Recently Updated':
+          '${pk != null ? 'project = $pk ' : ''}ORDER BY updated DESC',
+    };
+  }
 
   @override
   void dispose() {

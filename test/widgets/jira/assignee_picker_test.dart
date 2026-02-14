@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mocktail/mocktail.dart';
 
 import 'package:codeops/models/jira_models.dart';
 import 'package:codeops/widgets/jira/assignee_picker.dart';

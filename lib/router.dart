@@ -16,6 +16,7 @@ import 'pages/job_history_page.dart';
 import 'pages/job_progress_page.dart';
 import 'pages/job_report_page.dart';
 import 'pages/login_page.dart';
+import 'pages/jira_browser_page.dart';
 import 'pages/placeholder_page.dart';
 import 'pages/project_detail_page.dart';
 import 'pages/projects_page.dart';
@@ -147,7 +148,7 @@ final GoRouter router = GoRouter(
           path: '/bugs/jira',
           name: 'jiraBrowser',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Jira Browser'),
+            child: JiraBrowserPage(),
           ),
         ),
         // 12. Task Manager
