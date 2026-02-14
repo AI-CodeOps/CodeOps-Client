@@ -9,10 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'pages/audit_wizard_page.dart';
+import 'pages/findings_explorer_page.dart';
 import 'pages/github_browser_page.dart';
 import 'pages/home_page.dart';
 import 'pages/job_history_page.dart';
 import 'pages/job_progress_page.dart';
+import 'pages/job_report_page.dart';
 import 'pages/login_page.dart';
 import 'pages/placeholder_page.dart';
 import 'pages/project_detail_page.dart';
@@ -194,16 +196,20 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: '/jobs/:id/report',
           name: 'jobReport',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Job Report'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: JobReportPage(
+              jobId: state.pathParameters['id']!,
+            ),
           ),
         ),
         // 18. Findings Explorer
         GoRoute(
           path: '/jobs/:id/findings',
           name: 'findingsExplorer',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Findings Explorer'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: FindingsExplorerPage(
+              jobId: state.pathParameters['id']!,
+            ),
           ),
         ),
         // 19. Task List

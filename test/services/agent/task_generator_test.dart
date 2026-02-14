@@ -2,7 +2,6 @@
 //
 // Verifies finding grouping, priority calculation, prompt generation,
 // and batch task creation via IntegrationApi.
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

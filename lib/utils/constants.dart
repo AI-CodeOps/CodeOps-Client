@@ -190,4 +190,35 @@ class AppConstants {
 
   /// Polling interval for job progress fallback in seconds.
   static const int jobPollingIntervalSeconds = 5;
+
+  // -------------------------------------------------------------------------
+  // Report & Findings constants (COC-008)
+  // -------------------------------------------------------------------------
+
+  /// Health score deduction for each critical finding.
+  static const double criticalScoreReduction = 5.0;
+
+  /// Health score deduction for each high finding.
+  static const double highScoreReduction = 2.0;
+
+  /// Health score deduction for each medium finding.
+  static const double mediumScoreReduction = 0.5;
+
+  /// Health score deduction for each low finding.
+  static const double lowScoreReduction = 0.0;
+
+  /// Default page size for findings explorer.
+  static const int defaultFindingsPageSize = 20;
+
+  /// Debounce duration for findings search in milliseconds.
+  static const int findingsSearchDebounceMs = 300;
+
+  /// Maximum filename length for exported files.
+  static const int maxExportFilenameLength = 100;
+
+  /// Health score gauge animation duration in milliseconds.
+  static const int healthScoreAnimationMs = 500;
+
+  /// Default size for health score gauge widget.
+  static const double gaugeDefaultSize = 120.0;
 }

@@ -7,7 +7,6 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/enums.dart';
 import '../../models/finding.dart';
 import '../../services/cloud/finding_api.dart';
 import '../../theme/colors.dart';
