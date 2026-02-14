@@ -116,4 +116,41 @@ class AppConstants {
 
   /// Default Claude model identifier.
   static const String defaultClaudeModel = 'claude-sonnet-4-20250514';
+
+  /// Health score threshold for green (healthy) status.
+  static const int healthScoreGreenThreshold = 80;
+
+  /// Health score threshold for yellow (warning) status.
+  static const int healthScoreYellowThreshold = 60;
+
+  /// Default number of days for health trend charts.
+  static const int healthTrendDefaultDays = 30;
+
+  /// Page size for recent jobs in project detail.
+  static const int recentJobsPageSize = 10;
+
+  /// Default maximum turns for Claude Code subprocess.
+  static const int defaultMaxTurns = 50;
+
+  /// Default Claude model for agent dispatch.
+  static const String defaultClaudeModelForDispatch =
+      'claude-sonnet-4-5-20250514';
+
+  /// Line threshold for finding deduplication (±N lines).
+  static const int deduplicationLineThreshold = 5;
+
+  /// Title similarity threshold for finding deduplication (0.0-1.0).
+  static const double deduplicationTitleSimilarityThreshold = 0.8;
+
+  /// Weight multiplier for Security agent in health score calculation.
+  static const double securityAgentWeight = 1.5;
+
+  /// Weight multiplier for Architecture agent in health score calculation.
+  static const double architectureAgentWeight = 1.5;
+
+  /// Default weight multiplier for agents in health score calculation.
+  static const double defaultAgentWeight = 1.0;
+
+  /// Minimum required Claude Code CLI version.
+  static const String minClaudeCodeVersion = '1.0.0';
 }
