@@ -622,6 +622,27 @@ class Specifications extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Local registry of cloned git repositories.
+class ClonedRepos extends Table {
+  /// Full repository name (owner/repo) as primary key.
+  TextColumn get repoFullName => text()();
+
+  /// Absolute path on the local filesystem.
+  TextColumn get localPath => text()();
+
+  /// Optional associated project UUID.
+  TextColumn get projectId => text().nullable()();
+
+  /// Timestamp when the repo was cloned.
+  DateTimeColumn get clonedAt => dateTime().nullable()();
+
+  /// Timestamp of the last access.
+  DateTimeColumn get lastAccessedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {repoFullName};
+}
+
 /// Tracks last sync time for each table.
 class SyncMetadata extends Table {
   /// Synced table name as primary key.

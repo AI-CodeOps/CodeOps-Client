@@ -3,6 +3,7 @@
 /// Handles project CRUD, archiving, and team-scoped project listing.
 library;
 
+import '../../models/health_snapshot.dart';
 import '../../models/project.dart';
 import 'api_client.dart';
 
@@ -72,6 +73,29 @@ class ProjectApi {
     return response.data!
         .map((e) => Project.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  /// Fetches paginated projects for a team.
+  ///
+  /// Returns a [PageResponse] envelope with pagination metadata.
+  Future<PageResponse<Project>> getTeamProjectsPaged(
+    String teamId, {
+    int page = 0,
+    int size = 20,
+    bool includeArchived = false,
+  }) async {
+    final response = await _client.get<Map<String, dynamic>>(
+      '/projects/team/$teamId/paged',
+      queryParameters: {
+        'page': page,
+        'size': size,
+        'includeArchived': includeArchived,
+      },
+    );
+    return PageResponse.fromJson(
+      response.data!,
+      (json) => Project.fromJson(json as Map<String, dynamic>),
+    );
   }
 
   /// Fetches a single project by [projectId].

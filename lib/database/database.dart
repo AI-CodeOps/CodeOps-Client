@@ -34,6 +34,7 @@ part 'database.g.dart';
   ComplianceItems,
   Specifications,
   SyncMetadata,
+  ClonedRepos,
 ])
 class CodeOpsDatabase extends _$CodeOpsDatabase {
   /// Creates a [CodeOpsDatabase] with the given [QueryExecutor].
@@ -45,7 +46,17 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(clonedRepos);
+          }
+        },
+      );
 
   /// Deletes all rows from every table.
   ///

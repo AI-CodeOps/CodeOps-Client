@@ -9560,6 +9560,339 @@ class SyncMetadataCompanion extends UpdateCompanion<SyncMetadataData> {
   }
 }
 
+class $ClonedReposTable extends ClonedRepos
+    with TableInfo<$ClonedReposTable, ClonedRepo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClonedReposTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _repoFullNameMeta =
+      const VerificationMeta('repoFullName');
+  @override
+  late final GeneratedColumn<String> repoFullName = GeneratedColumn<String>(
+      'repo_full_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localPathMeta =
+      const VerificationMeta('localPath');
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+      'local_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _projectIdMeta =
+      const VerificationMeta('projectId');
+  @override
+  late final GeneratedColumn<String> projectId = GeneratedColumn<String>(
+      'project_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _clonedAtMeta =
+      const VerificationMeta('clonedAt');
+  @override
+  late final GeneratedColumn<DateTime> clonedAt = GeneratedColumn<DateTime>(
+      'cloned_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _lastAccessedAtMeta =
+      const VerificationMeta('lastAccessedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastAccessedAt =
+      GeneratedColumn<DateTime>('last_accessed_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [repoFullName, localPath, projectId, clonedAt, lastAccessedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cloned_repos';
+  @override
+  VerificationContext validateIntegrity(Insertable<ClonedRepo> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('repo_full_name')) {
+      context.handle(
+          _repoFullNameMeta,
+          repoFullName.isAcceptableOrUnknown(
+              data['repo_full_name']!, _repoFullNameMeta));
+    } else if (isInserting) {
+      context.missing(_repoFullNameMeta);
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(_localPathMeta,
+          localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta));
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('project_id')) {
+      context.handle(_projectIdMeta,
+          projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
+    }
+    if (data.containsKey('cloned_at')) {
+      context.handle(_clonedAtMeta,
+          clonedAt.isAcceptableOrUnknown(data['cloned_at']!, _clonedAtMeta));
+    }
+    if (data.containsKey('last_accessed_at')) {
+      context.handle(
+          _lastAccessedAtMeta,
+          lastAccessedAt.isAcceptableOrUnknown(
+              data['last_accessed_at']!, _lastAccessedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {repoFullName};
+  @override
+  ClonedRepo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClonedRepo(
+      repoFullName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}repo_full_name'])!,
+      localPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}local_path'])!,
+      projectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}project_id']),
+      clonedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}cloned_at']),
+      lastAccessedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_accessed_at']),
+    );
+  }
+
+  @override
+  $ClonedReposTable createAlias(String alias) {
+    return $ClonedReposTable(attachedDatabase, alias);
+  }
+}
+
+class ClonedRepo extends DataClass implements Insertable<ClonedRepo> {
+  /// Full repository name (owner/repo) as primary key.
+  final String repoFullName;
+
+  /// Absolute path on the local filesystem.
+  final String localPath;
+
+  /// Optional associated project UUID.
+  final String? projectId;
+
+  /// Timestamp when the repo was cloned.
+  final DateTime? clonedAt;
+
+  /// Timestamp of the last access.
+  final DateTime? lastAccessedAt;
+  const ClonedRepo(
+      {required this.repoFullName,
+      required this.localPath,
+      this.projectId,
+      this.clonedAt,
+      this.lastAccessedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['repo_full_name'] = Variable<String>(repoFullName);
+    map['local_path'] = Variable<String>(localPath);
+    if (!nullToAbsent || projectId != null) {
+      map['project_id'] = Variable<String>(projectId);
+    }
+    if (!nullToAbsent || clonedAt != null) {
+      map['cloned_at'] = Variable<DateTime>(clonedAt);
+    }
+    if (!nullToAbsent || lastAccessedAt != null) {
+      map['last_accessed_at'] = Variable<DateTime>(lastAccessedAt);
+    }
+    return map;
+  }
+
+  ClonedReposCompanion toCompanion(bool nullToAbsent) {
+    return ClonedReposCompanion(
+      repoFullName: Value(repoFullName),
+      localPath: Value(localPath),
+      projectId: projectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(projectId),
+      clonedAt: clonedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clonedAt),
+      lastAccessedAt: lastAccessedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAccessedAt),
+    );
+  }
+
+  factory ClonedRepo.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClonedRepo(
+      repoFullName: serializer.fromJson<String>(json['repoFullName']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      projectId: serializer.fromJson<String?>(json['projectId']),
+      clonedAt: serializer.fromJson<DateTime?>(json['clonedAt']),
+      lastAccessedAt: serializer.fromJson<DateTime?>(json['lastAccessedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'repoFullName': serializer.toJson<String>(repoFullName),
+      'localPath': serializer.toJson<String>(localPath),
+      'projectId': serializer.toJson<String?>(projectId),
+      'clonedAt': serializer.toJson<DateTime?>(clonedAt),
+      'lastAccessedAt': serializer.toJson<DateTime?>(lastAccessedAt),
+    };
+  }
+
+  ClonedRepo copyWith(
+          {String? repoFullName,
+          String? localPath,
+          Value<String?> projectId = const Value.absent(),
+          Value<DateTime?> clonedAt = const Value.absent(),
+          Value<DateTime?> lastAccessedAt = const Value.absent()}) =>
+      ClonedRepo(
+        repoFullName: repoFullName ?? this.repoFullName,
+        localPath: localPath ?? this.localPath,
+        projectId: projectId.present ? projectId.value : this.projectId,
+        clonedAt: clonedAt.present ? clonedAt.value : this.clonedAt,
+        lastAccessedAt:
+            lastAccessedAt.present ? lastAccessedAt.value : this.lastAccessedAt,
+      );
+  ClonedRepo copyWithCompanion(ClonedReposCompanion data) {
+    return ClonedRepo(
+      repoFullName: data.repoFullName.present
+          ? data.repoFullName.value
+          : this.repoFullName,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      projectId: data.projectId.present ? data.projectId.value : this.projectId,
+      clonedAt: data.clonedAt.present ? data.clonedAt.value : this.clonedAt,
+      lastAccessedAt: data.lastAccessedAt.present
+          ? data.lastAccessedAt.value
+          : this.lastAccessedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClonedRepo(')
+          ..write('repoFullName: $repoFullName, ')
+          ..write('localPath: $localPath, ')
+          ..write('projectId: $projectId, ')
+          ..write('clonedAt: $clonedAt, ')
+          ..write('lastAccessedAt: $lastAccessedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(repoFullName, localPath, projectId, clonedAt, lastAccessedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClonedRepo &&
+          other.repoFullName == this.repoFullName &&
+          other.localPath == this.localPath &&
+          other.projectId == this.projectId &&
+          other.clonedAt == this.clonedAt &&
+          other.lastAccessedAt == this.lastAccessedAt);
+}
+
+class ClonedReposCompanion extends UpdateCompanion<ClonedRepo> {
+  final Value<String> repoFullName;
+  final Value<String> localPath;
+  final Value<String?> projectId;
+  final Value<DateTime?> clonedAt;
+  final Value<DateTime?> lastAccessedAt;
+  final Value<int> rowid;
+  const ClonedReposCompanion({
+    this.repoFullName = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.projectId = const Value.absent(),
+    this.clonedAt = const Value.absent(),
+    this.lastAccessedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ClonedReposCompanion.insert({
+    required String repoFullName,
+    required String localPath,
+    this.projectId = const Value.absent(),
+    this.clonedAt = const Value.absent(),
+    this.lastAccessedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : repoFullName = Value(repoFullName),
+        localPath = Value(localPath);
+  static Insertable<ClonedRepo> custom({
+    Expression<String>? repoFullName,
+    Expression<String>? localPath,
+    Expression<String>? projectId,
+    Expression<DateTime>? clonedAt,
+    Expression<DateTime>? lastAccessedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (repoFullName != null) 'repo_full_name': repoFullName,
+      if (localPath != null) 'local_path': localPath,
+      if (projectId != null) 'project_id': projectId,
+      if (clonedAt != null) 'cloned_at': clonedAt,
+      if (lastAccessedAt != null) 'last_accessed_at': lastAccessedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ClonedReposCompanion copyWith(
+      {Value<String>? repoFullName,
+      Value<String>? localPath,
+      Value<String?>? projectId,
+      Value<DateTime?>? clonedAt,
+      Value<DateTime?>? lastAccessedAt,
+      Value<int>? rowid}) {
+    return ClonedReposCompanion(
+      repoFullName: repoFullName ?? this.repoFullName,
+      localPath: localPath ?? this.localPath,
+      projectId: projectId ?? this.projectId,
+      clonedAt: clonedAt ?? this.clonedAt,
+      lastAccessedAt: lastAccessedAt ?? this.lastAccessedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (repoFullName.present) {
+      map['repo_full_name'] = Variable<String>(repoFullName.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (projectId.present) {
+      map['project_id'] = Variable<String>(projectId.value);
+    }
+    if (clonedAt.present) {
+      map['cloned_at'] = Variable<DateTime>(clonedAt.value);
+    }
+    if (lastAccessedAt.present) {
+      map['last_accessed_at'] = Variable<DateTime>(lastAccessedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClonedReposCompanion(')
+          ..write('repoFullName: $repoFullName, ')
+          ..write('localPath: $localPath, ')
+          ..write('projectId: $projectId, ')
+          ..write('clonedAt: $clonedAt, ')
+          ..write('lastAccessedAt: $lastAccessedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$CodeOpsDatabase extends GeneratedDatabase {
   _$CodeOpsDatabase(QueryExecutor e) : super(e);
   $CodeOpsDatabaseManager get managers => $CodeOpsDatabaseManager(this);
@@ -9584,6 +9917,7 @@ abstract class _$CodeOpsDatabase extends GeneratedDatabase {
       $ComplianceItemsTable(this);
   late final $SpecificationsTable specifications = $SpecificationsTable(this);
   late final $SyncMetadataTable syncMetadata = $SyncMetadataTable(this);
+  late final $ClonedReposTable clonedRepos = $ClonedReposTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9604,7 +9938,8 @@ abstract class _$CodeOpsDatabase extends GeneratedDatabase {
         healthSnapshots,
         complianceItems,
         specifications,
-        syncMetadata
+        syncMetadata,
+        clonedRepos
       ];
 }
 
@@ -13853,6 +14188,182 @@ typedef $$SyncMetadataTableProcessedTableManager = ProcessedTableManager<
     ),
     SyncMetadataData,
     PrefetchHooks Function()>;
+typedef $$ClonedReposTableCreateCompanionBuilder = ClonedReposCompanion
+    Function({
+  required String repoFullName,
+  required String localPath,
+  Value<String?> projectId,
+  Value<DateTime?> clonedAt,
+  Value<DateTime?> lastAccessedAt,
+  Value<int> rowid,
+});
+typedef $$ClonedReposTableUpdateCompanionBuilder = ClonedReposCompanion
+    Function({
+  Value<String> repoFullName,
+  Value<String> localPath,
+  Value<String?> projectId,
+  Value<DateTime?> clonedAt,
+  Value<DateTime?> lastAccessedAt,
+  Value<int> rowid,
+});
+
+class $$ClonedReposTableFilterComposer
+    extends Composer<_$CodeOpsDatabase, $ClonedReposTable> {
+  $$ClonedReposTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get repoFullName => $composableBuilder(
+      column: $table.repoFullName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+      column: $table.localPath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get projectId => $composableBuilder(
+      column: $table.projectId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get clonedAt => $composableBuilder(
+      column: $table.clonedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastAccessedAt => $composableBuilder(
+      column: $table.lastAccessedAt,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$ClonedReposTableOrderingComposer
+    extends Composer<_$CodeOpsDatabase, $ClonedReposTable> {
+  $$ClonedReposTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get repoFullName => $composableBuilder(
+      column: $table.repoFullName,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+      column: $table.localPath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get projectId => $composableBuilder(
+      column: $table.projectId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get clonedAt => $composableBuilder(
+      column: $table.clonedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastAccessedAt => $composableBuilder(
+      column: $table.lastAccessedAt,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$ClonedReposTableAnnotationComposer
+    extends Composer<_$CodeOpsDatabase, $ClonedReposTable> {
+  $$ClonedReposTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get repoFullName => $composableBuilder(
+      column: $table.repoFullName, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<String> get projectId =>
+      $composableBuilder(column: $table.projectId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get clonedAt =>
+      $composableBuilder(column: $table.clonedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAccessedAt => $composableBuilder(
+      column: $table.lastAccessedAt, builder: (column) => column);
+}
+
+class $$ClonedReposTableTableManager extends RootTableManager<
+    _$CodeOpsDatabase,
+    $ClonedReposTable,
+    ClonedRepo,
+    $$ClonedReposTableFilterComposer,
+    $$ClonedReposTableOrderingComposer,
+    $$ClonedReposTableAnnotationComposer,
+    $$ClonedReposTableCreateCompanionBuilder,
+    $$ClonedReposTableUpdateCompanionBuilder,
+    (
+      ClonedRepo,
+      BaseReferences<_$CodeOpsDatabase, $ClonedReposTable, ClonedRepo>
+    ),
+    ClonedRepo,
+    PrefetchHooks Function()> {
+  $$ClonedReposTableTableManager(_$CodeOpsDatabase db, $ClonedReposTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ClonedReposTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClonedReposTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClonedReposTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> repoFullName = const Value.absent(),
+            Value<String> localPath = const Value.absent(),
+            Value<String?> projectId = const Value.absent(),
+            Value<DateTime?> clonedAt = const Value.absent(),
+            Value<DateTime?> lastAccessedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ClonedReposCompanion(
+            repoFullName: repoFullName,
+            localPath: localPath,
+            projectId: projectId,
+            clonedAt: clonedAt,
+            lastAccessedAt: lastAccessedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String repoFullName,
+            required String localPath,
+            Value<String?> projectId = const Value.absent(),
+            Value<DateTime?> clonedAt = const Value.absent(),
+            Value<DateTime?> lastAccessedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ClonedReposCompanion.insert(
+            repoFullName: repoFullName,
+            localPath: localPath,
+            projectId: projectId,
+            clonedAt: clonedAt,
+            lastAccessedAt: lastAccessedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$ClonedReposTableProcessedTableManager = ProcessedTableManager<
+    _$CodeOpsDatabase,
+    $ClonedReposTable,
+    ClonedRepo,
+    $$ClonedReposTableFilterComposer,
+    $$ClonedReposTableOrderingComposer,
+    $$ClonedReposTableAnnotationComposer,
+    $$ClonedReposTableCreateCompanionBuilder,
+    $$ClonedReposTableUpdateCompanionBuilder,
+    (
+      ClonedRepo,
+      BaseReferences<_$CodeOpsDatabase, $ClonedReposTable, ClonedRepo>
+    ),
+    ClonedRepo,
+    PrefetchHooks Function()>;
 
 class $CodeOpsDatabaseManager {
   final _$CodeOpsDatabase _db;
@@ -13890,4 +14401,6 @@ class $CodeOpsDatabaseManager {
       $$SpecificationsTableTableManager(_db, _db.specifications);
   $$SyncMetadataTableTableManager get syncMetadata =>
       $$SyncMetadataTableTableManager(_db, _db.syncMetadata);
+  $$ClonedReposTableTableManager get clonedRepos =>
+      $$ClonedReposTableTableManager(_db, _db.clonedRepos);
 }

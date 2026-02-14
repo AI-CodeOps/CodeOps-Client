@@ -1,10 +1,12 @@
 // Tests for ProjectApi.
 //
-// Verifies project CRUD, archiving, and team-scoped listing.
+// Verifies project CRUD, archiving, team-scoped listing, and pagination.
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:codeops/models/health_snapshot.dart';
+import 'package:codeops/models/project.dart';
 import 'package:codeops/services/cloud/api_client.dart';
 import 'package:codeops/services/cloud/project_api.dart';
 
@@ -141,6 +143,68 @@ void main() {
       await projectApi.deleteProject('proj-1');
 
       verify(() => mockClient.delete('/projects/proj-1')).called(1);
+    });
+
+    test('getTeamProjectsPaged returns PageResponse with pagination metadata',
+        () async {
+      when(() => mockClient.get<Map<String, dynamic>>(
+            '/projects/team/team-1/paged',
+            queryParameters: any(named: 'queryParameters'),
+          )).thenAnswer((_) async => Response(
+            data: {
+              'content': [projectJson],
+              'page': 0,
+              'size': 20,
+              'totalElements': 1,
+              'totalPages': 1,
+              'isLast': true,
+            },
+            requestOptions: RequestOptions(),
+            statusCode: 200,
+          ));
+
+      final page = await projectApi.getTeamProjectsPaged('team-1');
+
+      expect(page, isA<PageResponse<Project>>());
+      expect(page.content, hasLength(1));
+      expect(page.content.first.name, 'Test Project');
+      expect(page.page, 0);
+      expect(page.totalElements, 1);
+      expect(page.isLast, isTrue);
+    });
+
+    test('getTeamProjectsPaged passes page and size params', () async {
+      when(() => mockClient.get<Map<String, dynamic>>(
+            '/projects/team/team-1/paged',
+            queryParameters: {
+              'page': 2,
+              'size': 10,
+              'includeArchived': true,
+            },
+          )).thenAnswer((_) async => Response(
+            data: {
+              'content': <dynamic>[],
+              'page': 2,
+              'size': 10,
+              'totalElements': 25,
+              'totalPages': 3,
+              'isLast': false,
+            },
+            requestOptions: RequestOptions(),
+            statusCode: 200,
+          ));
+
+      final page = await projectApi.getTeamProjectsPaged(
+        'team-1',
+        page: 2,
+        size: 10,
+        includeArchived: true,
+      );
+
+      expect(page.page, 2);
+      expect(page.size, 10);
+      expect(page.totalElements, 25);
+      expect(page.isLast, isFalse);
     });
   });
 }

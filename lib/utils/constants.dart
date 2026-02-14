@@ -153,4 +153,41 @@ class AppConstants {
 
   /// Minimum required Claude Code CLI version.
   static const String minClaudeCodeVersion = '1.0.0';
+
+  // -------------------------------------------------------------------------
+  // Wizard & Job Progress constants
+  // -------------------------------------------------------------------------
+
+  /// Minimum concurrent agents allowed in wizard configuration.
+  static const int maxConcurrentAgentsMin = 1;
+
+  /// Maximum concurrent agents allowed in wizard configuration.
+  static const int maxConcurrentAgentsMax = 6;
+
+  /// Minimum agent timeout in minutes.
+  static const int agentTimeoutMinutesMin = 5;
+
+  /// Maximum agent timeout in minutes.
+  static const int agentTimeoutMinutesMax = 60;
+
+  /// Minimum max turns for Claude Code subprocess.
+  static const int maxTurnsMin = 10;
+
+  /// Maximum max turns for Claude Code subprocess.
+  static const int maxTurnsMax = 100;
+
+  /// Default pass threshold for health score (0-100).
+  static const int defaultPassThreshold = 80;
+
+  /// Default warn threshold for health score (0-100).
+  static const int defaultWarnThreshold = 60;
+
+  /// Maximum specification file size in bytes (50 MB).
+  static const int maxSpecFileSizeBytes = 52428800;
+
+  /// Maximum number of live findings visible in the feed.
+  static const int maxVisibleLiveFindings = 50;
+
+  /// Polling interval for job progress fallback in seconds.
+  static const int jobPollingIntervalSeconds = 5;
 }

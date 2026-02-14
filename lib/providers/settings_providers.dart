@@ -28,3 +28,12 @@ final offlineModeProvider = StateProvider<bool>((ref) => false);
 
 /// Current connectivity status.
 final connectivityProvider = StateProvider<bool>((ref) => true);
+
+/// Whether the sidebar is collapsed (icon-only mode).
+final sidebarCollapsedProvider = StateProvider<bool>((ref) => false);
+
+/// Currently selected settings section index.
+final settingsSectionProvider = StateProvider<int>((ref) => 0);
+
+/// Font density setting (0 = compact, 1 = normal, 2 = comfortable).
+final fontDensityProvider = StateProvider<int>((ref) => 1);

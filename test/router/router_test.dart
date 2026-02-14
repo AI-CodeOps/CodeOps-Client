@@ -13,6 +13,8 @@ void main() {
           if (route is GoRoute) {
             count++;
             count += countRoutes(route.routes);
+          } else if (route is ShellRoute) {
+            count += countRoutes(route.routes);
           }
         }
         return count;
@@ -58,6 +60,8 @@ void main() {
         for (final route in routes) {
           if (route is GoRoute) {
             registeredPaths.add(route.path);
+            collectPaths(route.routes);
+          } else if (route is ShellRoute) {
             collectPaths(route.routes);
           }
         }
