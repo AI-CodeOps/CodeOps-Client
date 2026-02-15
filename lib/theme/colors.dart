@@ -73,4 +73,20 @@ class CodeOpsColors {
     JobStatus.failed: error,
     JobStatus.cancelled: textTertiary,
   };
+
+  /// Maps each [AgentType] to its corresponding accent color.
+  static const Map<AgentType, Color> agentTypeColors = {
+    AgentType.security: Color(0xFFEF4444),
+    AgentType.codeQuality: Color(0xFF6C63FF),
+    AgentType.buildHealth: Color(0xFF4ADE80),
+    AgentType.completeness: Color(0xFF3B82F6),
+    AgentType.apiContract: Color(0xFFF97316),
+    AgentType.testCoverage: Color(0xFFA855F7),
+    AgentType.uiUx: Color(0xFFEC4899),
+    AgentType.documentation: Color(0xFF14B8A6),
+    AgentType.database: Color(0xFFEAB308),
+    AgentType.performance: Color(0xFF06B6D4),
+    AgentType.dependency: Color(0xFF78716C),
+    AgentType.architecture: Color(0xFFD946EF),
+  };
 }

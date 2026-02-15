@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'pages/audit_wizard_page.dart';
+import 'pages/directives_page.dart';
 import 'pages/findings_explorer_page.dart';
 import 'pages/github_browser_page.dart';
 import 'pages/home_page.dart';
@@ -18,6 +19,8 @@ import 'pages/job_report_page.dart';
 import 'pages/login_page.dart';
 import 'pages/jira_browser_page.dart';
 import 'pages/bug_investigator_page.dart';
+import 'pages/persona_editor_page.dart';
+import 'pages/personas_page.dart';
 import 'pages/placeholder_page.dart';
 import 'pages/project_detail_page.dart';
 import 'pages/task_list_page.dart';
@@ -233,15 +236,17 @@ final GoRouter router = GoRouter(
           path: '/personas',
           name: 'personas',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Personas'),
+            child: PersonasPage(),
           ),
         ),
         // 21. Persona Editor
         GoRoute(
           path: '/personas/:id/edit',
           name: 'personaEditor',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Persona Editor'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PersonaEditorPage(
+              personaId: state.pathParameters['id']!,
+            ),
           ),
         ),
         // 22. Directives
@@ -249,7 +254,7 @@ final GoRouter router = GoRouter(
           path: '/directives',
           name: 'directives',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Directives'),
+            child: DirectivesPage(),
           ),
         ),
         // 23. Settings
