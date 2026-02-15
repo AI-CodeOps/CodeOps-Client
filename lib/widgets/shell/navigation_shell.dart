@@ -4,12 +4,11 @@
 /// and a content area for the current route's child widget.
 library;
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../../models/enums.dart';
 import '../../providers/auth_providers.dart';
@@ -38,21 +37,31 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
 
     return Scaffold(
       backgroundColor: CodeOpsColors.background,
-      body: Row(
+      body: Column(
         children: [
-          // Sidebar
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            width: sidebarWidth,
-            child: _Sidebar(collapsed: collapsed),
-          ),
-          // Main content area
+          // Full-width centered app title bar
+          const _AppTitleBar(),
+          const Divider(height: 1, color: CodeOpsColors.border),
+          // Sidebar + main content below the title bar
           Expanded(
-            child: Column(
+            child: Row(
               children: [
-                const _TopBar(),
-                Expanded(child: widget.child),
+                // Sidebar
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  width: sidebarWidth,
+                  child: _Sidebar(collapsed: collapsed),
+                ),
+                // Main content area
+                Expanded(
+                  child: Column(
+                    children: [
+                      const _TopBar(),
+                      Expanded(child: widget.child),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -79,8 +88,8 @@ class _Sidebar extends ConsumerWidget {
       color: CodeOpsColors.surface,
       child: Column(
         children: [
-          // Logo + collapse toggle
-          _SidebarHeader(collapsed: collapsed),
+          // Collapse toggle
+          _SidebarCollapseToggle(collapsed: collapsed),
           const Divider(height: 1),
 
           // Nav items
@@ -206,63 +215,82 @@ class _Sidebar extends ConsumerWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Sidebar Header
+// App Title Bar (full-width, centered logo)
 // ---------------------------------------------------------------------------
 
-class _SidebarHeader extends ConsumerWidget {
-  final bool collapsed;
-
-  const _SidebarHeader({required this.collapsed});
-
-  /// Extra left padding on macOS to clear the native traffic-light buttons
-  /// when using [TitleBarStyle.hidden].
-  static final double _macOsTrafficLightWidth = Platform.isMacOS ? 70.0 : 0.0;
+class _AppTitleBar extends StatelessWidget {
+  const _AppTitleBar();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final leftPad = collapsed
-        ? (_macOsTrafficLightWidth > 0 ? _macOsTrafficLightWidth : 8.0)
-        : (_macOsTrafficLightWidth > 0 ? _macOsTrafficLightWidth : 16.0);
-
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 48,
-      child: Padding(
-        padding: EdgeInsets.only(left: leftPad, right: collapsed ? 8 : 16),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.terminal,
-              color: CodeOpsColors.primary,
-              size: 24,
-            ),
-            if (!collapsed) ...[
-              const SizedBox(width: 10),
-              const Flexible(
-                child: Text(
+      child: Stack(
+        children: [
+          // Centered logo + name (ignores traffic-light offset).
+          const Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.terminal,
+                  color: CodeOpsColors.primary,
+                  size: 24,
+                ),
+                SizedBox(width: 10),
+                Text(
                   'CodeOps',
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: CodeOpsColors.textPrimary,
                   ),
                 ),
-              ),
-            ],
-            const Spacer(),
-            IconButton(
-              icon: Icon(
-                collapsed ? Icons.chevron_right : Icons.chevron_left,
-                size: 18,
-                color: CodeOpsColors.textTertiary,
-              ),
-              onPressed: () {
-                ref.read(sidebarCollapsedProvider.notifier).state = !collapsed;
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              ],
             ),
-          ],
+          ),
+          // Invisible drag area so the window can be dragged from the title bar.
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanStart: (_) => windowManager.startDragging(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sidebar Collapse Toggle
+// ---------------------------------------------------------------------------
+
+class _SidebarCollapseToggle extends ConsumerWidget {
+  final bool collapsed;
+
+  const _SidebarCollapseToggle({required this.collapsed});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      height: 36,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: collapsed ? 8 : 16),
+        child: Align(
+          alignment: collapsed ? Alignment.center : Alignment.centerRight,
+          child: IconButton(
+            icon: Icon(
+              collapsed ? Icons.chevron_right : Icons.chevron_left,
+              size: 18,
+              color: CodeOpsColors.textTertiary,
+            ),
+            onPressed: () {
+              ref.read(sidebarCollapsedProvider.notifier).state = !collapsed;
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          ),
         ),
       ),
     );
