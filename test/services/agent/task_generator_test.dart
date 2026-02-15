@@ -1,7 +1,7 @@
 // Tests for TaskGenerator.
 //
 // Verifies finding grouping, priority calculation, prompt generation,
-// and batch task creation via IntegrationApi.
+// and batch task creation via TaskApi.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -9,12 +9,12 @@ import 'package:codeops/models/enums.dart';
 import 'package:codeops/models/finding.dart';
 import 'package:codeops/models/remediation_task.dart';
 import 'package:codeops/services/agent/task_generator.dart';
-import 'package:codeops/services/cloud/integration_api.dart';
+import 'package:codeops/services/cloud/task_api.dart';
 
-class MockIntegrationApi extends Mock implements IntegrationApi {}
+class MockTaskApi extends Mock implements TaskApi {}
 
 void main() {
-  late MockIntegrationApi mockIntegrationApi;
+  late MockTaskApi mockTaskApi;
   late TaskGenerator taskGenerator;
 
   final securityFinding = const Finding(
@@ -71,8 +71,8 @@ void main() {
   );
 
   setUp(() {
-    mockIntegrationApi = MockIntegrationApi();
-    taskGenerator = TaskGenerator(mockIntegrationApi);
+    mockTaskApi = MockTaskApi();
+    taskGenerator = TaskGenerator(mockTaskApi);
   });
 
   group('TaskGenerator', () {
@@ -334,11 +334,11 @@ void main() {
         );
 
         expect(tasks, isEmpty);
-        verifyNever(() => mockIntegrationApi.createTasksBatch(any()));
+        verifyNever(() => mockTaskApi.createTasksBatch(any()));
       });
 
       test('calls createTasksBatch and returns created tasks', () async {
-        when(() => mockIntegrationApi.createTasksBatch(any()))
+        when(() => mockTaskApi.createTasksBatch(any()))
             .thenAnswer((_) async => [
                   const RemediationTask(
                     id: 'task-1',
@@ -360,11 +360,11 @@ void main() {
         expect(tasks.first.id, 'task-1');
         expect(tasks.first.priority, Priority.p1);
 
-        verify(() => mockIntegrationApi.createTasksBatch(any())).called(1);
+        verify(() => mockTaskApi.createTasksBatch(any())).called(1);
       });
 
       test('creates one task per file group', () async {
-        when(() => mockIntegrationApi.createTasksBatch(any()))
+        when(() => mockTaskApi.createTasksBatch(any()))
             .thenAnswer((invocation) async {
           final payloads = invocation.positionalArguments[0]
               as List<Map<String, dynamic>>;
@@ -399,7 +399,7 @@ void main() {
       test('includes finding IDs in task payloads', () async {
         final capturedPayloads = <List<Map<String, dynamic>>>[];
 
-        when(() => mockIntegrationApi.createTasksBatch(any()))
+        when(() => mockTaskApi.createTasksBatch(any()))
             .thenAnswer((invocation) async {
           final payloads = invocation.positionalArguments[0]
               as List<Map<String, dynamic>>;
@@ -430,7 +430,7 @@ void main() {
       test('assigns sequential task numbers', () async {
         final capturedPayloads = <List<Map<String, dynamic>>>[];
 
-        when(() => mockIntegrationApi.createTasksBatch(any()))
+        when(() => mockTaskApi.createTasksBatch(any()))
             .thenAnswer((invocation) async {
           final payloads = invocation.positionalArguments[0]
               as List<Map<String, dynamic>>;

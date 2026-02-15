@@ -27,9 +27,7 @@ Project _$ProjectFromJson(Map<String, dynamic> json) => Project(
       lastAuditAt: json['lastAuditAt'] == null
           ? null
           : DateTime.parse(json['lastAuditAt'] as String),
-      settingsJson: json['settingsJson'] as String?,
       isArchived: json['isArchived'] as bool?,
-      createdBy: json['createdBy'] as String?,
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -55,9 +53,7 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
       'techStack': instance.techStack,
       'healthScore': instance.healthScore,
       'lastAuditAt': instance.lastAuditAt?.toIso8601String(),
-      'settingsJson': instance.settingsJson,
       'isArchived': instance.isArchived,
-      'createdBy': instance.createdBy,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
     };

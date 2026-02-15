@@ -11,7 +11,6 @@ import '../models/health_snapshot.dart';
 import '../services/cloud/health_monitor_api.dart';
 import '../services/cloud/metrics_api.dart';
 import 'auth_providers.dart';
-import 'task_providers.dart';
 import 'team_providers.dart';
 
 /// Provides [MetricsApi] for metrics endpoints.
@@ -40,8 +39,8 @@ final projectMetricsProvider =
 final healthHistoryProvider =
     FutureProvider.family<List<HealthSnapshot>, String>(
   (ref, projectId) async {
-    final integrationApi = ref.watch(integrationApiProvider);
-    return integrationApi.getProjectSnapshots(projectId);
+    final api = ref.watch(healthMonitorApiProvider);
+    return api.getHealthTrend(projectId);
   },
 );
 
@@ -49,8 +48,8 @@ final healthHistoryProvider =
 final healthSchedulesProvider =
     FutureProvider.family<List<HealthSchedule>, String>(
   (ref, projectId) async {
-    final integrationApi = ref.watch(integrationApiProvider);
-    return integrationApi.getProjectSchedules(projectId);
+    final api = ref.watch(healthMonitorApiProvider);
+    return api.getSchedulesForProject(projectId);
   },
 );
 

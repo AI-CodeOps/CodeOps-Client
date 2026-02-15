@@ -144,6 +144,9 @@ class QaJobs extends Table {
   /// Branch being analyzed.
   TextColumn get branch => text().nullable()();
 
+  /// Job configuration JSON.
+  TextColumn get configJson => text().nullable()();
+
   /// Markdown summary.
   TextColumn get summaryMd => text().nullable()();
 

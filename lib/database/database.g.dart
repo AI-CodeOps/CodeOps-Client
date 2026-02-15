@@ -1780,6 +1780,12 @@ class $QaJobsTable extends QaJobs with TableInfo<$QaJobsTable, QaJob> {
   late final GeneratedColumn<String> branch = GeneratedColumn<String>(
       'branch', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _configJsonMeta =
+      const VerificationMeta('configJson');
+  @override
+  late final GeneratedColumn<String> configJson = GeneratedColumn<String>(
+      'config_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _summaryMdMeta =
       const VerificationMeta('summaryMd');
   @override
@@ -1873,6 +1879,7 @@ class $QaJobsTable extends QaJobs with TableInfo<$QaJobsTable, QaJob> {
         status,
         name,
         branch,
+        configJson,
         summaryMd,
         overallResult,
         healthScore,
@@ -1934,6 +1941,12 @@ class $QaJobsTable extends QaJobs with TableInfo<$QaJobsTable, QaJob> {
     if (data.containsKey('branch')) {
       context.handle(_branchMeta,
           branch.isAcceptableOrUnknown(data['branch']!, _branchMeta));
+    }
+    if (data.containsKey('config_json')) {
+      context.handle(
+          _configJsonMeta,
+          configJson.isAcceptableOrUnknown(
+              data['config_json']!, _configJsonMeta));
     }
     if (data.containsKey('summary_md')) {
       context.handle(_summaryMdMeta,
@@ -2030,6 +2043,8 @@ class $QaJobsTable extends QaJobs with TableInfo<$QaJobsTable, QaJob> {
           .read(DriftSqlType.string, data['${effectivePrefix}name']),
       branch: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}branch']),
+      configJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}config_json']),
       summaryMd: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}summary_md']),
       overallResult: attachedDatabase.typeMapping
@@ -2089,6 +2104,9 @@ class QaJob extends DataClass implements Insertable<QaJob> {
   /// Branch being analyzed.
   final String? branch;
 
+  /// Job configuration JSON.
+  final String? configJson;
+
   /// Markdown summary.
   final String? summaryMd;
 
@@ -2138,6 +2156,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
       required this.status,
       this.name,
       this.branch,
+      this.configJson,
       this.summaryMd,
       this.overallResult,
       this.healthScore,
@@ -2167,6 +2186,9 @@ class QaJob extends DataClass implements Insertable<QaJob> {
     }
     if (!nullToAbsent || branch != null) {
       map['branch'] = Variable<String>(branch);
+    }
+    if (!nullToAbsent || configJson != null) {
+      map['config_json'] = Variable<String>(configJson);
     }
     if (!nullToAbsent || summaryMd != null) {
       map['summary_md'] = Variable<String>(summaryMd);
@@ -2225,6 +2247,9 @@ class QaJob extends DataClass implements Insertable<QaJob> {
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       branch:
           branch == null && nullToAbsent ? const Value.absent() : Value(branch),
+      configJson: configJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(configJson),
       summaryMd: summaryMd == null && nullToAbsent
           ? const Value.absent()
           : Value(summaryMd),
@@ -2281,6 +2306,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
       status: serializer.fromJson<String>(json['status']),
       name: serializer.fromJson<String?>(json['name']),
       branch: serializer.fromJson<String?>(json['branch']),
+      configJson: serializer.fromJson<String?>(json['configJson']),
       summaryMd: serializer.fromJson<String?>(json['summaryMd']),
       overallResult: serializer.fromJson<String?>(json['overallResult']),
       healthScore: serializer.fromJson<int?>(json['healthScore']),
@@ -2308,6 +2334,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
       'status': serializer.toJson<String>(status),
       'name': serializer.toJson<String?>(name),
       'branch': serializer.toJson<String?>(branch),
+      'configJson': serializer.toJson<String?>(configJson),
       'summaryMd': serializer.toJson<String?>(summaryMd),
       'overallResult': serializer.toJson<String?>(overallResult),
       'healthScore': serializer.toJson<int?>(healthScore),
@@ -2333,6 +2360,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
           String? status,
           Value<String?> name = const Value.absent(),
           Value<String?> branch = const Value.absent(),
+          Value<String?> configJson = const Value.absent(),
           Value<String?> summaryMd = const Value.absent(),
           Value<String?> overallResult = const Value.absent(),
           Value<int?> healthScore = const Value.absent(),
@@ -2355,6 +2383,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
         status: status ?? this.status,
         name: name.present ? name.value : this.name,
         branch: branch.present ? branch.value : this.branch,
+        configJson: configJson.present ? configJson.value : this.configJson,
         summaryMd: summaryMd.present ? summaryMd.value : this.summaryMd,
         overallResult:
             overallResult.present ? overallResult.value : this.overallResult,
@@ -2385,6 +2414,8 @@ class QaJob extends DataClass implements Insertable<QaJob> {
       status: data.status.present ? data.status.value : this.status,
       name: data.name.present ? data.name.value : this.name,
       branch: data.branch.present ? data.branch.value : this.branch,
+      configJson:
+          data.configJson.present ? data.configJson.value : this.configJson,
       summaryMd: data.summaryMd.present ? data.summaryMd.value : this.summaryMd,
       overallResult: data.overallResult.present
           ? data.overallResult.value
@@ -2425,6 +2456,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
           ..write('status: $status, ')
           ..write('name: $name, ')
           ..write('branch: $branch, ')
+          ..write('configJson: $configJson, ')
           ..write('summaryMd: $summaryMd, ')
           ..write('overallResult: $overallResult, ')
           ..write('healthScore: $healthScore, ')
@@ -2452,6 +2484,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
         status,
         name,
         branch,
+        configJson,
         summaryMd,
         overallResult,
         healthScore,
@@ -2478,6 +2511,7 @@ class QaJob extends DataClass implements Insertable<QaJob> {
           other.status == this.status &&
           other.name == this.name &&
           other.branch == this.branch &&
+          other.configJson == this.configJson &&
           other.summaryMd == this.summaryMd &&
           other.overallResult == this.overallResult &&
           other.healthScore == this.healthScore &&
@@ -2502,6 +2536,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
   final Value<String> status;
   final Value<String?> name;
   final Value<String?> branch;
+  final Value<String?> configJson;
   final Value<String?> summaryMd;
   final Value<String?> overallResult;
   final Value<int?> healthScore;
@@ -2525,6 +2560,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
     this.status = const Value.absent(),
     this.name = const Value.absent(),
     this.branch = const Value.absent(),
+    this.configJson = const Value.absent(),
     this.summaryMd = const Value.absent(),
     this.overallResult = const Value.absent(),
     this.healthScore = const Value.absent(),
@@ -2549,6 +2585,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
     required String status,
     this.name = const Value.absent(),
     this.branch = const Value.absent(),
+    this.configJson = const Value.absent(),
     this.summaryMd = const Value.absent(),
     this.overallResult = const Value.absent(),
     this.healthScore = const Value.absent(),
@@ -2576,6 +2613,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
     Expression<String>? status,
     Expression<String>? name,
     Expression<String>? branch,
+    Expression<String>? configJson,
     Expression<String>? summaryMd,
     Expression<String>? overallResult,
     Expression<int>? healthScore,
@@ -2600,6 +2638,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
       if (status != null) 'status': status,
       if (name != null) 'name': name,
       if (branch != null) 'branch': branch,
+      if (configJson != null) 'config_json': configJson,
       if (summaryMd != null) 'summary_md': summaryMd,
       if (overallResult != null) 'overall_result': overallResult,
       if (healthScore != null) 'health_score': healthScore,
@@ -2626,6 +2665,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
       Value<String>? status,
       Value<String?>? name,
       Value<String?>? branch,
+      Value<String?>? configJson,
       Value<String?>? summaryMd,
       Value<String?>? overallResult,
       Value<int?>? healthScore,
@@ -2649,6 +2689,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
       status: status ?? this.status,
       name: name ?? this.name,
       branch: branch ?? this.branch,
+      configJson: configJson ?? this.configJson,
       summaryMd: summaryMd ?? this.summaryMd,
       overallResult: overallResult ?? this.overallResult,
       healthScore: healthScore ?? this.healthScore,
@@ -2690,6 +2731,9 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
     }
     if (branch.present) {
       map['branch'] = Variable<String>(branch.value);
+    }
+    if (configJson.present) {
+      map['config_json'] = Variable<String>(configJson.value);
     }
     if (summaryMd.present) {
       map['summary_md'] = Variable<String>(summaryMd.value);
@@ -2749,6 +2793,7 @@ class QaJobsCompanion extends UpdateCompanion<QaJob> {
           ..write('status: $status, ')
           ..write('name: $name, ')
           ..write('branch: $branch, ')
+          ..write('configJson: $configJson, ')
           ..write('summaryMd: $summaryMd, ')
           ..write('overallResult: $overallResult, ')
           ..write('healthScore: $healthScore, ')
@@ -10711,6 +10756,7 @@ typedef $$QaJobsTableCreateCompanionBuilder = QaJobsCompanion Function({
   required String status,
   Value<String?> name,
   Value<String?> branch,
+  Value<String?> configJson,
   Value<String?> summaryMd,
   Value<String?> overallResult,
   Value<int?> healthScore,
@@ -10735,6 +10781,7 @@ typedef $$QaJobsTableUpdateCompanionBuilder = QaJobsCompanion Function({
   Value<String> status,
   Value<String?> name,
   Value<String?> branch,
+  Value<String?> configJson,
   Value<String?> summaryMd,
   Value<String?> overallResult,
   Value<int?> healthScore,
@@ -10781,6 +10828,9 @@ class $$QaJobsTableFilterComposer
 
   ColumnFilters<String> get branch => $composableBuilder(
       column: $table.branch, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get configJson => $composableBuilder(
+      column: $table.configJson, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get summaryMd => $composableBuilder(
       column: $table.summaryMd, builder: (column) => ColumnFilters(column));
@@ -10854,6 +10904,9 @@ class $$QaJobsTableOrderingComposer
 
   ColumnOrderings<String> get branch => $composableBuilder(
       column: $table.branch, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get configJson => $composableBuilder(
+      column: $table.configJson, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get summaryMd => $composableBuilder(
       column: $table.summaryMd, builder: (column) => ColumnOrderings(column));
@@ -10933,6 +10986,9 @@ class $$QaJobsTableAnnotationComposer
   GeneratedColumn<String> get branch =>
       $composableBuilder(column: $table.branch, builder: (column) => column);
 
+  GeneratedColumn<String> get configJson => $composableBuilder(
+      column: $table.configJson, builder: (column) => column);
+
   GeneratedColumn<String> get summaryMd =>
       $composableBuilder(column: $table.summaryMd, builder: (column) => column);
 
@@ -11006,6 +11062,7 @@ class $$QaJobsTableTableManager extends RootTableManager<
             Value<String> status = const Value.absent(),
             Value<String?> name = const Value.absent(),
             Value<String?> branch = const Value.absent(),
+            Value<String?> configJson = const Value.absent(),
             Value<String?> summaryMd = const Value.absent(),
             Value<String?> overallResult = const Value.absent(),
             Value<int?> healthScore = const Value.absent(),
@@ -11030,6 +11087,7 @@ class $$QaJobsTableTableManager extends RootTableManager<
             status: status,
             name: name,
             branch: branch,
+            configJson: configJson,
             summaryMd: summaryMd,
             overallResult: overallResult,
             healthScore: healthScore,
@@ -11054,6 +11112,7 @@ class $$QaJobsTableTableManager extends RootTableManager<
             required String status,
             Value<String?> name = const Value.absent(),
             Value<String?> branch = const Value.absent(),
+            Value<String?> configJson = const Value.absent(),
             Value<String?> summaryMd = const Value.absent(),
             Value<String?> overallResult = const Value.absent(),
             Value<int?> healthScore = const Value.absent(),
@@ -11078,6 +11137,7 @@ class $$QaJobsTableTableManager extends RootTableManager<
             status: status,
             name: name,
             branch: branch,
+            configJson: configJson,
             summaryMd: summaryMd,
             overallResult: overallResult,
             healthScore: healthScore,

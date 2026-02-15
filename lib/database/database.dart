@@ -46,7 +46,7 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
   }
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -54,6 +54,9 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.createTable(clonedRepos);
+          }
+          if (from < 3) {
+            await m.addColumn(qaJobs, qaJobs.configJson);
           }
         },
       );

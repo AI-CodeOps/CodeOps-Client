@@ -17,7 +17,7 @@ import 'auth_providers.dart';
 // API providers
 // ---------------------------------------------------------------------------
 
-/// Provides [IntegrationApi] for integration endpoints.
+/// Provides [IntegrationApi] for GitHub/Jira connection endpoints.
 final integrationApiProvider = Provider<IntegrationApi>(
   (ref) => IntegrationApi(ref.watch(apiClientProvider)),
 );
@@ -34,14 +34,14 @@ final taskApiProvider = Provider<TaskApi>(
 /// Fetches remediation tasks for a job.
 final jobTasksProvider =
     FutureProvider.family<List<RemediationTask>, String>((ref, jobId) async {
-  final integrationApi = ref.watch(integrationApiProvider);
-  return integrationApi.getJobTasks(jobId);
+  final taskApi = ref.watch(taskApiProvider);
+  return taskApi.getTasksForJob(jobId);
 });
 
 /// Fetches remediation tasks assigned to the current user.
 final myTasksProvider = FutureProvider<List<RemediationTask>>((ref) async {
-  final integrationApi = ref.watch(integrationApiProvider);
-  return integrationApi.getMyTasks();
+  final taskApi = ref.watch(taskApiProvider);
+  return taskApi.getAssignedTasks();
 });
 
 /// Fetches a single remediation task by ID.

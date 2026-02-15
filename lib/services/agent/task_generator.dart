@@ -13,7 +13,7 @@ import 'package:path/path.dart' as p;
 import '../../models/enums.dart';
 import '../../models/finding.dart';
 import '../../models/remediation_task.dart';
-import '../cloud/integration_api.dart';
+import '../cloud/task_api.dart';
 
 /// Groups findings by file path for task generation.
 class FindingGroup {
@@ -29,10 +29,10 @@ class FindingGroup {
 
 /// Generates remediation tasks from audit findings.
 class TaskGenerator {
-  final IntegrationApi _integrationApi;
+  final TaskApi _taskApi;
 
-  /// Creates a [TaskGenerator] backed by the given [integrationApi].
-  TaskGenerator(this._integrationApi);
+  /// Creates a [TaskGenerator] backed by the given [taskApi].
+  TaskGenerator(this._taskApi);
 
   /// Groups findings by file path, generates tasks, and batch-creates them.
   ///
@@ -65,7 +65,7 @@ class TaskGenerator {
       taskNumber++;
     }
 
-    return _integrationApi.createTasksBatch(taskPayloads);
+    return _taskApi.createTasksBatch(taskPayloads);
   }
 
   /// Generates a Claude Code-ready markdown prompt for a finding group.

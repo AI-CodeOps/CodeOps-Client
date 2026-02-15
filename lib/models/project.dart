@@ -58,14 +58,8 @@ class Project {
   /// Timestamp of the last audit.
   final DateTime? lastAuditAt;
 
-  /// Project-level settings as a JSON string.
-  final String? settingsJson;
-
   /// Whether the project is archived.
   final bool? isArchived;
-
-  /// UUID of the user who created the project.
-  final String? createdBy;
 
   /// Timestamp when the project was created.
   final DateTime? createdAt;
@@ -91,9 +85,7 @@ class Project {
     this.techStack,
     this.healthScore,
     this.lastAuditAt,
-    this.settingsJson,
     this.isArchived,
-    this.createdBy,
     this.createdAt,
     this.updatedAt,
   });

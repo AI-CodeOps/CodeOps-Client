@@ -89,4 +89,38 @@ class CodeOpsColors {
     AgentType.dependency: Color(0xFF78716C),
     AgentType.architecture: Color(0xFFD946EF),
   };
+
+  /// Maps each [TaskStatus] to its corresponding color.
+  static const Map<TaskStatus, Color> taskStatusColors = {
+    TaskStatus.pending: textTertiary,
+    TaskStatus.assigned: Color(0xFF3B82F6),
+    TaskStatus.exported: Color(0xFFA855F7),
+    TaskStatus.jiraCreated: Color(0xFF14B8A6),
+    TaskStatus.completed: success,
+  };
+
+  /// Maps each [DebtStatus] to its corresponding color.
+  static const Map<DebtStatus, Color> debtStatusColors = {
+    DebtStatus.identified: textTertiary,
+    DebtStatus.planned: Color(0xFF3B82F6),
+    DebtStatus.inProgress: primary,
+    DebtStatus.resolved: success,
+  };
+
+  /// Maps each [DirectiveCategory] to its corresponding color.
+  static const Map<DirectiveCategory, Color> directiveCategoryColors = {
+    DirectiveCategory.architecture: Color(0xFFA855F7),
+    DirectiveCategory.standards: Color(0xFF3B82F6),
+    DirectiveCategory.conventions: Color(0xFF14B8A6),
+    DirectiveCategory.context: Color(0xFFFBBF24),
+    DirectiveCategory.other: textTertiary,
+  };
+
+  /// Maps each [VulnerabilityStatus] to its corresponding color.
+  static const Map<VulnerabilityStatus, Color> vulnerabilityStatusColors = {
+    VulnerabilityStatus.open: error,
+    VulnerabilityStatus.updating: warning,
+    VulnerabilityStatus.suppressed: textTertiary,
+    VulnerabilityStatus.resolved: success,
+  };
 }
