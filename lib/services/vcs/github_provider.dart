@@ -210,6 +210,29 @@ class GitHubProvider implements VcsProvider {
         .toList();
   }
 
+  /// Fetches the raw README markdown for a repository.
+  ///
+  /// Returns `null` if the repository has no README (404).
+  Future<String?> getReadmeContent(String fullName) async {
+    try {
+      final response = await _dio.get<String>(
+        '/repos/$fullName/readme',
+        options: Options(
+          headers: {'Accept': 'application/vnd.github.v3.raw'},
+          responseType: ResponseType.plain,
+        ),
+      );
+      _trackRateLimit(response);
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        log.d('GitHubProvider', 'No README for $fullName');
+        return null;
+      }
+      _mapDioException(e);
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Internal helpers
   // ---------------------------------------------------------------------------

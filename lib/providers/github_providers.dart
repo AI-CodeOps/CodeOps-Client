@@ -146,3 +146,94 @@ final clonedReposProvider = FutureProvider<Map<String, String>>((ref) async {
   final repoManager = ref.watch(repoManagerProvider);
   return repoManager.getAllRepos();
 });
+
+// ---------------------------------------------------------------------------
+// Master-detail layout providers (COC-020)
+// ---------------------------------------------------------------------------
+
+/// Selected GitHub organization object for the sidebar org picker.
+final selectedGithubOrgProvider = StateProvider<VcsOrganization?>((ref) => null);
+
+/// Selected repository object for the detail panel.
+final selectedGithubRepoProvider = StateProvider<VcsRepository?>((ref) => null);
+
+/// Search query text for filtering repos in the sidebar.
+final githubRepoSearchQueryProvider = StateProvider<String>((ref) => '');
+
+/// Active tab index in the detail panel (0=README, 1=Branches, 2=PRs, 3=Commits).
+final githubDetailTabProvider = StateProvider<int>((ref) => 0);
+
+/// Fetches repositories for the selected GitHub organization.
+final githubReposForOrgProvider =
+    FutureProvider<List<VcsRepository>>((ref) async {
+  final org = ref.watch(selectedGithubOrgProvider);
+  if (org == null) return [];
+  final authenticated = ref.watch(vcsAuthenticatedProvider);
+  if (!authenticated) return [];
+  log.d('GitHubProviders', 'Loading repos for org=${org.login}');
+  final provider = ref.watch(vcsProviderProvider);
+  return provider.getRepositories(org.login, perPage: 100);
+});
+
+/// Repos for the selected org, filtered by the search query.
+final filteredGithubReposProvider =
+    Provider<AsyncValue<List<VcsRepository>>>((ref) {
+  final reposAsync = ref.watch(githubReposForOrgProvider);
+  final query = ref.watch(githubRepoSearchQueryProvider).toLowerCase();
+  return reposAsync.whenData((repos) {
+    if (query.isEmpty) return repos;
+    return repos
+        .where((r) =>
+            r.name.toLowerCase().contains(query) ||
+            (r.description?.toLowerCase().contains(query) ?? false))
+        .toList();
+  });
+});
+
+/// Fetches the raw README markdown for the selected repository.
+final githubReadmeProvider =
+    FutureProvider.autoDispose<String?>((ref) async {
+  final repo = ref.watch(selectedGithubRepoProvider);
+  if (repo == null) return null;
+  final provider = ref.watch(vcsProviderProvider);
+  if (provider is GitHubProvider) {
+    return provider.getReadmeContent(repo.fullName);
+  }
+  return null;
+});
+
+/// Fetches branches for the selected repository.
+final githubRepoBranchesProvider =
+    FutureProvider.autoDispose<List<VcsBranch>>((ref) async {
+  final repo = ref.watch(selectedGithubRepoProvider);
+  if (repo == null) return [];
+  final provider = ref.watch(vcsProviderProvider);
+  return provider.getBranches(repo.fullName);
+});
+
+/// Fetches pull requests for the selected repository.
+final githubRepoPullRequestsProvider =
+    FutureProvider.autoDispose<List<VcsPullRequest>>((ref) async {
+  final repo = ref.watch(selectedGithubRepoProvider);
+  if (repo == null) return [];
+  final provider = ref.watch(vcsProviderProvider);
+  return provider.getPullRequests(repo.fullName);
+});
+
+/// Fetches commit history for the selected repository.
+final githubRepoCommitsProvider =
+    FutureProvider.autoDispose<List<VcsCommit>>((ref) async {
+  final repo = ref.watch(selectedGithubRepoProvider);
+  if (repo == null) return [];
+  final provider = ref.watch(vcsProviderProvider);
+  return provider.getCommitHistory(repo.fullName);
+});
+
+/// Whether the selected repository is cloned locally.
+final isRepoClonedProvider =
+    FutureProvider.autoDispose<bool>((ref) async {
+  final repo = ref.watch(selectedGithubRepoProvider);
+  if (repo == null) return false;
+  final clonedMap = await ref.watch(clonedReposProvider.future);
+  return clonedMap.containsKey(repo.fullName);
+});

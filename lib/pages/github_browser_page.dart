@@ -1,62 +1,32 @@
-/// Full GitHub browser page composing VCS widgets.
+/// Full GitHub browser page with a master-detail layout.
 ///
 /// Layout:
-/// - Left panel: OrgBrowser (org list) with search filter
-/// - Main area: RepoBrowser (repo grid) or RepoSearch results
+/// - Left panel (300px): RepoSidebar with org picker, search, repo list
+/// - Right panel: RepoDetailPanel with header, action bar, and tabs
 /// - "Connect GitHub" button if not authenticated
-/// - When repo selected and cloned: RepoStatusBar + tabs
-/// - Connection selector dropdown in header
-/// - "Create Project from Repo" action on repo cards
+/// - "Create Project from Repo" action available from RepoSidebar
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/vcs_models.dart';
 import '../providers/github_providers.dart';
 import '../providers/project_providers.dart';
 import '../providers/team_providers.dart';
 import '../theme/colors.dart';
 import '../widgets/shared/empty_state.dart';
 import '../widgets/shared/notification_toast.dart';
-import '../widgets/vcs/commit_history.dart';
-import '../widgets/vcs/diff_viewer.dart';
 import '../widgets/vcs/github_auth_dialog.dart';
-import '../widgets/vcs/org_browser.dart';
-import '../widgets/vcs/pull_request_list.dart';
-import '../widgets/vcs/repo_browser.dart';
-import '../widgets/vcs/repo_search.dart';
-import '../widgets/vcs/repo_status_bar.dart';
-import '../widgets/vcs/stash_manager.dart';
+import '../widgets/vcs/repo_detail_panel.dart';
+import '../widgets/vcs/repo_sidebar.dart';
 
-/// The GitHub browser page replacing the `/repos` placeholder.
-class GitHubBrowserPage extends ConsumerStatefulWidget {
+/// The GitHub browser page with master-detail layout.
+class GitHubBrowserPage extends ConsumerWidget {
   /// Creates a [GitHubBrowserPage].
   const GitHubBrowserPage({super.key});
 
   @override
-  ConsumerState<GitHubBrowserPage> createState() => _GitHubBrowserPageState();
-}
-
-class _GitHubBrowserPageState extends ConsumerState<GitHubBrowserPage>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
-  bool _showSearch = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final authenticated = ref.watch(vcsAuthenticatedProvider);
 
     if (!authenticated) {
@@ -70,157 +40,11 @@ class _GitHubBrowserPageState extends ConsumerState<GitHubBrowserPage>
       );
     }
 
-    final selectedRepo = ref.watch(selectedRepoProvider);
-    final clonedAsync = ref.watch(clonedReposProvider);
-    final clonedMap = clonedAsync.valueOrNull ?? {};
-    final isCloned =
-        selectedRepo != null && clonedMap.containsKey(selectedRepo);
-    final repoStatusAsync = ref.watch(selectedRepoStatusProvider);
-    final connectionsAsync = ref.watch(githubConnectionsProvider);
-
-    return Row(
+    return const Row(
       children: [
-        // Left sidebar: orgs + search toggle.
-        SizedBox(
-          width: 260,
-          child: Column(
-            children: [
-              // Header with connection selector.
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: CodeOpsColors.border),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'GitHub',
-                          style: TextStyle(
-                            color: CodeOpsColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          icon: Icon(
-                            _showSearch ? Icons.list : Icons.search,
-                            size: 18,
-                          ),
-                          tooltip: _showSearch
-                              ? 'Show organizations'
-                              : 'Search repositories',
-                          onPressed: () =>
-                              setState(() => _showSearch = !_showSearch),
-                        ),
-                      ],
-                    ),
-                    // Connection selector.
-                    connectionsAsync.when(
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                      data: (connections) {
-                        if (connections.length <= 1) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: DropdownButton<String>(
-                            isExpanded: true,
-                            value: connections.isNotEmpty
-                                ? connections.first.id
-                                : null,
-                            dropdownColor: CodeOpsColors.surfaceVariant,
-                            underline: const SizedBox.shrink(),
-                            style: const TextStyle(
-                              color: CodeOpsColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                            items: connections
-                                .map((c) => DropdownMenuItem(
-                                      value: c.id,
-                                      child: Text(
-                                        c.name,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ))
-                                .toList(),
-                            onChanged: (_) {
-                              // Connection switching — placeholder for
-                              // credential update logic.
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              // Body: org list or search.
-              Expanded(
-                child: _showSearch
-                    ? const RepoSearch()
-                    : const OrgBrowser(),
-              ),
-            ],
-          ),
-        ),
-        const VerticalDivider(width: 1, color: CodeOpsColors.border),
-        // Main area.
-        Expanded(
-          child: Column(
-            children: [
-              // Repo browser.
-              if (selectedRepo == null || !isCloned)
-                const Expanded(child: RepoBrowser())
-              else ...[
-                // Repo status bar for cloned repos.
-                repoStatusAsync.when(
-                  loading: () => const LinearProgressIndicator(
-                    color: CodeOpsColors.primary,
-                  ),
-                  error: (_, __) => const SizedBox.shrink(),
-                  data: (status) {
-                    if (status == null) return const SizedBox.shrink();
-                    return RepoStatusBar(
-                      status: status,
-                      repoDir: clonedMap[selectedRepo]!,
-                    );
-                  },
-                ),
-                // Tabs for cloned repo.
-                TabBar(
-                  controller: _tabController,
-                  labelColor: CodeOpsColors.primary,
-                  unselectedLabelColor: CodeOpsColors.textTertiary,
-                  indicatorColor: CodeOpsColors.primary,
-                  tabs: const [
-                    Tab(text: 'Commits'),
-                    Tab(text: 'Pull Requests'),
-                    Tab(text: 'Changes'),
-                    Tab(text: 'Stashes'),
-                  ],
-                ),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      CommitHistory(repoFullName: selectedRepo),
-                      PullRequestList(repoFullName: selectedRepo),
-                      _ChangesTab(repoDir: clonedMap[selectedRepo]!),
-                      StashManager(repoDir: clonedMap[selectedRepo]!),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+        SizedBox(width: 300, child: RepoSidebar()),
+        VerticalDivider(width: 1, color: CodeOpsColors.divider),
+        Expanded(child: RepoDetailPanel()),
       ],
     );
   }
@@ -240,37 +64,6 @@ class _UnauthenticatedView extends StatelessWidget {
           'manage branches, and create pull requests.',
       actionLabel: 'Connect GitHub',
       onAction: onConnect,
-    );
-  }
-}
-
-class _ChangesTab extends ConsumerWidget {
-  final String repoDir;
-
-  const _ChangesTab({required this.repoDir});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final gitService = ref.watch(gitServiceProvider);
-
-    return FutureBuilder<List<DiffResult>>(
-      future: gitService.diff(repoDir),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: CodeOpsColors.primary),
-          );
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              'Error: ${snapshot.error}',
-              style: const TextStyle(color: CodeOpsColors.error),
-            ),
-          );
-        }
-        return DiffViewer(diffs: snapshot.data ?? []);
-      },
     );
   }
 }

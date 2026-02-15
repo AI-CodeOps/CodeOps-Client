@@ -618,6 +618,74 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
+  // getReadmeContent
+  // -------------------------------------------------------------------------
+  group('getReadmeContent', () {
+    test('returns markdown string on 200', () async {
+      const readmeMarkdown = '# My Project\n\nA description.';
+      when(() => mockDio.get<String>(
+            '/repos/acme/widget/readme',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenAnswer((_) async => Response<String>(
+            data: readmeMarkdown,
+            statusCode: 200,
+            headers: Headers.fromMap({
+              'X-RateLimit-Remaining': ['4999'],
+              'X-RateLimit-Reset': ['1700000000'],
+            }),
+            requestOptions: RequestOptions(path: '/repos/acme/widget/readme'),
+          ));
+
+      final result = await provider.getReadmeContent('acme/widget');
+
+      expect(result, readmeMarkdown);
+      verify(() => mockDio.get<String>(
+            '/repos/acme/widget/readme',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).called(1);
+    });
+
+    test('returns null on 404', () async {
+      when(() => mockDio.get<String>(
+            '/repos/acme/no-readme/readme',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenThrow(_dioError(404));
+
+      final result = await provider.getReadmeContent('acme/no-readme');
+
+      expect(result, isNull);
+    });
+
+    test('throws ServerException on 500', () async {
+      when(() => mockDio.get<String>(
+            '/repos/acme/broken/readme',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          )).thenThrow(_dioError(500));
+
+      expect(
+        () => provider.getReadmeContent('acme/broken'),
+        throwsA(isA<ServerException>()),
+      );
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Rate limit tracking
   // -------------------------------------------------------------------------
   group('rate limit tracking', () {

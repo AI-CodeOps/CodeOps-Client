@@ -1,16 +1,16 @@
 // Widget tests for GitHubBrowserPage.
 //
-// Verifies unauthenticated view, authenticated layout, connection
-// selector, and "Create Project from Repo" dialog.
+// Verifies unauthenticated view and the master-detail layout when
+// authenticated (RepoSidebar on left, RepoDetailPanel on right).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:codeops/models/enums.dart';
-import 'package:codeops/models/health_snapshot.dart';
+import 'package:codeops/models/vcs_models.dart';
 import 'package:codeops/pages/github_browser_page.dart';
 import 'package:codeops/providers/github_providers.dart';
-import 'package:codeops/providers/project_providers.dart';
+import 'package:codeops/widgets/vcs/repo_detail_panel.dart';
+import 'package:codeops/widgets/vcs/repo_sidebar.dart';
 
 void main() {
   Widget createUnauthenticatedWidget() {
@@ -24,20 +24,25 @@ void main() {
 
   Widget createAuthenticatedWidget({
     List<Override> overrides = const [],
-    List<GitHubConnection> connections = const [],
   }) {
     return ProviderScope(
       overrides: [
         vcsAuthenticatedProvider.overrideWith((ref) => true),
-        selectedRepoProvider.overrideWith((ref) => null),
+        githubOrgsProvider
+            .overrideWith((ref) async => <VcsOrganization>[]),
+        githubReposForOrgProvider
+            .overrideWith((ref) async => <VcsRepository>[]),
+        selectedGithubRepoProvider.overrideWith((ref) => null),
+        githubReadmeProvider.overrideWith((ref) async => null),
+        githubRepoBranchesProvider
+            .overrideWith((ref) async => <VcsBranch>[]),
+        githubRepoPullRequestsProvider
+            .overrideWith((ref) async => <VcsPullRequest>[]),
+        githubRepoCommitsProvider
+            .overrideWith((ref) async => <VcsCommit>[]),
+        isRepoClonedProvider.overrideWith((ref) async => false),
         clonedReposProvider
-            .overrideWith((ref) => Future.value(<String, String>{})),
-        selectedRepoStatusProvider
-            .overrideWith((ref) => Future.value(null)),
-        githubConnectionsProvider
-            .overrideWith((ref) => Future.value(connections)),
-        jiraConnectionsProvider
-            .overrideWith((ref) => Future.value(<JiraConnection>[])),
+            .overrideWith((ref) async => <String, String>{}),
         ...overrides,
       ],
       child: const MaterialApp(home: Scaffold(body: GitHubBrowserPage())),
@@ -54,59 +59,47 @@ void main() {
   });
 
   group('GitHubBrowserPage - authenticated', () {
-    testWidgets('shows GitHub sidebar header', (tester) async {
+    testWidgets('shows master-detail layout when authenticated',
+        (tester) async {
       await tester.pumpWidget(createAuthenticatedWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('GitHub'), findsOneWidget);
+      // Left panel: RepoSidebar.
+      expect(find.byType(RepoSidebar), findsOneWidget);
+      // Right panel: RepoDetailPanel.
+      expect(find.byType(RepoDetailPanel), findsOneWidget);
+      // Vertical divider between panels.
+      expect(find.byType(VerticalDivider), findsOneWidget);
     });
 
-    testWidgets('shows search toggle icon', (tester) async {
+    testWidgets('shows search field in sidebar', (tester) async {
       await tester.pumpWidget(createAuthenticatedWidget());
       await tester.pumpAndSettle();
 
+      // Search field is always visible in the sidebar.
       expect(find.byIcon(Icons.search), findsOneWidget);
     });
 
-    testWidgets('hides connection selector when single connection',
+    testWidgets('shows empty state in detail panel when no repo selected',
         (tester) async {
-      await tester.pumpWidget(createAuthenticatedWidget(
-        connections: [
-          const GitHubConnection(
-            id: 'conn-1',
-            name: 'My GitHub',
-            teamId: 'team-1',
-            authType: GitHubAuthType.pat,
-          ),
-        ],
-      ));
+      await tester.pumpWidget(createAuthenticatedWidget());
       await tester.pumpAndSettle();
 
-      // Single connection = no dropdown
-      expect(find.byType(DropdownButton<String>), findsNothing);
+      expect(find.text('Select a repository'), findsOneWidget);
     });
 
-    testWidgets('shows connection selector when multiple connections',
-        (tester) async {
-      await tester.pumpWidget(createAuthenticatedWidget(
-        connections: [
-          const GitHubConnection(
-            id: 'conn-1',
-            name: 'Personal',
-            teamId: 'team-1',
-            authType: GitHubAuthType.pat,
-          ),
-          const GitHubConnection(
-            id: 'conn-2',
-            name: 'Work',
-            teamId: 'team-1',
-            authType: GitHubAuthType.oauth,
-          ),
-        ],
-      ));
+    testWidgets('sidebar has 300px width', (tester) async {
+      await tester.pumpWidget(createAuthenticatedWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byType(DropdownButton<String>), findsOneWidget);
+      // Find the SizedBox wrapping RepoSidebar.
+      final sizedBox = tester.widget<SizedBox>(
+        find.ancestor(
+          of: find.byType(RepoSidebar),
+          matching: find.byType(SizedBox),
+        ).first,
+      );
+      expect(sizedBox.width, 300);
     });
   });
 }
