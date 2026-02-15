@@ -132,13 +132,19 @@ class GitService {
     if (branch != null) args.addAll(['-b', branch]);
     args.addAll([url, targetDir]);
 
+    // Log the command with the token redacted.
+    final safeUrl = _redactUrl(url);
+    logging.log.d('GitService', 'git clone --progress $safeUrl $targetDir');
+
     final process = await _runner.start('git', args, environment: _env);
 
-    // Git reports clone progress on stderr.
+    // Collect ALL stderr lines for error reporting; also forward progress.
+    final stderrLines = <String>[];
     process.stderr
         .transform(utf8.decoder)
         .transform(const LineSplitter())
         .listen((line) {
+      stderrLines.add(line);
       if (onProgress != null && line.contains('%')) {
         onProgress(CloneProgress.fromGitLine(line));
       }
@@ -146,14 +152,24 @@ class GitService {
 
     final exitCode = await process.exitCode;
     if (exitCode != 0) {
-      logging.log.e('GitService', 'Clone failed (exitCode=$exitCode, target=$targetDir)');
+      final stderr = stderrLines.join('\n').trim();
+      logging.log.e('GitService', 'Clone failed (exitCode=$exitCode): $stderr');
       throw GitException(
         command: 'clone',
-        message: 'Clone failed with exit code $exitCode',
+        message: stderr.isNotEmpty ? stderr : 'Clone failed with exit code $exitCode',
         exitCode: exitCode,
       );
     }
     logging.log.i('GitService', 'Clone completed (target=$targetDir)');
+  }
+
+  /// Redacts credentials from a URL for safe logging.
+  static String _redactUrl(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri != null && uri.userInfo.isNotEmpty) {
+      return uri.replace(userInfo: '***').toString();
+    }
+    return url;
   }
 
   /// Pulls the latest changes from remote.

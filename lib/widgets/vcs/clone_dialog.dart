@@ -12,6 +12,7 @@ import 'package:file_picker/file_picker.dart';
 
 import '../../models/vcs_models.dart';
 import '../../providers/github_providers.dart';
+import '../../services/logging/log_service.dart';
 import '../../theme/colors.dart';
 
 /// Clone dialog for a specific repository.
@@ -75,14 +76,26 @@ class _CloneDialogState extends ConsumerState<CloneDialog> {
     });
 
     try {
+      // Fail fast if target already exists (git clone refuses non-empty dirs).
+      final targetDirectory = Directory(targetDir);
+      if (targetDirectory.existsSync() &&
+          targetDirectory.listSync().isNotEmpty) {
+        setState(() {
+          _error = 'Target directory already exists and is not empty';
+          _cloning = false;
+        });
+        return;
+      }
+
       // Ensure parent directory exists.
-      final parent = Directory(targetDir).parent;
+      final parent = targetDirectory.parent;
       if (!parent.existsSync()) {
         parent.createSync(recursive: true);
       }
 
       final gitService = ref.read(gitServiceProvider);
       var cloneUrl = widget.repo.cloneUrl ?? widget.repo.htmlUrl ?? '';
+      log.d('CloneDialog', 'Base clone URL: $cloneUrl');
 
       // Inject PAT into the clone URL for authenticated access.
       final credentials = ref.read(vcsCredentialsProvider);
@@ -92,7 +105,12 @@ class _CloneDialogState extends ConsumerState<CloneDialog> {
           cloneUrl = uri.replace(
             userInfo: credentials.token,
           ).toString();
+          log.d('CloneDialog', 'PAT injected into clone URL');
+        } else {
+          log.w('CloneDialog', 'Could not inject PAT — URI parse failed or non-HTTPS');
         }
+      } else {
+        log.w('CloneDialog', 'No VCS credentials available for clone');
       }
 
       await gitService.clone(
