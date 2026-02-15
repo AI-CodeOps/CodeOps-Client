@@ -37,3 +37,12 @@ final settingsSectionProvider = StateProvider<int>((ref) => 0);
 
 /// Font density setting (0 = compact, 1 = normal, 2 = comfortable).
 final fontDensityProvider = StateProvider<int>((ref) => 1);
+
+/// Whether compact mode is enabled for denser layouts.
+final compactModeProvider = StateProvider<bool>((ref) => false);
+
+/// Whether automatic updates are enabled.
+final autoUpdateProvider = StateProvider<bool>((ref) => true);
+
+/// File path to the Claude Code CLI binary.
+final claudeCodePathProvider = StateProvider<String>((ref) => '');

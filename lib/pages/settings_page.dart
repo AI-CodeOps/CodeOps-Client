@@ -636,6 +636,18 @@ class _AppearanceSection extends ConsumerWidget {
           onSelectionChanged: (v) =>
               ref.read(fontDensityProvider.notifier).state = v.first,
         ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: const Text('Compact mode', style: TextStyle(fontSize: 13)),
+          subtitle: const Text(
+            'Reduces padding for denser layouts',
+            style: TextStyle(fontSize: 11, color: CodeOpsColors.textTertiary),
+          ),
+          value: ref.watch(compactModeProvider),
+          onChanged: (v) =>
+              ref.read(compactModeProvider.notifier).state = v,
+          contentPadding: EdgeInsets.zero,
+        ),
       ],
     );
   }
@@ -666,6 +678,18 @@ class _AboutSection extends ConsumerWidget {
             error: (_, __) => 'Unreachable',
             data: (_) => 'Connected',
           ),
+        ),
+        const SizedBox(height: 16),
+        SwitchListTile(
+          title: const Text('Automatic updates', style: TextStyle(fontSize: 13)),
+          subtitle: const Text(
+            'Check for updates on startup',
+            style: TextStyle(fontSize: 11, color: CodeOpsColors.textTertiary),
+          ),
+          value: ref.watch(autoUpdateProvider),
+          onChanged: (v) =>
+              ref.read(autoUpdateProvider.notifier).state = v,
+          contentPadding: EdgeInsets.zero,
         ),
         const SizedBox(height: 24),
         Wrap(

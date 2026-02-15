@@ -17,8 +17,10 @@ import 'pages/home_page.dart';
 import 'pages/job_history_page.dart';
 import 'pages/job_progress_page.dart';
 import 'pages/job_report_page.dart';
+import 'pages/health_dashboard_page.dart';
 import 'pages/login_page.dart';
 import 'pages/jira_browser_page.dart';
+import 'pages/admin_hub_page.dart';
 import 'pages/bug_investigator_page.dart';
 import 'pages/persona_editor_page.dart';
 import 'pages/personas_page.dart';
@@ -183,7 +185,7 @@ final GoRouter router = GoRouter(
           path: '/health',
           name: 'health',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Health Dashboard'),
+            child: HealthDashboardPage(),
           ),
         ),
         // 15. Job History
@@ -273,7 +275,7 @@ final GoRouter router = GoRouter(
           path: '/admin',
           name: 'admin',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Admin Hub'),
+            child: AdminHubPage(),
           ),
         ),
       ],
