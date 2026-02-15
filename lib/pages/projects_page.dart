@@ -291,7 +291,9 @@ class _ProjectCard extends ConsumerWidget {
               Row(
                 children: [
                   if (project.techStack != null) ...[
-                    _TechStackBadge(techStack: project.techStack!),
+                    Flexible(
+                      child: _TechStackBadge(techStack: project.techStack!),
+                    ),
                     const SizedBox(width: 8),
                   ],
                   const Spacer(),
@@ -367,6 +369,8 @@ class _TechStackBadge extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
