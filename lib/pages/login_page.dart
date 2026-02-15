@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/auth_providers.dart';
 import '../services/cloud/api_exceptions.dart';
+import '../services/logging/log_service.dart';
 import '../theme/colors.dart';
 import '../utils/string_utils.dart';
 
@@ -85,7 +86,8 @@ class _LoginPageState extends ConsumerState<LoginPage>
       );
       ref.read(currentUserProvider.notifier).state = user;
       if (mounted) context.go('/');
-    } catch (e) {
+    } catch (e, st) {
+      log.e('LoginPage', 'Sign-in failed', e, st);
       setState(() => _errorMessage = _extractErrorMessage(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -108,7 +110,8 @@ class _LoginPageState extends ConsumerState<LoginPage>
       );
       ref.read(currentUserProvider.notifier).state = user;
       if (mounted) context.go('/');
-    } catch (e) {
+    } catch (e, st) {
+      log.e('LoginPage', 'Registration failed', e, st);
       setState(() => _errorMessage = _extractErrorMessage(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);

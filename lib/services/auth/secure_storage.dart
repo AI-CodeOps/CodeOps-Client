@@ -30,6 +30,7 @@ class SecureStorageService {
               lOptions: LinuxOptions(),
               mOptions: MacOsOptions(
                 accessibility: KeychainAccessibility.first_unlock_this_device,
+                useDataProtectionKeyChain: false,
               ),
             );
 
