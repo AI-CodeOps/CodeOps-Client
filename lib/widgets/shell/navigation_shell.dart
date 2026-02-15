@@ -4,6 +4,8 @@
 /// and a content area for the current route's child widget.
 library;
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -212,12 +214,20 @@ class _SidebarHeader extends ConsumerWidget {
 
   const _SidebarHeader({required this.collapsed});
 
+  /// Extra left padding on macOS to clear the native traffic-light buttons
+  /// when using [TitleBarStyle.hidden].
+  static final double _macOsTrafficLightWidth = Platform.isMacOS ? 70.0 : 0.0;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final leftPad = collapsed
+        ? (_macOsTrafficLightWidth > 0 ? _macOsTrafficLightWidth : 8.0)
+        : (_macOsTrafficLightWidth > 0 ? _macOsTrafficLightWidth : 16.0);
+
     return SizedBox(
       height: 48,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: collapsed ? 8 : 16),
+        padding: EdgeInsets.only(left: leftPad, right: collapsed ? 8 : 16),
         child: Row(
           children: [
             const Icon(
@@ -227,12 +237,15 @@ class _SidebarHeader extends ConsumerWidget {
             ),
             if (!collapsed) ...[
               const SizedBox(width: 10),
-              const Text(
-                'CodeOps',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: CodeOpsColors.textPrimary,
+              const Flexible(
+                child: Text(
+                  'CodeOps',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: CodeOpsColors.textPrimary,
+                  ),
                 ),
               ),
             ],

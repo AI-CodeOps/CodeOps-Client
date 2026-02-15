@@ -8,6 +8,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:file_picker/file_picker.dart';
+
 import '../../models/vcs_models.dart';
 import '../../providers/github_providers.dart';
 import '../../theme/colors.dart';
@@ -48,6 +50,16 @@ class _CloneDialogState extends ConsumerState<CloneDialog> {
     super.dispose();
   }
 
+  Future<void> _browseDirectory() async {
+    final selected = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Select clone directory',
+      initialDirectory: _dirController.text.trim(),
+    );
+    if (selected != null && mounted) {
+      _dirController.text = '$selected/${widget.repo.name}';
+    }
+  }
+
   Future<void> _startClone() async {
     final targetDir = _dirController.text.trim();
     if (targetDir.isEmpty) {
@@ -70,7 +82,18 @@ class _CloneDialogState extends ConsumerState<CloneDialog> {
       }
 
       final gitService = ref.read(gitServiceProvider);
-      final cloneUrl = widget.repo.cloneUrl ?? widget.repo.htmlUrl ?? '';
+      var cloneUrl = widget.repo.cloneUrl ?? widget.repo.htmlUrl ?? '';
+
+      // Inject PAT into the clone URL for authenticated access.
+      final credentials = ref.read(vcsCredentialsProvider);
+      if (credentials != null && credentials.token.isNotEmpty) {
+        final uri = Uri.tryParse(cloneUrl);
+        if (uri != null && uri.scheme == 'https') {
+          cloneUrl = uri.replace(
+            userInfo: credentials.token,
+          ).toString();
+        }
+      }
 
       await gitService.clone(
         cloneUrl,
@@ -181,22 +204,37 @@ class _CloneDialogState extends ConsumerState<CloneDialog> {
               ),
             ),
             const SizedBox(height: 4),
-            TextField(
-              controller: _dirController,
-              enabled: !_cloning,
-              style: const TextStyle(
-                color: CodeOpsColors.textPrimary,
-                fontFamily: 'monospace',
-                fontSize: 13,
-              ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: CodeOpsColors.surfaceVariant,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _dirController,
+                    enabled: !_cloning,
+                    style: const TextStyle(
+                      color: CodeOpsColors.textPrimary,
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                    ),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: CodeOpsColors.surfaceVariant,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(
+                    Icons.folder_open,
+                    color: CodeOpsColors.textSecondary,
+                  ),
+                  tooltip: 'Browse...',
+                  onPressed: _cloning ? null : _browseDirectory,
+                ),
+              ],
             ),
             if (_cloning) ...[
               const SizedBox(height: 16),
