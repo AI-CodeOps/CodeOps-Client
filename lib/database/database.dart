@@ -46,7 +46,7 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
   }
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -57,6 +57,12 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
           }
           if (from < 3) {
             await m.addColumn(qaJobs, qaJobs.configJson);
+          }
+          if (from < 4) {
+            await m.addColumn(qaJobs, qaJobs.summaryMd);
+            await m.addColumn(qaJobs, qaJobs.startedByName);
+            await m.addColumn(findings, findings.statusChangedBy);
+            await m.addColumn(findings, findings.statusChangedAt);
           }
         },
       );

@@ -92,16 +92,16 @@ class CodeOpsColors {
 
   /// Maps each [TaskStatus] to its corresponding color.
   static const Map<TaskStatus, Color> taskStatusColors = {
-    TaskStatus.pending: textTertiary,
+    TaskStatus.pending: warning,
     TaskStatus.assigned: Color(0xFF3B82F6),
-    TaskStatus.exported: Color(0xFFA855F7),
+    TaskStatus.exported: secondary,
     TaskStatus.jiraCreated: Color(0xFF14B8A6),
     TaskStatus.completed: success,
   };
 
   /// Maps each [DebtStatus] to its corresponding color.
   static const Map<DebtStatus, Color> debtStatusColors = {
-    DebtStatus.identified: textTertiary,
+    DebtStatus.identified: warning,
     DebtStatus.planned: Color(0xFF3B82F6),
     DebtStatus.inProgress: primary,
     DebtStatus.resolved: success,
@@ -109,17 +109,17 @@ class CodeOpsColors {
 
   /// Maps each [DirectiveCategory] to its corresponding color.
   static const Map<DirectiveCategory, Color> directiveCategoryColors = {
-    DirectiveCategory.architecture: Color(0xFFA855F7),
+    DirectiveCategory.architecture: error,
     DirectiveCategory.standards: Color(0xFF3B82F6),
-    DirectiveCategory.conventions: Color(0xFF14B8A6),
-    DirectiveCategory.context: Color(0xFFFBBF24),
+    DirectiveCategory.conventions: secondary,
+    DirectiveCategory.context: warning,
     DirectiveCategory.other: textTertiary,
   };
 
   /// Maps each [VulnerabilityStatus] to its corresponding color.
   static const Map<VulnerabilityStatus, Color> vulnerabilityStatusColors = {
     VulnerabilityStatus.open: error,
-    VulnerabilityStatus.updating: warning,
+    VulnerabilityStatus.updating: Color(0xFF3B82F6),
     VulnerabilityStatus.suppressed: textTertiary,
     VulnerabilityStatus.resolved: success,
   };

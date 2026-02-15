@@ -19,8 +19,8 @@ void main() {
       expect(db, isNotNull);
     });
 
-    test('schema version is 3', () {
-      expect(db.schemaVersion, 3);
+    test('schema version is 4', () {
+      expect(db.schemaVersion, 4);
     });
 
     test('clearAllTables does not throw', () async {
