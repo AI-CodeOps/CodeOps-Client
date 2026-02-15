@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'providers/auth_providers.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
 
@@ -16,6 +17,11 @@ class CodeOpsApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Bridge AuthService stream → GoRouter's authNotifier
+    ref.listen(authStateProvider, (_, next) {
+      next.whenData((state) => authNotifier.state = state);
+    });
+
     return MaterialApp.router(
       title: 'CodeOps',
       theme: AppTheme.darkTheme,
