@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers/auth_providers.dart';
+import 'providers/github_providers.dart';
 import 'providers/team_providers.dart';
 import 'router.dart';
 import 'services/auth/auth_service.dart';
@@ -63,6 +64,9 @@ class CodeOpsApp extends ConsumerWidget {
       ref.read(selectedTeamIdProvider.notifier).state = teamId;
       await secureStorage.setSelectedTeamId(teamId);
       log.i('App', 'Team auto-selected: $teamId');
+
+      // Restore GitHub authentication from stored PAT.
+      await restoreGitHubAuth(ref);
     } catch (e) {
       log.e('App', 'Failed to auto-select team', e);
     }

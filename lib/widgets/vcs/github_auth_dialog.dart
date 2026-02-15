@@ -13,9 +13,7 @@ import '../../models/vcs_models.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/github_providers.dart';
 import '../../theme/colors.dart';
-
-/// Secure storage key for the GitHub PAT.
-const _keyGitHubToken = 'github_pat';
+import '../../utils/constants.dart';
 
 /// Dialog for connecting to GitHub via Personal Access Token.
 class GitHubAuthDialog extends ConsumerStatefulWidget {
@@ -65,7 +63,7 @@ class _GitHubAuthDialogState extends ConsumerState<GitHubAuthDialog> {
       if (ok) {
         // Store token securely.
         final storage = ref.read(secureStorageProvider);
-        await storage.write(_keyGitHubToken, token);
+        await storage.write(AppConstants.keyGitHubPat, token);
 
         ref.read(vcsCredentialsProvider.notifier).state = credentials;
         ref.read(vcsAuthenticatedProvider.notifier).state = true;

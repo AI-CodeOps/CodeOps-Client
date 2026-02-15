@@ -114,6 +114,9 @@ class AppConstants {
   /// Secure storage key for the agent timeout setting.
   static const String keyAgentTimeoutMinutes = 'agent_timeout_minutes';
 
+  /// Secure storage key for the GitHub Personal Access Token.
+  static const String keyGitHubPat = 'github_pat';
+
   /// Default Claude model identifier.
   static const String defaultClaudeModel = 'claude-sonnet-4-20250514';
 

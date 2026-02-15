@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/enums.dart';
 import '../models/health_snapshot.dart';
 import '../models/vcs_models.dart';
 import '../services/logging/log_service.dart';
@@ -13,6 +14,7 @@ import '../services/vcs/git_service.dart';
 import '../services/vcs/github_provider.dart';
 import '../services/vcs/repo_manager.dart';
 import '../services/vcs/vcs_provider.dart' as vcs;
+import '../utils/constants.dart';
 import 'auth_providers.dart';
 import 'task_providers.dart';
 import 'team_providers.dart';
@@ -61,6 +63,41 @@ final vcsAuthenticatedProvider = StateProvider<bool>((ref) => false);
 
 /// Current VCS credentials (stored in secure storage, loaded at startup).
 final vcsCredentialsProvider = StateProvider<VcsCredentials?>((ref) => null);
+
+/// Restores GitHub authentication from a previously stored PAT.
+///
+/// Reads the PAT from secure storage. If found, authenticates with the
+/// GitHub API and updates [vcsAuthenticatedProvider] and
+/// [vcsCredentialsProvider]. Called once during post-login initialization.
+Future<void> restoreGitHubAuth(WidgetRef ref) async {
+  final storage = ref.read(secureStorageProvider);
+  final token = await storage.read(AppConstants.keyGitHubPat);
+  if (token == null || token.isEmpty) {
+    log.d('GitHubProviders', 'No stored GitHub PAT found');
+    return;
+  }
+
+  log.d('GitHubProviders', 'Found stored GitHub PAT, authenticating...');
+  final credentials = VcsCredentials(
+    authType: GitHubAuthType.pat,
+    token: token,
+  );
+
+  try {
+    final provider = ref.read(vcsProviderProvider);
+    final ok = await provider.authenticate(credentials);
+    if (ok) {
+      ref.read(vcsCredentialsProvider.notifier).state = credentials;
+      ref.read(vcsAuthenticatedProvider.notifier).state = true;
+      log.i('GitHubProviders', 'GitHub PAT restored successfully');
+    } else {
+      log.w('GitHubProviders', 'Stored GitHub PAT is invalid — clearing');
+      await storage.delete(AppConstants.keyGitHubPat);
+    }
+  } catch (e) {
+    log.w('GitHubProviders', 'Failed to restore GitHub PAT', e);
+  }
+}
 
 /// Currently selected GitHub organization login.
 final selectedOrgProvider = StateProvider<String?>((ref) => null);
