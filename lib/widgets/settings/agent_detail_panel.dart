@@ -198,6 +198,17 @@ class _AgentDetailPanelState extends ConsumerState<AgentDetailPanel> {
             loading: () => const LinearProgressIndicator(),
             error: (_, __) => _buildFallbackModelDropdown(agent),
             data: (models) {
+              // Use fetched models, or fallback when cache is empty.
+              final modelItems = models.isEmpty
+                  ? _fallbackModelItems()
+                  : models
+                      .map((m) => DropdownMenuItem<String>(
+                            value: m.id,
+                            child: Text(m.displayName,
+                                style: const TextStyle(fontSize: 13)),
+                          ))
+                      .toList();
+
               final items = <DropdownMenuItem<String>>[
                 const DropdownMenuItem(
                   value: '',
@@ -205,11 +216,7 @@ class _AgentDetailPanelState extends ConsumerState<AgentDetailPanel> {
                       style: TextStyle(
                           fontStyle: FontStyle.italic, fontSize: 13)),
                 ),
-                ...models.map((m) => DropdownMenuItem(
-                      value: m.id,
-                      child:
-                          Text(m.displayName, style: const TextStyle(fontSize: 13)),
-                    )),
+                ...modelItems,
               ];
 
               final currentValue = agent.modelId ?? '';
@@ -237,18 +244,21 @@ class _AgentDetailPanelState extends ConsumerState<AgentDetailPanel> {
   }
 
   Widget _buildFallbackModelDropdown(AgentDefinition agent) {
+    final currentValue = agent.modelId ?? '';
+    final items = <DropdownMenuItem<String>>[
+      const DropdownMenuItem(
+          value: '', child: Text('(System Default)')),
+      ..._fallbackModelItems(),
+    ];
+    final validValue = items.any((i) => i.value == currentValue)
+        ? currentValue
+        : '';
+
     return DropdownButton<String>(
-      value: agent.modelId ?? '',
+      value: validValue,
       isExpanded: true,
       dropdownColor: CodeOpsColors.surface,
-      items: [
-        const DropdownMenuItem(
-            value: '', child: Text('(System Default)')),
-        DropdownMenuItem(
-          value: AppConstants.defaultClaudeModel,
-          child: Text(AppConstants.defaultClaudeModel),
-        ),
-      ],
+      items: items,
       onChanged: (v) async {
         final service = ref.read(agentConfigServiceProvider);
         await service.updateAgent(agent.id,
@@ -256,6 +266,23 @@ class _AgentDetailPanelState extends ConsumerState<AgentDetailPanel> {
         ref.invalidate(agentDefinitionsProvider);
       },
     );
+  }
+
+  static List<DropdownMenuItem<String>> _fallbackModelItems() {
+    return const [
+      DropdownMenuItem(
+        value: 'claude-sonnet-4-20250514',
+        child: Text('Claude Sonnet 4', style: TextStyle(fontSize: 13)),
+      ),
+      DropdownMenuItem(
+        value: 'claude-opus-4-20250514',
+        child: Text('Claude Opus 4', style: TextStyle(fontSize: 13)),
+      ),
+      DropdownMenuItem(
+        value: 'claude-haiku-4-20250514',
+        child: Text('Claude Haiku 4', style: TextStyle(fontSize: 13)),
+      ),
+    ];
   }
 
   Widget _buildTemperatureSlider(AgentDefinition agent) {

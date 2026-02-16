@@ -73,13 +73,16 @@ class _GeneralSettingsTabState extends ConsumerState<GeneralSettingsTab> {
                 },
               ),
               data: (models) {
-                final items = models
-                    .map((m) => DropdownMenuItem(
-                          value: m.id,
-                          child: Text(m.displayName,
-                              style: const TextStyle(fontSize: 13)),
-                        ))
-                    .toList();
+                // Use fetched models, or fallback when cache is empty.
+                final items = models.isEmpty
+                    ? _fallbackModelItems(model)
+                    : models
+                        .map((m) => DropdownMenuItem(
+                              value: m.id,
+                              child: Text(m.displayName,
+                                  style: const TextStyle(fontSize: 13)),
+                            ))
+                        .toList();
 
                 // Ensure current value is in the list.
                 if (!items.any((i) => i.value == model)) {

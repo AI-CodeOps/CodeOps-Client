@@ -77,8 +77,16 @@ class _ApiKeyTabState extends ConsumerState<ApiKeyTab> {
       await storage.setAnthropicApiKey(key);
       ref.invalidate(anthropicApiKeyProvider);
       ref.read(apiKeyValidatedProvider.notifier).state = null;
+
+      // Auto-refresh models now that we have a key.
+      final service = ref.read(agentConfigServiceProvider);
+      await service.refreshModels();
+      ref.invalidate(anthropicModelsProvider);
+      if (mounted) {
+        ref.read(modelFetchFailedProvider.notifier).state = false;
+      }
     } catch (_) {
-      // Error handled silently — key not saved.
+      // Key saved but model refresh may have failed — non-fatal.
     } finally {
       if (mounted) setState(() => _saving = false);
     }
