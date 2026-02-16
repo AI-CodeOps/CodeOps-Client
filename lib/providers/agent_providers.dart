@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/agent_progress.dart';
 import '../models/agent_run.dart';
 import '../services/logging/log_service.dart';
 import '../models/enums.dart';
@@ -23,6 +24,7 @@ import '../services/cloud/persona_api.dart';
 import '../services/platform/claude_code_detector.dart';
 import '../services/platform/process_manager.dart';
 import '../utils/constants.dart';
+import 'agent_progress_notifier.dart';
 import 'auth_providers.dart';
 import 'job_providers.dart';
 
@@ -115,6 +117,7 @@ final jobOrchestratorProvider = Provider<JobOrchestrator>(
     jobApi: ref.watch(jobApiProvider),
     findingApi: ref.watch(findingApiProvider),
     reportApi: ref.watch(reportApiProvider),
+    agentProgressNotifier: ref.watch(agentProgressProvider.notifier),
   ),
 );
 
@@ -128,6 +131,56 @@ final jobProgressProvider = StreamProvider<JobProgress>((ref) {
 final jobLifecycleProvider = StreamProvider<JobLifecycleEvent>((ref) {
   final orchestrator = ref.watch(jobOrchestratorProvider);
   return orchestrator.lifecycleStream;
+});
+
+/// Provides [AgentProgressNotifier] for real-time agent card state.
+final agentProgressProvider = StateNotifierProvider<AgentProgressNotifier,
+    Map<String, AgentProgress>>(
+  (ref) => AgentProgressNotifier(),
+);
+
+/// Sorted list of [AgentProgress] values for rendering agent cards.
+///
+/// Sort order: running first, then queued (by queue position),
+/// then completed, then failed.
+final sortedAgentProgressProvider = Provider<List<AgentProgress>>((ref) {
+  final map = ref.watch(agentProgressProvider);
+  final values = map.values.toList();
+
+  int statusOrder(AgentStatus status) => switch (status) {
+        AgentStatus.running => 0,
+        AgentStatus.pending => 1,
+        AgentStatus.completed => 2,
+        AgentStatus.failed => 3,
+      };
+
+  values.sort((a, b) {
+    final cmp = statusOrder(a.status).compareTo(statusOrder(b.status));
+    if (cmp != 0) return cmp;
+    // Within pending, sort by queue position.
+    if (a.status == AgentStatus.pending) {
+      return a.queuePosition.compareTo(b.queuePosition);
+    }
+    return 0;
+  });
+
+  return values;
+});
+
+/// Aggregate summary statistics across all agents in the current job.
+final agentProgressSummaryProvider = Provider<AgentProgressSummary>((ref) {
+  final map = ref.watch(agentProgressProvider);
+  final values = map.values;
+
+  return AgentProgressSummary(
+    total: values.length,
+    running: values.where((a) => a.isRunning).length,
+    queued: values.where((a) => a.isQueued).length,
+    completed: values.where((a) => a.isComplete).length,
+    failed: values.where((a) => a.isFailed).length,
+    totalFindings: values.fold(0, (sum, a) => sum + a.totalFindings),
+    totalCritical: values.fold(0, (sum, a) => sum + a.criticalCount),
+  );
 });
 
 /// Provides [BugInvestigationOrchestrator] for launching bug investigations.

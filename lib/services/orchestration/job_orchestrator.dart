@@ -9,6 +9,7 @@ library;
 import 'dart:async';
 
 import '../../models/enums.dart';
+import '../../providers/agent_progress_notifier.dart';
 import '../agent/report_parser.dart';
 import '../cloud/finding_api.dart';
 import '../cloud/job_api.dart';
@@ -146,6 +147,7 @@ class JobOrchestrator {
   final JobApi _jobApi;
   final FindingApi _findingApi;
   final ReportApi _reportApi;
+  final AgentProgressNotifier? _agentProgress;
 
   final StreamController<JobLifecycleEvent> _lifecycleController =
       StreamController<JobLifecycleEvent>.broadcast();
@@ -163,6 +165,7 @@ class JobOrchestrator {
     required JobApi jobApi,
     required FindingApi findingApi,
     required ReportApi reportApi,
+    AgentProgressNotifier? agentProgressNotifier,
   })  : _dispatcher = dispatcher,
         _monitor = monitor,
         _vera = vera,
@@ -170,7 +173,8 @@ class JobOrchestrator {
         _parser = parser,
         _jobApi = jobApi,
         _findingApi = findingApi,
-        _reportApi = reportApi;
+        _reportApi = reportApi,
+        _agentProgress = agentProgressNotifier;
 
   /// The UUID of the currently running job, or `null` if no job is active.
   String? get activeJobId => _activeJobId;
@@ -242,6 +246,13 @@ class JobOrchestrator {
         agentRunIdsByType[run.agentType] = run.id;
       }
 
+      // Initialize the agent progress notifier with created runs.
+      _agentProgress?.initializeAgents(
+        agentRuns,
+        maxTurns: config.maxTurns,
+        modelId: config.claudeModel,
+      );
+
       // Step 3: Update job status to RUNNING.
       await _jobApi.updateJob(
         jobId,
@@ -298,6 +309,7 @@ class JobOrchestrator {
                 elapsed: Duration.zero,
               ),
             );
+            _agentProgress?.updateQueuePositions();
 
           case AgentStarted(:final agentType):
             agentStartTimes[agentType] = DateTime.now();
@@ -309,6 +321,12 @@ class JobOrchestrator {
                 elapsed: Duration.zero,
               ),
             );
+            // Update agent progress notifier.
+            final startRunId = agentRunIdsByType[agentType];
+            if (startRunId != null) {
+              _agentProgress?.markStarted(startRunId);
+              _agentProgress?.updateQueuePositions();
+            }
             // Update agent run status on server.
             final runId = agentRunIdsByType[agentType];
             if (runId != null) {
@@ -329,6 +347,15 @@ class JobOrchestrator {
                 lastOutputLine: line,
               ),
             );
+            // Feed output to agent progress notifier.
+            final outputRunId = agentRunIdsByType[agentType];
+            if (outputRunId != null) {
+              _agentProgress?.appendOutput(outputRunId, line);
+              _agentProgress?.updateElapsed(
+                outputRunId,
+                _elapsedSince(agentStartTimes[agentType]),
+              );
+            }
 
           case AgentCompleted(
               :final agentType,
@@ -399,7 +426,33 @@ class JobOrchestrator {
               ),
             );
 
-          case AgentFailed(:final agentType):
+            // Update agent progress notifier with completion data.
+            if (runId != null) {
+              final completedCritical = parsedReport.findings
+                  .where((f) => f.severity == Severity.critical)
+                  .length;
+              final completedHigh = parsedReport.findings
+                  .where((f) => f.severity == Severity.high)
+                  .length;
+              final completedMedium = parsedReport.findings
+                  .where((f) => f.severity == Severity.medium)
+                  .length;
+              final completedLow = parsedReport.findings
+                  .where((f) => f.severity == Severity.low)
+                  .length;
+              _agentProgress?.markCompleted(
+                runId,
+                agentResult,
+                score: parsedReport.metrics?.score,
+                findingsCount: parsedReport.findings.length,
+                criticalCount: completedCritical,
+                highCount: completedHigh,
+                mediumCount: completedMedium,
+                lowCount: completedLow,
+              );
+            }
+
+          case AgentFailed(:final agentType, :final error):
             _progress.updateAgentStatus(
               agentType,
               AgentProgressStatus(
@@ -408,10 +461,11 @@ class JobOrchestrator {
                 elapsed: _elapsedSince(agentStartTimes[agentType]),
               ),
             );
-            final runId = agentRunIdsByType[agentType];
-            if (runId != null) {
+            final failedRunId = agentRunIdsByType[agentType];
+            if (failedRunId != null) {
+              _agentProgress?.markFailed(failedRunId, error: error);
               await _jobApi.updateAgentRun(
-                runId,
+                failedRunId,
                 status: AgentStatus.failed,
                 result: AgentResult.fail,
                 completedAt: DateTime.now(),
@@ -427,10 +481,14 @@ class JobOrchestrator {
                 elapsed: config.agentTimeout,
               ),
             );
-            final runId = agentRunIdsByType[agentType];
-            if (runId != null) {
+            final timedOutRunId = agentRunIdsByType[agentType];
+            if (timedOutRunId != null) {
+              _agentProgress?.markFailed(
+                timedOutRunId,
+                error: 'Agent timed out after ${config.agentTimeout.inMinutes} minutes',
+              );
               await _jobApi.updateAgentRun(
-                runId,
+                timedOutRunId,
                 status: AgentStatus.failed,
                 result: AgentResult.fail,
                 completedAt: DateTime.now(),
@@ -573,6 +631,7 @@ class JobOrchestrator {
       // Best-effort server update.
     }
 
+    _agentProgress?.reset();
     _lifecycleController.add(JobCancelled(jobId: jobId));
     _activeJobId = null;
   }

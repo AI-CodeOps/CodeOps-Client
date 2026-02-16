@@ -2,6 +2,7 @@
 ///
 /// Auto-scrolls to the bottom as new findings arrive. Each finding
 /// shows a severity badge, agent icon, title, and timestamp.
+/// Includes a collapse toggle to minimize the feed.
 library;
 
 import 'package:flutter/material.dart';
@@ -13,12 +14,22 @@ import '../../utils/date_utils.dart';
 import 'agent_card.dart';
 
 /// Displays a scrollable list of live findings during job execution.
+///
+/// Supports a collapsible mode: when collapsed, only a summary header
+/// is shown. When expanded, shows the full scrollable feed.
 class LiveFindingsFeed extends StatefulWidget {
   /// The list of live findings to display.
   final List<LiveFinding> findings;
 
+  /// Whether to start in collapsed state.
+  final bool initiallyCollapsed;
+
   /// Creates a [LiveFindingsFeed].
-  const LiveFindingsFeed({super.key, required this.findings});
+  const LiveFindingsFeed({
+    super.key,
+    required this.findings,
+    this.initiallyCollapsed = false,
+  });
 
   @override
   State<LiveFindingsFeed> createState() => _LiveFindingsFeedState();
@@ -26,11 +37,19 @@ class LiveFindingsFeed extends StatefulWidget {
 
 class _LiveFindingsFeedState extends State<LiveFindingsFeed> {
   final ScrollController _scrollController = ScrollController();
+  late bool _collapsed;
+
+  @override
+  void initState() {
+    super.initState();
+    _collapsed = widget.initiallyCollapsed;
+  }
 
   @override
   void didUpdateWidget(LiveFindingsFeed oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.findings.length > oldWidget.findings.length) {
+    if (!_collapsed &&
+        widget.findings.length > oldWidget.findings.length) {
       // Auto-scroll to bottom on new findings.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
@@ -52,6 +71,45 @@ class _LiveFindingsFeedState extends State<LiveFindingsFeed> {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Collapse toggle header
+        InkWell(
+          onTap: () => setState(() => _collapsed = !_collapsed),
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Icon(
+                  _collapsed ? Icons.expand_more : Icons.expand_less,
+                  size: 18,
+                  color: CodeOpsColors.textTertiary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _collapsed
+                      ? 'Show findings (${widget.findings.length})'
+                      : 'Hide findings',
+                  style: const TextStyle(
+                    color: CodeOpsColors.textTertiary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Feed content
+        if (!_collapsed) _buildFeed(),
+      ],
+    );
+  }
+
+  Widget _buildFeed() {
     final visible = widget.findings.length >
             AppConstants.maxVisibleLiveFindings
         ? widget.findings.sublist(
@@ -72,15 +130,18 @@ class _LiveFindingsFeedState extends State<LiveFindingsFeed> {
       );
     }
 
-    return ListView.separated(
-      controller: _scrollController,
-      itemCount: visible.length,
-      separatorBuilder: (_, __) =>
-          const Divider(height: 1, color: CodeOpsColors.divider),
-      itemBuilder: (context, index) {
-        final finding = visible[index];
-        return _FindingTile(finding: finding);
-      },
+    return SizedBox(
+      height: 300,
+      child: ListView.separated(
+        controller: _scrollController,
+        itemCount: visible.length,
+        separatorBuilder: (_, __) =>
+            const Divider(height: 1, color: CodeOpsColors.divider),
+        itemBuilder: (context, index) {
+          final finding = visible[index];
+          return _FindingTile(finding: finding);
+        },
+      ),
     );
   }
 }

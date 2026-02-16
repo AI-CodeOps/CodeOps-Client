@@ -1,15 +1,17 @@
 /// Card widget displaying the status of a single agent in a job.
 ///
-/// Shows the agent type icon, name, current phase, elapsed time,
-/// and score/findings when complete. Color-coded by phase.
+/// Shows the agent type icon, name, current status, elapsed time,
+/// progress bar, severity badges, score gauge, and expandable output
+/// terminal. Color-coded by agent type and status.
 library;
 
 import 'package:flutter/material.dart';
 
+import '../../models/agent_progress.dart';
 import '../../models/enums.dart';
-import '../../services/orchestration/progress_aggregator.dart';
 import '../../theme/colors.dart';
 import '../../utils/date_utils.dart';
+import 'agent_output_terminal.dart';
 
 /// Metadata for each agent type (icon, display name, description).
 class AgentTypeMetadata {
@@ -94,27 +96,39 @@ class AgentTypeMetadata {
   };
 }
 
-/// Displays the status of a single agent within a job.
-class AgentCard extends StatelessWidget {
-  /// The agent's current progress status.
-  final AgentProgressStatus status;
+/// Displays the real-time status of a single agent within a job.
+///
+/// Enhanced version that consumes [AgentProgress] for rich detail:
+/// progress bar, severity badges, score gauge, and expandable terminal.
+class AgentCard extends StatefulWidget {
+  /// The agent's real-time progress data.
+  final AgentProgress progress;
 
   /// Creates an [AgentCard].
-  const AgentCard({super.key, required this.status});
+  const AgentCard({super.key, required this.progress});
+
+  @override
+  State<AgentCard> createState() => _AgentCardState();
+}
+
+class _AgentCardState extends State<AgentCard> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
-    final meta = AgentTypeMetadata.all[status.agentType]!;
-    final phaseColor = _phaseColor(status.phase);
+    final p = widget.progress;
+    final meta = AgentTypeMetadata.all[p.agentType]!;
+    final statusColor = _statusColor(p.status);
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: CodeOpsColors.surface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: status.phase == AgentPhase.running
-              ? CodeOpsColors.primary.withValues(alpha: 0.5)
+          color: p.isRunning
+              ? p.agentColor.withValues(alpha: 0.5)
               : CodeOpsColors.border,
         ),
       ),
@@ -122,10 +136,10 @@ class AgentCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header: icon + name + phase badge
+          // Header: icon + name + status badge + expand toggle
           Row(
             children: [
-              Icon(meta.icon, size: 18, color: phaseColor),
+              Icon(meta.icon, size: 18, color: p.agentColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -138,52 +152,139 @@ class AgentCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: phaseColor.withValues(alpha: 0.15),
+              _StatusBadge(status: p.status, color: statusColor),
+              if (p.isRunning || p.outputLines.isNotEmpty) ...[
+                const SizedBox(width: 6),
+                InkWell(
+                  onTap: () => setState(() => _expanded = !_expanded),
                   borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  status.phase.displayName,
-                  style: TextStyle(
-                    color: phaseColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                  child: Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 18,
+                    color: CodeOpsColors.textTertiary,
                   ),
                 ),
-              ),
+              ],
             ],
           ),
-          const SizedBox(height: 8),
 
-          // Elapsed time
+          // Progress bar (when running)
+          if (p.isRunning) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: p.progressPercent,
+                minHeight: 3,
+                backgroundColor: CodeOpsColors.border,
+                color: p.progressColor,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Text(
+                  'Turn ${p.currentTurn}/${p.maxTurns}',
+                  style: const TextStyle(
+                    color: CodeOpsColors.textTertiary,
+                    fontSize: 9,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '${(p.progressPercent * 100).toInt()}%',
+                  style: const TextStyle(
+                    color: CodeOpsColors.textTertiary,
+                    fontSize: 9,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // Queue position (when pending)
+          if (p.isQueued && p.queuePosition > 0) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Queue position: ${p.queuePosition}',
+              style: const TextStyle(
+                color: CodeOpsColors.textTertiary,
+                fontSize: 10,
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 6),
+
+          // Elapsed time + model ID
           Row(
             children: [
               const Icon(Icons.timer_outlined,
                   size: 12, color: CodeOpsColors.textTertiary),
               const SizedBox(width: 4),
               Text(
-                formatDuration(status.elapsed),
+                formatDuration(p.elapsed),
                 style: const TextStyle(
                   color: CodeOpsColors.textSecondary,
                   fontSize: 11,
                 ),
               ),
+              if (p.modelId != null) ...[
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    p.modelId!,
+                    style: const TextStyle(
+                      color: CodeOpsColors.textTertiary,
+                      fontSize: 9,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ],
           ),
 
-          // Findings count (when available)
-          if (status.findingsCount != null) ...[
-            const SizedBox(height: 4),
+          // Severity badges (when findings exist)
+          if (p.totalFindings > 0) ...[
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                if (p.criticalCount > 0)
+                  _SeverityBadge(
+                    label: '${p.criticalCount} Critical',
+                    color: CodeOpsColors.critical,
+                  ),
+                if (p.highCount > 0)
+                  _SeverityBadge(
+                    label: '${p.highCount} High',
+                    color: CodeOpsColors.error,
+                  ),
+                if (p.mediumCount > 0)
+                  _SeverityBadge(
+                    label: '${p.mediumCount} Medium',
+                    color: CodeOpsColors.warning,
+                  ),
+                if (p.lowCount > 0)
+                  _SeverityBadge(
+                    label: '${p.lowCount} Low',
+                    color: CodeOpsColors.secondary,
+                  ),
+              ],
+            ),
+          ],
+
+          // Score gauge (when complete with score)
+          if (p.isComplete && p.score != null) ...[
+            const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(Icons.bug_report_outlined,
-                    size: 12, color: CodeOpsColors.textTertiary),
-                const SizedBox(width: 4),
+                _ScoreIndicator(score: p.score!, result: p.result),
+                const SizedBox(width: 8),
                 Text(
-                  '${status.findingsCount} findings',
+                  '${p.totalFindings} findings',
                   style: const TextStyle(
                     color: CodeOpsColors.textSecondary,
                     fontSize: 11,
@@ -193,12 +294,25 @@ class AgentCard extends StatelessWidget {
             ),
           ],
 
-          // Last output line (when running)
-          if (status.lastOutputLine != null &&
-              status.phase == AgentPhase.running) ...[
+          // Error message (when failed)
+          if (p.isFailed && p.errorMessage != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              p.errorMessage!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: CodeOpsColors.error,
+                fontSize: 10,
+              ),
+            ),
+          ],
+
+          // Current activity (when running)
+          if (p.isRunning && p.currentActivity != null) ...[
             const SizedBox(height: 4),
             Text(
-              status.lastOutputLine!,
+              p.currentActivity!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -208,17 +322,117 @@ class AgentCard extends StatelessWidget {
               ),
             ),
           ],
+
+          // Expanded output terminal
+          if (_expanded && p.outputLines.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            AgentOutputTerminal(lines: p.outputLines),
+          ],
         ],
       ),
     );
   }
 
-  Color _phaseColor(AgentPhase phase) => switch (phase) {
-        AgentPhase.queued => CodeOpsColors.textTertiary,
-        AgentPhase.running => CodeOpsColors.primary,
-        AgentPhase.parsing => CodeOpsColors.secondary,
-        AgentPhase.completed => CodeOpsColors.success,
-        AgentPhase.failed => CodeOpsColors.error,
-        AgentPhase.timedOut => CodeOpsColors.warning,
+  Color _statusColor(AgentStatus status) => switch (status) {
+        AgentStatus.pending => CodeOpsColors.textTertiary,
+        AgentStatus.running => CodeOpsColors.primary,
+        AgentStatus.completed => CodeOpsColors.success,
+        AgentStatus.failed => CodeOpsColors.error,
       };
+}
+
+class _StatusBadge extends StatelessWidget {
+  final AgentStatus status;
+  final Color color;
+
+  const _StatusBadge({required this.status, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (status) {
+      AgentStatus.pending => 'Queued',
+      AgentStatus.running => 'Running',
+      AgentStatus.completed => 'Done',
+      AgentStatus.failed => 'Failed',
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _SeverityBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _SeverityBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _ScoreIndicator extends StatelessWidget {
+  final int score;
+  final AgentResult? result;
+
+  const _ScoreIndicator({required this.score, this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (result) {
+      AgentResult.pass => CodeOpsColors.success,
+      AgentResult.warn => CodeOpsColors.warning,
+      AgentResult.fail => CodeOpsColors.error,
+      null => CodeOpsColors.textTertiary,
+    };
+
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.15),
+        border: Border.all(color: color, width: 1.5),
+      ),
+      child: Center(
+        child: Text(
+          '$score',
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
 }

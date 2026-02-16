@@ -1,18 +1,27 @@
 /// A responsive grid of [AgentCard] widgets showing all agents in a job.
 ///
-/// Agents are sorted by status: running first, then queued, then completed,
-/// then failed. Uses a 3-column layout by default.
+/// Uses [sortedAgentProgressProvider] for rich real-time data. Optionally
+/// displays a [VeraCard] at the top during consolidation/syncing phases.
 library;
 
 import 'package:flutter/material.dart';
 
-import '../../services/orchestration/progress_aggregator.dart';
+import '../../models/agent_progress.dart';
+import '../../providers/wizard_providers.dart';
 import 'agent_card.dart';
+import 'vera_card.dart';
 
 /// Displays a grid of agent status cards for a running job.
+///
+/// Consumes a sorted list of [AgentProgress] from the provider layer.
+/// Shows a [VeraCard] at the top when the job phase is consolidation
+/// or later.
 class AgentStatusGrid extends StatelessWidget {
-  /// The current job progress snapshot.
-  final JobProgress progress;
+  /// Sorted list of agent progress data.
+  final List<AgentProgress> agents;
+
+  /// The current job execution phase (controls Vera card visibility).
+  final JobExecutionPhase phase;
 
   /// Number of columns in the grid.
   final int columns;
@@ -20,47 +29,47 @@ class AgentStatusGrid extends StatelessWidget {
   /// Creates an [AgentStatusGrid].
   const AgentStatusGrid({
     super.key,
-    required this.progress,
+    required this.agents,
+    required this.phase,
     this.columns = 3,
   });
 
   @override
   Widget build(BuildContext context) {
-    final statuses = progress.agentStatuses.values.toList();
-
-    // Sort: running → queued → completed → failed/timedOut.
-    statuses.sort((a, b) {
-      final order = _phaseOrder(a.phase).compareTo(_phaseOrder(b.phase));
-      if (order != 0) return order;
-      return a.agentType.name.compareTo(b.agentType.name);
-    });
+    final showVera = phase == JobExecutionPhase.consolidating ||
+        phase == JobExecutionPhase.syncing ||
+        phase == JobExecutionPhase.complete;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final effectiveColumns = constraints.maxWidth < 600 ? 2 : columns;
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: statuses.map((status) {
-            final width =
-                (constraints.maxWidth - (effectiveColumns - 1) * 8) /
-                    effectiveColumns;
-            return SizedBox(
-              width: width,
-              child: AgentCard(status: status),
-            );
-          }).toList(),
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Vera consolidation card
+            if (showVera) ...[
+              VeraCard(phase: phase),
+              const SizedBox(height: 8),
+            ],
+
+            // Agent card grid
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: agents.map((progress) {
+                final width =
+                    (constraints.maxWidth - (effectiveColumns - 1) * 8) /
+                        effectiveColumns;
+                return SizedBox(
+                  width: width,
+                  child: AgentCard(progress: progress),
+                );
+              }).toList(),
+            ),
+          ],
         );
       },
     );
   }
-
-  int _phaseOrder(AgentPhase phase) => switch (phase) {
-        AgentPhase.running => 0,
-        AgentPhase.parsing => 0,
-        AgentPhase.queued => 1,
-        AgentPhase.completed => 2,
-        AgentPhase.failed => 3,
-        AgentPhase.timedOut => 3,
-      };
 }

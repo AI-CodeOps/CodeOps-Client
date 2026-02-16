@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:codeops/models/agent_progress.dart';
 import 'package:codeops/models/enums.dart';
-import 'package:codeops/services/orchestration/progress_aggregator.dart';
+import 'package:codeops/providers/wizard_providers.dart';
 import 'package:codeops/widgets/progress/agent_card.dart';
 import 'package:codeops/widgets/progress/agent_status_grid.dart';
+import 'package:codeops/widgets/progress/vera_card.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
@@ -18,32 +20,31 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1400, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final progress = JobProgress(
-        agentStatuses: {
-          AgentType.security: const AgentProgressStatus(
-            agentType: AgentType.security,
-            phase: AgentPhase.running,
-            elapsed: Duration(minutes: 1),
-          ),
-          AgentType.codeQuality: const AgentProgressStatus(
-            agentType: AgentType.codeQuality,
-            phase: AgentPhase.queued,
-            elapsed: Duration.zero,
-          ),
-          AgentType.buildHealth: const AgentProgressStatus(
-            agentType: AgentType.buildHealth,
-            phase: AgentPhase.completed,
-            elapsed: Duration(minutes: 5),
-          ),
-        },
-        liveFindings: const [],
-        completedCount: 1,
-        totalCount: 3,
-        elapsed: const Duration(minutes: 5),
-      );
+      const agents = [
+        AgentProgress(
+          agentRunId: 'r1',
+          agentType: AgentType.security,
+          status: AgentStatus.running,
+          elapsed: Duration(minutes: 1),
+        ),
+        AgentProgress(
+          agentRunId: 'r2',
+          agentType: AgentType.codeQuality,
+          status: AgentStatus.pending,
+        ),
+        AgentProgress(
+          agentRunId: 'r3',
+          agentType: AgentType.buildHealth,
+          status: AgentStatus.completed,
+          elapsed: Duration(minutes: 5),
+        ),
+      ];
 
       await tester.pumpWidget(wrap(
-        AgentStatusGrid(progress: progress),
+        const AgentStatusGrid(
+          agents: agents,
+          phase: JobExecutionPhase.running,
+        ),
       ));
 
       expect(find.byType(AgentCard), findsNWidgets(3));
@@ -53,19 +54,58 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1400, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      const progress = JobProgress(
-        agentStatuses: {},
-        liveFindings: [],
-        completedCount: 0,
-        totalCount: 0,
-        elapsed: Duration.zero,
-      );
-
       await tester.pumpWidget(wrap(
-        const AgentStatusGrid(progress: progress),
+        const AgentStatusGrid(
+          agents: [],
+          phase: JobExecutionPhase.running,
+        ),
       ));
 
       expect(find.byType(AgentCard), findsNothing);
+    });
+
+    testWidgets('shows VeraCard during consolidation phase', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      const agents = [
+        AgentProgress(
+          agentRunId: 'r1',
+          agentType: AgentType.security,
+          status: AgentStatus.completed,
+        ),
+      ];
+
+      await tester.pumpWidget(wrap(
+        const AgentStatusGrid(
+          agents: agents,
+          phase: JobExecutionPhase.consolidating,
+        ),
+      ));
+
+      expect(find.byType(VeraCard), findsOneWidget);
+    });
+
+    testWidgets('hides VeraCard during running phase', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1400, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      const agents = [
+        AgentProgress(
+          agentRunId: 'r1',
+          agentType: AgentType.security,
+          status: AgentStatus.running,
+        ),
+      ];
+
+      await tester.pumpWidget(wrap(
+        const AgentStatusGrid(
+          agents: agents,
+          phase: JobExecutionPhase.running,
+        ),
+      ));
+
+      expect(find.byType(VeraCard), findsNothing);
     });
   });
 }

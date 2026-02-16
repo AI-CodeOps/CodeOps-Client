@@ -7,13 +7,26 @@ import 'package:codeops/widgets/progress/live_findings_feed.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
-        home: Scaffold(
-          body: SizedBox(height: 400, child: child),
-        ),
+        home: Scaffold(body: SizedBox(width: 600, height: 600, child: child)),
       );
 
+  final sampleFindings = [
+    LiveFinding(
+      agentType: AgentType.security,
+      severity: Severity.critical,
+      title: 'SQL Injection in login',
+      detectedAt: DateTime.now(),
+    ),
+    LiveFinding(
+      agentType: AgentType.codeQuality,
+      severity: Severity.medium,
+      title: 'Unused import statement',
+      detectedAt: DateTime.now(),
+    ),
+  ];
+
   group('LiveFindingsFeed', () {
-    testWidgets('shows empty state with no findings', (tester) async {
+    testWidgets('shows empty message when no findings', (tester) async {
       await tester.pumpWidget(wrap(
         const LiveFindingsFeed(findings: []),
       ));
@@ -21,45 +34,69 @@ void main() {
       expect(find.text('No findings yet'), findsOneWidget);
     });
 
-    testWidgets('renders finding titles', (tester) async {
-      final findings = [
-        LiveFinding(
-          agentType: AgentType.security,
-          severity: Severity.high,
-          title: 'SQL injection detected',
-          detectedAt: DateTime.now(),
-        ),
-        LiveFinding(
-          agentType: AgentType.codeQuality,
-          severity: Severity.medium,
-          title: 'Complex method',
-          detectedAt: DateTime.now(),
-        ),
-      ];
-
+    testWidgets('shows findings when not collapsed', (tester) async {
       await tester.pumpWidget(wrap(
-        LiveFindingsFeed(findings: findings),
+        LiveFindingsFeed(findings: sampleFindings),
       ));
 
-      expect(find.text('SQL injection detected'), findsOneWidget);
-      expect(find.text('Complex method'), findsOneWidget);
+      expect(find.text('SQL Injection in login'), findsOneWidget);
+      expect(find.text('Unused import statement'), findsOneWidget);
     });
 
     testWidgets('shows severity badges', (tester) async {
-      final findings = [
-        LiveFinding(
-          agentType: AgentType.security,
-          severity: Severity.critical,
-          title: 'Critical issue',
-          detectedAt: DateTime.now(),
-        ),
-      ];
-
       await tester.pumpWidget(wrap(
-        LiveFindingsFeed(findings: findings),
+        LiveFindingsFeed(findings: sampleFindings),
       ));
 
       expect(find.text('Critical'), findsOneWidget);
+      expect(find.text('Medium'), findsOneWidget);
+    });
+
+    testWidgets('collapse toggle hides findings', (tester) async {
+      await tester.pumpWidget(wrap(
+        LiveFindingsFeed(findings: sampleFindings),
+      ));
+
+      // Findings visible initially.
+      expect(find.text('SQL Injection in login'), findsOneWidget);
+
+      // Tap collapse toggle.
+      await tester.tap(find.byIcon(Icons.expand_less));
+      await tester.pumpAndSettle();
+
+      // Findings hidden.
+      expect(find.text('SQL Injection in login'), findsNothing);
+      expect(find.textContaining('Show findings'), findsOneWidget);
+    });
+
+    testWidgets('starts collapsed when initiallyCollapsed is true',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        LiveFindingsFeed(
+          findings: sampleFindings,
+          initiallyCollapsed: true,
+        ),
+      ));
+
+      // Findings not visible.
+      expect(find.text('SQL Injection in login'), findsNothing);
+      expect(find.textContaining('Show findings'), findsOneWidget);
+    });
+
+    testWidgets('expand from collapsed shows findings', (tester) async {
+      await tester.pumpWidget(wrap(
+        LiveFindingsFeed(
+          findings: sampleFindings,
+          initiallyCollapsed: true,
+        ),
+      ));
+
+      // Tap expand.
+      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.pumpAndSettle();
+
+      // Findings now visible.
+      expect(find.text('SQL Injection in login'), findsOneWidget);
     });
   });
 }

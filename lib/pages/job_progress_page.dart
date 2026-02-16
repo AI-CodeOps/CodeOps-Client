@@ -24,6 +24,7 @@ import '../widgets/progress/elapsed_timer.dart';
 import '../widgets/progress/job_progress_bar.dart';
 import '../widgets/progress/live_findings_feed.dart';
 import '../widgets/progress/phase_indicator.dart';
+import '../widgets/progress/progress_summary_bar.dart';
 import '../widgets/shared/error_panel.dart';
 import '../widgets/shared/loading_overlay.dart';
 
@@ -68,6 +69,8 @@ class _JobProgressPageState extends ConsumerState<JobProgressPage> {
     final jobAsync = ref.watch(jobDetailProvider(widget.jobId));
     final progressAsync = ref.watch(jobProgressProvider);
     final lifecycleAsync = ref.watch(jobLifecycleProvider);
+    final agentProgressList = ref.watch(sortedAgentProgressProvider);
+    final agentSummary = ref.watch(agentProgressSummaryProvider);
 
     // Map lifecycle events to phases.
     lifecycleAsync.whenData((event) {
@@ -283,31 +286,33 @@ class _JobProgressPageState extends ConsumerState<JobProgressPage> {
                   data: (progress) => Column(
                     children: [
                       JobProgressBar(progress: progress),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
 
-              // Agent status grid
-              progressAsync.when(
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-                data: (progress) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Agents',
-                      style: TextStyle(
-                        color: CodeOpsColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    AgentStatusGrid(progress: progress),
-                  ],
+              // Progress summary bar (when agents are active)
+              if (agentSummary.total > 0) ...[
+                ProgressSummaryBar(summary: agentSummary),
+                const SizedBox(height: 16),
+              ],
+
+              // Agent status grid (using new AgentProgress data)
+              if (agentProgressList.isNotEmpty) ...[
+                const Text(
+                  'Agents',
+                  style: TextStyle(
+                    color: CodeOpsColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                AgentStatusGrid(
+                  agents: agentProgressList,
+                  phase: _phase,
+                ),
+              ],
 
               // Live findings feed (while running)
               if (isRunning)
@@ -353,11 +358,8 @@ class _JobProgressPageState extends ConsumerState<JobProgressPage> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        SizedBox(
-                          height: 300,
-                          child: LiveFindingsFeed(
-                            findings: progress.liveFindings,
-                          ),
+                        LiveFindingsFeed(
+                          findings: progress.liveFindings,
                         ),
                       ],
                     );
