@@ -81,9 +81,11 @@ class JobApi {
     if (highCount != null) body['highCount'] = highCount;
     if (mediumCount != null) body['mediumCount'] = mediumCount;
     if (lowCount != null) body['lowCount'] = lowCount;
-    if (startedAt != null) body['startedAt'] = startedAt.toIso8601String();
+    if (startedAt != null) {
+      body['startedAt'] = startedAt.toUtc().toIso8601String();
+    }
     if (completedAt != null) {
-      body['completedAt'] = completedAt.toIso8601String();
+      body['completedAt'] = completedAt.toUtc().toIso8601String();
     }
 
     final response = await _client.put<Map<String, dynamic>>(
@@ -183,9 +185,11 @@ class JobApi {
     if (findingsCount != null) body['findingsCount'] = findingsCount;
     if (criticalCount != null) body['criticalCount'] = criticalCount;
     if (highCount != null) body['highCount'] = highCount;
-    if (startedAt != null) body['startedAt'] = startedAt.toIso8601String();
+    if (startedAt != null) {
+      body['startedAt'] = startedAt.toUtc().toIso8601String();
+    }
     if (completedAt != null) {
-      body['completedAt'] = completedAt.toIso8601String();
+      body['completedAt'] = completedAt.toUtc().toIso8601String();
     }
 
     final response = await _client.put<Map<String, dynamic>>(

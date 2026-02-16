@@ -100,6 +100,65 @@ void main() {
       expect(job.status, JobStatus.running);
     });
 
+    test('updateJob sends timestamps in UTC', () async {
+      Map<String, dynamic>? capturedBody;
+      when(() => mockClient.put<Map<String, dynamic>>(
+            '/jobs/job-1',
+            data: any(named: 'data'),
+          )).thenAnswer((invocation) async {
+        capturedBody =
+            invocation.namedArguments[#data] as Map<String, dynamic>?;
+        return Response(
+          data: {
+            ...jobJson,
+            'status': 'RUNNING',
+            'startedAt': '2024-06-15T18:00:00.000Z',
+          },
+          requestOptions: RequestOptions(),
+          statusCode: 200,
+        );
+      });
+
+      // Use a local DateTime (non-UTC) to verify conversion.
+      final localTime = DateTime(2024, 6, 15, 12, 0, 0);
+      await jobApi.updateJob(
+        'job-1',
+        status: JobStatus.running,
+        startedAt: localTime,
+      );
+
+      expect(capturedBody, isNotNull);
+      final startedAt = capturedBody!['startedAt'] as String;
+      expect(startedAt, endsWith('Z'), reason: 'Timestamps must be UTC (end with Z)');
+    });
+
+    test('updateAgentRun sends timestamps in UTC', () async {
+      Map<String, dynamic>? capturedBody;
+      when(() => mockClient.put<Map<String, dynamic>>(
+            '/jobs/agents/run-1',
+            data: any(named: 'data'),
+          )).thenAnswer((invocation) async {
+        capturedBody =
+            invocation.namedArguments[#data] as Map<String, dynamic>?;
+        return Response(
+          data: agentRunJson,
+          requestOptions: RequestOptions(),
+          statusCode: 200,
+        );
+      });
+
+      final localTime = DateTime(2024, 6, 15, 12, 0, 0);
+      await jobApi.updateAgentRun(
+        'run-1',
+        status: AgentStatus.completed,
+        completedAt: localTime,
+      );
+
+      expect(capturedBody, isNotNull);
+      final completedAt = capturedBody!['completedAt'] as String;
+      expect(completedAt, endsWith('Z'), reason: 'Timestamps must be UTC (end with Z)');
+    });
+
     test('getProjectJobs returns paginated response', () async {
       when(() => mockClient.get<Map<String, dynamic>>(
             '/jobs/project/proj-1',
