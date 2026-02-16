@@ -1,53 +1,41 @@
 // Tests for SecureStorageService.
 //
-// Verifies that all getters/setters correctly delegate to
-// FlutterSecureStorage, and that clearAll removes all data.
+// Verifies that all getters/setters correctly store and retrieve values
+// via SharedPreferences, and that clearAll preserves remember-me + API key.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:codeops/services/auth/secure_storage.dart';
 import 'package:codeops/utils/constants.dart';
 
-class MockFlutterSecureStorage extends Mock implements FlutterSecureStorage {}
-
 void main() {
-  late MockFlutterSecureStorage mockStorage;
   late SecureStorageService service;
 
-  setUp(() {
-    mockStorage = MockFlutterSecureStorage();
-    service = SecureStorageService(storage: mockStorage);
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    service = SecureStorageService(prefs: prefs);
   });
 
   group('SecureStorageService', () {
     test('getAuthToken reads correct key', () async {
-      when(() => mockStorage.read(key: AppConstants.keyAuthToken))
-          .thenAnswer((_) async => 'test-token');
+      await service.setAuthToken('test-token');
 
       final result = await service.getAuthToken();
 
       expect(result, 'test-token');
-      verify(() => mockStorage.read(key: AppConstants.keyAuthToken)).called(1);
     });
 
     test('setAuthToken writes correct key and value', () async {
-      when(() => mockStorage.write(
-            key: AppConstants.keyAuthToken,
-            value: 'new-token',
-          )).thenAnswer((_) async {});
-
       await service.setAuthToken('new-token');
 
-      verify(() => mockStorage.write(
-            key: AppConstants.keyAuthToken,
-            value: 'new-token',
-          )).called(1);
+      final result = await service.getAuthToken();
+
+      expect(result, 'new-token');
     });
 
     test('getRefreshToken reads correct key', () async {
-      when(() => mockStorage.read(key: AppConstants.keyRefreshToken))
-          .thenAnswer((_) async => 'refresh-token');
+      await service.setRefreshToken('refresh-token');
 
       final result = await service.getRefreshToken();
 
@@ -55,22 +43,15 @@ void main() {
     });
 
     test('setRefreshToken writes correct key and value', () async {
-      when(() => mockStorage.write(
-            key: AppConstants.keyRefreshToken,
-            value: 'new-refresh',
-          )).thenAnswer((_) async {});
-
       await service.setRefreshToken('new-refresh');
 
-      verify(() => mockStorage.write(
-            key: AppConstants.keyRefreshToken,
-            value: 'new-refresh',
-          )).called(1);
+      final result = await service.getRefreshToken();
+
+      expect(result, 'new-refresh');
     });
 
     test('getCurrentUserId reads correct key', () async {
-      when(() => mockStorage.read(key: AppConstants.keyCurrentUserId))
-          .thenAnswer((_) async => 'user-123');
+      await service.setCurrentUserId('user-123');
 
       final result = await service.getCurrentUserId();
 
@@ -78,22 +59,15 @@ void main() {
     });
 
     test('setCurrentUserId writes correct key and value', () async {
-      when(() => mockStorage.write(
-            key: AppConstants.keyCurrentUserId,
-            value: 'user-123',
-          )).thenAnswer((_) async {});
-
       await service.setCurrentUserId('user-123');
 
-      verify(() => mockStorage.write(
-            key: AppConstants.keyCurrentUserId,
-            value: 'user-123',
-          )).called(1);
+      final result = await service.getCurrentUserId();
+
+      expect(result, 'user-123');
     });
 
     test('getSelectedTeamId reads correct key', () async {
-      when(() => mockStorage.read(key: AppConstants.keySelectedTeamId))
-          .thenAnswer((_) async => 'team-456');
+      await service.setSelectedTeamId('team-456');
 
       final result = await service.getSelectedTeamId();
 
@@ -101,105 +75,114 @@ void main() {
     });
 
     test('setSelectedTeamId writes correct key and value', () async {
-      when(() => mockStorage.write(
-            key: AppConstants.keySelectedTeamId,
-            value: 'team-456',
-          )).thenAnswer((_) async {});
-
       await service.setSelectedTeamId('team-456');
 
-      verify(() => mockStorage.write(
-            key: AppConstants.keySelectedTeamId,
-            value: 'team-456',
-          )).called(1);
+      final result = await service.getSelectedTeamId();
+
+      expect(result, 'team-456');
     });
 
     test('returns null for unset keys', () async {
-      when(() => mockStorage.read(key: any(named: 'key')))
-          .thenAnswer((_) async => null);
-
       expect(await service.getAuthToken(), isNull);
       expect(await service.getRefreshToken(), isNull);
       expect(await service.getCurrentUserId(), isNull);
       expect(await service.getSelectedTeamId(), isNull);
     });
 
-    test('read delegates to storage', () async {
-      when(() => mockStorage.read(key: 'custom-key'))
-          .thenAnswer((_) async => 'custom-value');
+    test('read returns stored value', () async {
+      await service.write('custom-key', 'custom-value');
 
       final result = await service.read('custom-key');
 
       expect(result, 'custom-value');
     });
 
-    test('write delegates to storage', () async {
-      when(() => mockStorage.write(key: 'custom-key', value: 'custom-value'))
-          .thenAnswer((_) async {});
-
+    test('write stores value retrievable by read', () async {
       await service.write('custom-key', 'custom-value');
 
-      verify(() => mockStorage.write(key: 'custom-key', value: 'custom-value'))
-          .called(1);
+      final result = await service.read('custom-key');
+
+      expect(result, 'custom-value');
     });
 
-    test('delete delegates to storage', () async {
-      when(() => mockStorage.delete(key: 'custom-key'))
-          .thenAnswer((_) async {});
-
+    test('delete removes key from storage', () async {
+      await service.write('custom-key', 'custom-value');
       await service.delete('custom-key');
 
-      verify(() => mockStorage.delete(key: 'custom-key')).called(1);
+      final result = await service.read('custom-key');
+
+      expect(result, isNull);
+    });
+
+    test('getAnthropicApiKey reads correct key', () async {
+      await service.setAnthropicApiKey('sk-ant-test');
+
+      final result = await service.getAnthropicApiKey();
+
+      expect(result, 'sk-ant-test');
+    });
+
+    test('setAnthropicApiKey writes correct key and value', () async {
+      await service.setAnthropicApiKey('sk-ant-test');
+
+      final result = await service.getAnthropicApiKey();
+
+      expect(result, 'sk-ant-test');
+    });
+
+    test('deleteAnthropicApiKey removes the key', () async {
+      await service.setAnthropicApiKey('sk-ant-test');
+      await service.deleteAnthropicApiKey();
+
+      final result = await service.getAnthropicApiKey();
+
+      expect(result, isNull);
     });
 
     test('clearAll deletes all stored data', () async {
-      when(() => mockStorage.read(key: any(named: 'key')))
-          .thenAnswer((_) async => null);
-      when(() => mockStorage.deleteAll()).thenAnswer((_) async {});
+      await service.setAuthToken('token');
+      await service.setRefreshToken('refresh');
+      await service.setCurrentUserId('user-123');
 
       await service.clearAll();
 
-      verify(() => mockStorage.deleteAll()).called(1);
+      expect(await service.getAuthToken(), isNull);
+      expect(await service.getRefreshToken(), isNull);
+      expect(await service.getCurrentUserId(), isNull);
     });
 
     test('clearAll preserves remember-me credentials and API key', () async {
-      when(() => mockStorage.read(key: AppConstants.keyRememberMe))
-          .thenAnswer((_) async => 'true');
-      when(() => mockStorage.read(key: AppConstants.keyRememberedEmail))
-          .thenAnswer((_) async => 'user@example.com');
-      when(() => mockStorage.read(key: AppConstants.keyRememberedPassword))
-          .thenAnswer((_) async => 'secret');
-      when(() => mockStorage.read(key: AppConstants.keyAnthropicApiKey))
-          .thenAnswer((_) async => 'sk-ant-test');
-      when(() => mockStorage.deleteAll()).thenAnswer((_) async {});
-      when(() => mockStorage.write(key: any(named: 'key'), value: any(named: 'value')))
-          .thenAnswer((_) async {});
+      // Set session data that should be cleared.
+      await service.setAuthToken('token');
+      await service.setRefreshToken('refresh');
+
+      // Set remember-me data that should be preserved.
+      await service.write(AppConstants.keyRememberMe, 'true');
+      await service.write(AppConstants.keyRememberedEmail, 'user@example.com');
+      await service.write(AppConstants.keyRememberedPassword, 'secret');
+
+      // Set API key that should be preserved.
+      await service.setAnthropicApiKey('sk-ant-test');
 
       await service.clearAll();
 
-      verify(() => mockStorage.deleteAll()).called(1);
-      verify(() => mockStorage.write(
-          key: AppConstants.keyRememberMe, value: 'true')).called(1);
-      verify(() => mockStorage.write(
-          key: AppConstants.keyRememberedEmail, value: 'user@example.com'))
-          .called(1);
-      verify(() => mockStorage.write(
-          key: AppConstants.keyRememberedPassword, value: 'secret'))
-          .called(1);
-      verify(() => mockStorage.write(
-          key: AppConstants.keyAnthropicApiKey, value: 'sk-ant-test'))
-          .called(1);
+      // Session data cleared.
+      expect(await service.getAuthToken(), isNull);
+      expect(await service.getRefreshToken(), isNull);
+
+      // Remember-me data preserved.
+      expect(await service.read(AppConstants.keyRememberMe), 'true');
+      expect(
+          await service.read(AppConstants.keyRememberedEmail), 'user@example.com');
+      expect(await service.read(AppConstants.keyRememberedPassword), 'secret');
+
+      // API key preserved.
+      expect(await service.getAnthropicApiKey(), 'sk-ant-test');
     });
 
     test('round-trip: set then get returns same value', () async {
-      when(() => mockStorage.write(
-            key: AppConstants.keyAuthToken,
-            value: 'round-trip-token',
-          )).thenAnswer((_) async {});
-      when(() => mockStorage.read(key: AppConstants.keyAuthToken))
-          .thenAnswer((_) async => 'round-trip-token');
-
       await service.setAuthToken('round-trip-token');
+
       final result = await service.getAuthToken();
 
       expect(result, 'round-trip-token');

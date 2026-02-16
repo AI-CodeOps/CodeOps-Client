@@ -1,132 +1,123 @@
-/// Provides secure, encrypted key-value storage backed by the OS keychain.
+/// Provides key-value storage backed by SharedPreferences (UserDefaults on macOS).
 ///
-/// On macOS, uses Keychain. On Windows, uses Windows Credential Locker.
-/// On Linux, uses libsecret. All values are AES-encrypted at rest.
-///
-/// Used primarily for storing authentication tokens, but also available
-/// for any sensitive data like API keys or connection credentials.
+/// Replaces flutter_secure_storage (Keychain-backed) to avoid macOS password
+/// dialogs when the App Sandbox is disabled. This is a local dev tool —
+/// OS-level encryption is unnecessary.
 library;
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/constants.dart';
 import '../logging/log_service.dart';
 
-/// Provides secure, encrypted key-value storage backed by the OS keychain.
+/// Provides key-value storage backed by SharedPreferences.
 ///
-/// On macOS, uses Keychain. On Windows, uses Windows Credential Locker.
-/// On Linux, uses libsecret. All values are AES-encrypted at rest.
+/// On macOS, uses UserDefaults. On Windows, uses the Registry.
+/// On Linux, uses XDG config files.
 ///
 /// Used primarily for storing authentication tokens, but also available
-/// for any sensitive data like API keys or connection credentials.
+/// for any data like API keys or connection credentials.
 class SecureStorageService {
-  final FlutterSecureStorage _storage;
+  SharedPreferences? _prefs;
 
-  /// Creates a [SecureStorageService] with optional custom [storage] instance.
-  SecureStorageService({FlutterSecureStorage? storage})
-      : _storage = storage ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-              lOptions: LinuxOptions(),
-              mOptions: MacOsOptions(
-                accessibility: KeychainAccessibility.first_unlock_this_device,
-                useDataProtectionKeyChain: false,
-              ),
-            );
+  /// Creates a [SecureStorageService] with optional [prefs] for test injection.
+  SecureStorageService({SharedPreferences? prefs}) : _prefs = prefs;
+
+  /// Lazily initializes and returns the [SharedPreferences] instance.
+  Future<SharedPreferences> get _storage async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
 
   /// Reads the JWT access token, or null if not stored.
   Future<String?> getAuthToken() async =>
-      _storage.read(key: AppConstants.keyAuthToken);
+      (await _storage).getString(AppConstants.keyAuthToken);
 
-  /// Persists the JWT access token to secure storage.
+  /// Persists the JWT access token to storage.
   Future<void> setAuthToken(String token) async =>
-      _storage.write(key: AppConstants.keyAuthToken, value: token);
+      (await _storage).setString(AppConstants.keyAuthToken, token);
 
   /// Reads the refresh token, or null if not stored.
   Future<String?> getRefreshToken() async =>
-      _storage.read(key: AppConstants.keyRefreshToken);
+      (await _storage).getString(AppConstants.keyRefreshToken);
 
-  /// Persists the refresh token to secure storage.
+  /// Persists the refresh token to storage.
   Future<void> setRefreshToken(String token) async =>
-      _storage.write(key: AppConstants.keyRefreshToken, value: token);
+      (await _storage).setString(AppConstants.keyRefreshToken, token);
 
   /// Reads the current user's ID, or null if not logged in.
   Future<String?> getCurrentUserId() async =>
-      _storage.read(key: AppConstants.keyCurrentUserId);
+      (await _storage).getString(AppConstants.keyCurrentUserId);
 
   /// Stores the current user's ID.
   Future<void> setCurrentUserId(String userId) async =>
-      _storage.write(key: AppConstants.keyCurrentUserId, value: userId);
+      (await _storage).setString(AppConstants.keyCurrentUserId, userId);
 
   /// Reads the currently selected team ID.
   Future<String?> getSelectedTeamId() async =>
-      _storage.read(key: AppConstants.keySelectedTeamId);
+      (await _storage).getString(AppConstants.keySelectedTeamId);
 
   /// Stores the currently selected team ID.
   Future<void> setSelectedTeamId(String teamId) async =>
-      _storage.write(key: AppConstants.keySelectedTeamId, value: teamId);
+      (await _storage).setString(AppConstants.keySelectedTeamId, teamId);
 
-  /// Reads an arbitrary key from secure storage.
-  Future<String?> read(String key) async => _storage.read(key: key);
+  /// Reads an arbitrary key from storage.
+  Future<String?> read(String key) async => (await _storage).getString(key);
 
-  /// Writes an arbitrary key-value pair to secure storage.
+  /// Writes an arbitrary key-value pair to storage.
   Future<void> write(String key, String value) async {
     log.d('SecureStorage', 'Write key=$key');
-    return _storage.write(key: key, value: value);
+    await (await _storage).setString(key, value);
   }
 
-  /// Deletes a specific key from secure storage.
+  /// Deletes a specific key from storage.
   Future<void> delete(String key) async {
     log.d('SecureStorage', 'Delete key=$key');
-    return _storage.delete(key: key);
+    await (await _storage).remove(key);
   }
 
   /// Reads the Anthropic API key, or null if not stored.
   Future<String?> getAnthropicApiKey() async =>
-      _storage.read(key: AppConstants.keyAnthropicApiKey);
+      (await _storage).getString(AppConstants.keyAnthropicApiKey);
 
-  /// Persists the Anthropic API key to secure storage.
+  /// Persists the Anthropic API key to storage.
   Future<void> setAnthropicApiKey(String apiKey) async =>
-      _storage.write(key: AppConstants.keyAnthropicApiKey, value: apiKey);
+      (await _storage).setString(AppConstants.keyAnthropicApiKey, apiKey);
 
-  /// Deletes the Anthropic API key from secure storage.
+  /// Deletes the Anthropic API key from storage.
   Future<void> deleteAnthropicApiKey() async =>
-      _storage.delete(key: AppConstants.keyAnthropicApiKey);
+      (await _storage).remove(AppConstants.keyAnthropicApiKey);
 
   /// Clears session data on logout, preserving "Remember Me" credentials
   /// and the Anthropic API key.
   Future<void> clearAll() async {
     log.d('SecureStorage', 'Clear all (preserving remember-me + API key)');
+    final prefs = await _storage;
 
     // Preserve remember-me data across logout.
-    final rememberMe = await _storage.read(key: AppConstants.keyRememberMe);
-    final email = await _storage.read(key: AppConstants.keyRememberedEmail);
-    final password =
-        await _storage.read(key: AppConstants.keyRememberedPassword);
+    final rememberMe = prefs.getString(AppConstants.keyRememberMe);
+    final email = prefs.getString(AppConstants.keyRememberedEmail);
+    final password = prefs.getString(AppConstants.keyRememberedPassword);
 
     // Preserve Anthropic API key across logout.
-    final anthropicKey =
-        await _storage.read(key: AppConstants.keyAnthropicApiKey);
+    final anthropicKey = prefs.getString(AppConstants.keyAnthropicApiKey);
 
-    await _storage.deleteAll();
+    await prefs.clear();
 
     // Restore remembered credentials.
     if (rememberMe != null) {
-      await _storage.write(key: AppConstants.keyRememberMe, value: rememberMe);
+      await prefs.setString(AppConstants.keyRememberMe, rememberMe);
     }
     if (email != null) {
-      await _storage.write(
-          key: AppConstants.keyRememberedEmail, value: email);
+      await prefs.setString(AppConstants.keyRememberedEmail, email);
     }
     if (password != null) {
-      await _storage.write(
-          key: AppConstants.keyRememberedPassword, value: password);
+      await prefs.setString(AppConstants.keyRememberedPassword, password);
     }
 
     // Restore Anthropic API key.
     if (anthropicKey != null) {
-      await _storage.write(
-          key: AppConstants.keyAnthropicApiKey, value: anthropicKey);
+      await prefs.setString(AppConstants.keyAnthropicApiKey, anthropicKey);
     }
   }
 }
