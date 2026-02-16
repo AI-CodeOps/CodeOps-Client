@@ -660,3 +660,114 @@ class SyncMetadata extends Table {
   @override
   Set<Column> get primaryKey => {syncTableName};
 }
+
+/// Cached Anthropic model metadata fetched from the API.
+class AnthropicModels extends Table {
+  /// Model identifier (e.g. "claude-sonnet-4-20250514").
+  TextColumn get id => text()();
+
+  /// Human-readable display name.
+  TextColumn get displayName => text()();
+
+  /// Model family grouping (e.g. "claude-4").
+  TextColumn get modelFamily => text().nullable()();
+
+  /// Maximum input context window in tokens.
+  IntColumn get contextWindow => integer().nullable()();
+
+  /// Maximum output tokens the model can generate.
+  IntColumn get maxOutputTokens => integer().nullable()();
+
+  /// Timestamp when this model was fetched from the API.
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Local agent definitions for per-agent configuration.
+class AgentDefinitions extends Table {
+  /// UUID primary key.
+  TextColumn get id => text()();
+
+  /// Agent display name.
+  TextColumn get name => text()();
+
+  /// Agent type enum value (SCREAMING_SNAKE_CASE).
+  TextColumn get agentType => text().nullable()();
+
+  /// Whether this agent serves as the QA manager (Vera).
+  BoolColumn get isQaManager => boolean().withDefault(const Constant(false))();
+
+  /// Whether this is a built-in agent (cannot be deleted).
+  BoolColumn get isBuiltIn => boolean().withDefault(const Constant(true))();
+
+  /// Whether this agent is enabled for dispatch.
+  BoolColumn get isEnabled => boolean().withDefault(const Constant(true))();
+
+  /// Override model ID for this agent (null = use system default).
+  TextColumn get modelId => text().nullable()();
+
+  /// Temperature setting for this agent (0.0–1.0).
+  RealColumn get temperature => real().withDefault(const Constant(0.0))();
+
+  /// Maximum retry attempts on failure.
+  IntColumn get maxRetries => integer().withDefault(const Constant(1))();
+
+  /// Timeout override in minutes (null = use system default).
+  IntColumn get timeoutMinutes => integer().nullable()();
+
+  /// Maximum agentic turns allowed.
+  IntColumn get maxTurns => integer().withDefault(const Constant(50))();
+
+  /// Optional system prompt override markdown.
+  TextColumn get systemPromptOverride => text().nullable()();
+
+  /// Human-readable description of the agent.
+  TextColumn get description => text().nullable()();
+
+  /// Display sort order.
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
+  /// Creation timestamp.
+  DateTimeColumn get createdAt => dateTime()();
+
+  /// Last update timestamp.
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Files attached to an agent definition (personas, prompts, etc.).
+class AgentFiles extends Table {
+  /// UUID primary key.
+  TextColumn get id => text()();
+
+  /// Parent agent definition UUID.
+  TextColumn get agentDefinitionId => text()();
+
+  /// Display file name.
+  TextColumn get fileName => text()();
+
+  /// File type (e.g. "persona", "prompt", "context").
+  TextColumn get fileType => text()();
+
+  /// Markdown content of the file.
+  TextColumn get contentMd => text().nullable()();
+
+  /// Optional filesystem path reference.
+  TextColumn get filePath => text().nullable()();
+
+  /// Display sort order within the agent.
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
+  /// Creation timestamp.
+  DateTimeColumn get createdAt => dateTime()();
+
+  /// Last update timestamp.
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}

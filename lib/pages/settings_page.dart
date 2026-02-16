@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/enums.dart';
+import '../providers/agent_config_providers.dart';
 import '../providers/auth_providers.dart';
 import '../providers/github_providers.dart';
 import '../providers/health_providers.dart';
@@ -17,6 +18,9 @@ import '../providers/settings_providers.dart';
 import '../providers/team_providers.dart';
 import '../theme/colors.dart';
 import '../utils/constants.dart';
+import '../widgets/settings/agents_tab.dart';
+import '../widgets/settings/api_key_tab.dart';
+import '../widgets/settings/general_settings_tab.dart';
 
 /// The application settings page.
 class SettingsPage extends ConsumerStatefulWidget {
@@ -88,10 +92,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         const VerticalDivider(width: 1),
         // Right content panel
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: _buildSection(selectedIndex),
-          ),
+          child: selectedIndex == 3
+              // Agent Config manages its own scrolling (master-detail).
+              ? _buildSection(selectedIndex)
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(32),
+                  child: _buildSection(selectedIndex),
+                ),
         ),
       ],
     );
@@ -428,58 +435,70 @@ class _IntegrationsSection extends ConsumerWidget {
 class _AgentConfigSection extends ConsumerWidget {
   const _AgentConfigSection();
 
+  static const _tabs = ['API Key', 'Agents', 'General'];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final model = ref.watch(claudeModelProvider);
-    final concurrent = ref.watch(maxConcurrentAgentsProvider);
-    final timeout = ref.watch(agentTimeoutMinutesProvider);
+    final selectedTab = ref.watch(agentConfigTabProvider);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Agent Configuration', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 24),
-        _FieldRow(
-          label: 'Claude Model',
-          child: DropdownButton<String>(
-            value: model,
-            isExpanded: true,
-            dropdownColor: CodeOpsColors.surface,
-            items: const [
-              DropdownMenuItem(value: 'claude-sonnet-4-20250514', child: Text('Claude Sonnet 4')),
-              DropdownMenuItem(value: 'claude-opus-4-20250514', child: Text('Claude Opus 4')),
-              DropdownMenuItem(value: 'claude-haiku-4-20250514', child: Text('Claude Haiku 4')),
+        // Tab bar.
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: CodeOpsColors.border)),
+          ),
+          child: Row(
+            children: [
+              Text('Agent Configuration',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(width: 24),
+              Flexible(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: List.generate(_tabs.length, (i) {
+                      final active = i == selectedTab;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: TextButton(
+                          onPressed: () =>
+                              ref.read(agentConfigTabProvider.notifier).state =
+                                  i,
+                          style: TextButton.styleFrom(
+                            backgroundColor: active
+                                ? CodeOpsColors.primary
+                                    .withValues(alpha: 0.15)
+                                : null,
+                            foregroundColor: active
+                                ? CodeOpsColors.primary
+                                : CodeOpsColors.textSecondary,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(_tabs[i],
+                              style: const TextStyle(fontSize: 13)),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ),
             ],
-            onChanged: (v) {
-              if (v != null) ref.read(claudeModelProvider.notifier).state = v;
-            },
           ),
         ),
-        const SizedBox(height: 24),
-        _FieldRow(
-          label: 'Concurrent Agents ($concurrent)',
-          child: Slider(
-            value: concurrent.toDouble(),
-            min: 1,
-            max: 6,
-            divisions: 5,
-            label: '$concurrent',
-            onChanged: (v) =>
-                ref.read(maxConcurrentAgentsProvider.notifier).state = v.round(),
-          ),
-        ),
-        const SizedBox(height: 24),
-        _FieldRow(
-          label: 'Timeout ($timeout min)',
-          child: Slider(
-            value: timeout.toDouble(),
-            min: 5,
-            max: 30,
-            divisions: 5,
-            label: '$timeout min',
-            onChanged: (v) =>
-                ref.read(agentTimeoutMinutesProvider.notifier).state = v.round(),
-          ),
+        // Tab content.
+        Expanded(
+          child: switch (selectedTab) {
+            0 => const ApiKeyTab(),
+            1 => const AgentsTab(),
+            2 => const GeneralSettingsTab(),
+            _ => const SizedBox.shrink(),
+          },
         ),
       ],
     );

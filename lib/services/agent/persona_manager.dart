@@ -48,6 +48,9 @@ class PersonaManager {
   /// [additionalContext] is free-form text appended to the context section.
   /// [jiraTicketData] is raw Jira ticket content for bug-investigate mode.
   /// [specReferences] is a list of specification names/paths for compliance.
+  /// [agentFileContents] is pre-loaded markdown from [AgentFiles] entries,
+  /// inserted between directives and job context. Optional — null means
+  /// no agent-specific file content is injected.
   ///
   /// Returns a fully-assembled markdown string.
   Future<String> assemblePrompt({
@@ -60,6 +63,7 @@ class PersonaManager {
     String? additionalContext,
     String? jiraTicketData,
     List<String>? specReferences,
+    List<String>? agentFileContents,
   }) async {
     log.i('PersonaManager', 'Assembling prompt (agent=${agentType.name}, mode=${mode.name})');
     final sections = <String>[];
@@ -72,6 +76,20 @@ class PersonaManager {
     final directives = await loadDirectives(teamId, projectId);
     if (directives.isNotEmpty) {
       sections.add(directives);
+    }
+
+    // 2.5. Agent-specific file content (from AgentFiles DB entries).
+    if (agentFileContents != null && agentFileContents.isNotEmpty) {
+      final fileBuffer = StringBuffer();
+      fileBuffer.writeln('## Agent Configuration Files');
+      fileBuffer.writeln();
+      for (final content in agentFileContents) {
+        if (content.isNotEmpty) {
+          fileBuffer.writeln(content);
+          fileBuffer.writeln();
+        }
+      }
+      sections.add(fileBuffer.toString().trim());
     }
 
     // 3. Job context.

@@ -81,15 +81,32 @@ class SecureStorageService {
     return _storage.delete(key: key);
   }
 
-  /// Clears session data on logout, preserving "Remember Me" credentials.
+  /// Reads the Anthropic API key, or null if not stored.
+  Future<String?> getAnthropicApiKey() async =>
+      _storage.read(key: AppConstants.keyAnthropicApiKey);
+
+  /// Persists the Anthropic API key to secure storage.
+  Future<void> setAnthropicApiKey(String apiKey) async =>
+      _storage.write(key: AppConstants.keyAnthropicApiKey, value: apiKey);
+
+  /// Deletes the Anthropic API key from secure storage.
+  Future<void> deleteAnthropicApiKey() async =>
+      _storage.delete(key: AppConstants.keyAnthropicApiKey);
+
+  /// Clears session data on logout, preserving "Remember Me" credentials
+  /// and the Anthropic API key.
   Future<void> clearAll() async {
-    log.d('SecureStorage', 'Clear all (preserving remember-me)');
+    log.d('SecureStorage', 'Clear all (preserving remember-me + API key)');
 
     // Preserve remember-me data across logout.
     final rememberMe = await _storage.read(key: AppConstants.keyRememberMe);
     final email = await _storage.read(key: AppConstants.keyRememberedEmail);
     final password =
         await _storage.read(key: AppConstants.keyRememberedPassword);
+
+    // Preserve Anthropic API key across logout.
+    final anthropicKey =
+        await _storage.read(key: AppConstants.keyAnthropicApiKey);
 
     await _storage.deleteAll();
 
@@ -104,6 +121,12 @@ class SecureStorageService {
     if (password != null) {
       await _storage.write(
           key: AppConstants.keyRememberedPassword, value: password);
+    }
+
+    // Restore Anthropic API key.
+    if (anthropicKey != null) {
+      await _storage.write(
+          key: AppConstants.keyAnthropicApiKey, value: anthropicKey);
     }
   }
 }

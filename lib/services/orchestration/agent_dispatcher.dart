@@ -174,6 +174,12 @@ class AgentDispatcher {
   /// [branch] is the git branch being analyzed.
   /// [mode] determines the job mode context for prompt assembly.
   /// [config] governs timeout, model, and turn limits.
+  /// [perAgentModelId] overrides the model for this specific agent.
+  /// [perAgentMaxTurns] overrides max turns for this specific agent.
+  /// [perAgentTimeout] overrides the timeout for this specific agent.
+  /// [agentFileContents] provides pre-loaded agent file markdown content.
+  ///
+  /// Resolution order: per-agent override → config default.
   ///
   /// Returns the [ManagedProcess] handle for the spawned agent.
   Future<ManagedProcess> dispatchAgent({
@@ -188,6 +194,10 @@ class AgentDispatcher {
     String? additionalContext,
     String? jiraTicketData,
     List<String>? specReferences,
+    String? perAgentModelId,
+    int? perAgentMaxTurns,
+    Duration? perAgentTimeout,
+    List<String>? agentFileContents,
   }) async {
     final assembledPrompt = await _personaManager.assemblePrompt(
       agentType: agentType,
@@ -199,7 +209,13 @@ class AgentDispatcher {
       additionalContext: additionalContext,
       jiraTicketData: jiraTicketData,
       specReferences: specReferences,
+      agentFileContents: agentFileContents,
     );
+
+    // Resolve per-agent overrides: per-agent → system config.
+    final effectiveModel = perAgentModelId ?? config.claudeModel;
+    final effectiveMaxTurns = perAgentMaxTurns ?? config.maxTurns;
+    final effectiveTimeout = perAgentTimeout ?? config.agentTimeout;
 
     final executablePath = await _claudeCodeDetector.getExecutablePath();
     final executable = executablePath ?? 'claude';
@@ -209,9 +225,9 @@ class AgentDispatcher {
       '--output-format',
       'json',
       '--max-turns',
-      config.maxTurns.toString(),
+      effectiveMaxTurns.toString(),
       '--model',
-      config.claudeModel,
+      effectiveModel,
       '-p',
       assembledPrompt,
     ];
@@ -220,10 +236,10 @@ class AgentDispatcher {
       executable: executable,
       arguments: arguments,
       workingDirectory: projectPath,
-      timeout: config.agentTimeout,
+      timeout: effectiveTimeout,
     );
 
-    log.i('AgentDispatcher', 'Agent dispatched (type=${agentType.name}, model=${config.claudeModel}, pid=${process.pid})');
+    log.i('AgentDispatcher', 'Agent dispatched (type=${agentType.name}, model=$effectiveModel, pid=${process.pid})');
     _activeProcesses[agentType] = process;
     return process;
   }

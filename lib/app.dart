@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'providers/agent_config_providers.dart';
 import 'providers/auth_providers.dart';
 import 'providers/github_providers.dart';
 import 'providers/team_providers.dart';
@@ -29,6 +30,7 @@ class CodeOpsApp extends ConsumerWidget {
         // On authentication, auto-select the user's team
         if (state == AuthState.authenticated) {
           _initTeamSelection(ref);
+          _initAgentConfig(ref);
         }
       });
     });
@@ -69,6 +71,28 @@ class CodeOpsApp extends ConsumerWidget {
       await restoreGitHubAuth(ref);
     } catch (e) {
       log.e('App', 'Failed to auto-select team', e);
+    }
+  }
+
+  /// Seeds built-in agents and refreshes Anthropic model cache on login.
+  Future<void> _initAgentConfig(WidgetRef ref) async {
+    try {
+      final agentConfigService = ref.read(agentConfigServiceProvider);
+
+      // Idempotent: seeds 13 built-in agents if table is empty.
+      await agentConfigService.seedBuiltInAgents();
+      log.i('App', 'Agent config seeded');
+
+      // Fire-and-forget: refresh model cache in the background.
+      agentConfigService.refreshModels().then((_) {
+        log.i('App', 'Anthropic models refreshed');
+        ref.invalidate(anthropicModelsProvider);
+      }).catchError((e) {
+        log.w('App', 'Failed to refresh Anthropic models', e);
+        ref.read(modelFetchFailedProvider.notifier).state = true;
+      });
+    } catch (e) {
+      log.e('App', 'Failed to initialize agent config', e);
     }
   }
 }

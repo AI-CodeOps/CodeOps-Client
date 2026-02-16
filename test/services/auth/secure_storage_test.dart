@@ -162,13 +162,15 @@ void main() {
       verify(() => mockStorage.deleteAll()).called(1);
     });
 
-    test('clearAll preserves remember-me credentials', () async {
+    test('clearAll preserves remember-me credentials and API key', () async {
       when(() => mockStorage.read(key: AppConstants.keyRememberMe))
           .thenAnswer((_) async => 'true');
       when(() => mockStorage.read(key: AppConstants.keyRememberedEmail))
           .thenAnswer((_) async => 'user@example.com');
       when(() => mockStorage.read(key: AppConstants.keyRememberedPassword))
           .thenAnswer((_) async => 'secret');
+      when(() => mockStorage.read(key: AppConstants.keyAnthropicApiKey))
+          .thenAnswer((_) async => 'sk-ant-test');
       when(() => mockStorage.deleteAll()).thenAnswer((_) async {});
       when(() => mockStorage.write(key: any(named: 'key'), value: any(named: 'value')))
           .thenAnswer((_) async {});
@@ -183,6 +185,9 @@ void main() {
           .called(1);
       verify(() => mockStorage.write(
           key: AppConstants.keyRememberedPassword, value: 'secret'))
+          .called(1);
+      verify(() => mockStorage.write(
+          key: AppConstants.keyAnthropicApiKey, value: 'sk-ant-test'))
           .called(1);
     });
 

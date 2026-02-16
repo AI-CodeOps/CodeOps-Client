@@ -117,6 +117,18 @@ class AppConstants {
   /// Secure storage key for the GitHub Personal Access Token.
   static const String keyGitHubPat = 'github_pat';
 
+  /// Secure storage key for the Anthropic API key.
+  static const String keyAnthropicApiKey = 'codeops_anthropic_api_key';
+
+  /// Anthropic API base URL.
+  static const String anthropicApiBaseUrl = 'https://api.anthropic.com';
+
+  /// Anthropic API version header value.
+  static const String anthropicApiVersion = '2023-06-01';
+
+  /// Debounce duration in milliseconds for agent config auto-save.
+  static const int agentConfigSaveDebounceMs = 500;
+
   /// Secure storage key for the "Remember Me" toggle state.
   static const String keyRememberMe = 'remember_me';
 
@@ -174,13 +186,13 @@ class AppConstants {
   static const int maxConcurrentAgentsMin = 1;
 
   /// Maximum concurrent agents allowed in wizard configuration.
-  static const int maxConcurrentAgentsMax = 6;
+  static const int maxConcurrentAgentsMax = 10;
 
   /// Minimum agent timeout in minutes.
   static const int agentTimeoutMinutesMin = 5;
 
   /// Maximum agent timeout in minutes.
-  static const int agentTimeoutMinutesMax = 60;
+  static const int agentTimeoutMinutesMax = 120;
 
   /// Minimum max turns for Claude Code subprocess.
   static const int maxTurnsMin = 10;

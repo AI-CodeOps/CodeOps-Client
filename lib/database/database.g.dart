@@ -9938,6 +9938,1684 @@ class ClonedReposCompanion extends UpdateCompanion<ClonedRepo> {
   }
 }
 
+class $AnthropicModelsTable extends AnthropicModels
+    with TableInfo<$AnthropicModelsTable, AnthropicModel> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AnthropicModelsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _displayNameMeta =
+      const VerificationMeta('displayName');
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+      'display_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _modelFamilyMeta =
+      const VerificationMeta('modelFamily');
+  @override
+  late final GeneratedColumn<String> modelFamily = GeneratedColumn<String>(
+      'model_family', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _contextWindowMeta =
+      const VerificationMeta('contextWindow');
+  @override
+  late final GeneratedColumn<int> contextWindow = GeneratedColumn<int>(
+      'context_window', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _maxOutputTokensMeta =
+      const VerificationMeta('maxOutputTokens');
+  @override
+  late final GeneratedColumn<int> maxOutputTokens = GeneratedColumn<int>(
+      'max_output_tokens', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _fetchedAtMeta =
+      const VerificationMeta('fetchedAt');
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+      'fetched_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, displayName, modelFamily, contextWindow, maxOutputTokens, fetchedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'anthropic_models';
+  @override
+  VerificationContext validateIntegrity(Insertable<AnthropicModel> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+          _displayNameMeta,
+          displayName.isAcceptableOrUnknown(
+              data['display_name']!, _displayNameMeta));
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('model_family')) {
+      context.handle(
+          _modelFamilyMeta,
+          modelFamily.isAcceptableOrUnknown(
+              data['model_family']!, _modelFamilyMeta));
+    }
+    if (data.containsKey('context_window')) {
+      context.handle(
+          _contextWindowMeta,
+          contextWindow.isAcceptableOrUnknown(
+              data['context_window']!, _contextWindowMeta));
+    }
+    if (data.containsKey('max_output_tokens')) {
+      context.handle(
+          _maxOutputTokensMeta,
+          maxOutputTokens.isAcceptableOrUnknown(
+              data['max_output_tokens']!, _maxOutputTokensMeta));
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(_fetchedAtMeta,
+          fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta));
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AnthropicModel map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AnthropicModel(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      displayName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}display_name'])!,
+      modelFamily: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}model_family']),
+      contextWindow: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}context_window']),
+      maxOutputTokens: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}max_output_tokens']),
+      fetchedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}fetched_at'])!,
+    );
+  }
+
+  @override
+  $AnthropicModelsTable createAlias(String alias) {
+    return $AnthropicModelsTable(attachedDatabase, alias);
+  }
+}
+
+class AnthropicModel extends DataClass implements Insertable<AnthropicModel> {
+  /// Model identifier (e.g. "claude-sonnet-4-20250514").
+  final String id;
+
+  /// Human-readable display name.
+  final String displayName;
+
+  /// Model family grouping (e.g. "claude-4").
+  final String? modelFamily;
+
+  /// Maximum input context window in tokens.
+  final int? contextWindow;
+
+  /// Maximum output tokens the model can generate.
+  final int? maxOutputTokens;
+
+  /// Timestamp when this model was fetched from the API.
+  final DateTime fetchedAt;
+  const AnthropicModel(
+      {required this.id,
+      required this.displayName,
+      this.modelFamily,
+      this.contextWindow,
+      this.maxOutputTokens,
+      required this.fetchedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['display_name'] = Variable<String>(displayName);
+    if (!nullToAbsent || modelFamily != null) {
+      map['model_family'] = Variable<String>(modelFamily);
+    }
+    if (!nullToAbsent || contextWindow != null) {
+      map['context_window'] = Variable<int>(contextWindow);
+    }
+    if (!nullToAbsent || maxOutputTokens != null) {
+      map['max_output_tokens'] = Variable<int>(maxOutputTokens);
+    }
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    return map;
+  }
+
+  AnthropicModelsCompanion toCompanion(bool nullToAbsent) {
+    return AnthropicModelsCompanion(
+      id: Value(id),
+      displayName: Value(displayName),
+      modelFamily: modelFamily == null && nullToAbsent
+          ? const Value.absent()
+          : Value(modelFamily),
+      contextWindow: contextWindow == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contextWindow),
+      maxOutputTokens: maxOutputTokens == null && nullToAbsent
+          ? const Value.absent()
+          : Value(maxOutputTokens),
+      fetchedAt: Value(fetchedAt),
+    );
+  }
+
+  factory AnthropicModel.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AnthropicModel(
+      id: serializer.fromJson<String>(json['id']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      modelFamily: serializer.fromJson<String?>(json['modelFamily']),
+      contextWindow: serializer.fromJson<int?>(json['contextWindow']),
+      maxOutputTokens: serializer.fromJson<int?>(json['maxOutputTokens']),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'displayName': serializer.toJson<String>(displayName),
+      'modelFamily': serializer.toJson<String?>(modelFamily),
+      'contextWindow': serializer.toJson<int?>(contextWindow),
+      'maxOutputTokens': serializer.toJson<int?>(maxOutputTokens),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+    };
+  }
+
+  AnthropicModel copyWith(
+          {String? id,
+          String? displayName,
+          Value<String?> modelFamily = const Value.absent(),
+          Value<int?> contextWindow = const Value.absent(),
+          Value<int?> maxOutputTokens = const Value.absent(),
+          DateTime? fetchedAt}) =>
+      AnthropicModel(
+        id: id ?? this.id,
+        displayName: displayName ?? this.displayName,
+        modelFamily: modelFamily.present ? modelFamily.value : this.modelFamily,
+        contextWindow:
+            contextWindow.present ? contextWindow.value : this.contextWindow,
+        maxOutputTokens: maxOutputTokens.present
+            ? maxOutputTokens.value
+            : this.maxOutputTokens,
+        fetchedAt: fetchedAt ?? this.fetchedAt,
+      );
+  AnthropicModel copyWithCompanion(AnthropicModelsCompanion data) {
+    return AnthropicModel(
+      id: data.id.present ? data.id.value : this.id,
+      displayName:
+          data.displayName.present ? data.displayName.value : this.displayName,
+      modelFamily:
+          data.modelFamily.present ? data.modelFamily.value : this.modelFamily,
+      contextWindow: data.contextWindow.present
+          ? data.contextWindow.value
+          : this.contextWindow,
+      maxOutputTokens: data.maxOutputTokens.present
+          ? data.maxOutputTokens.value
+          : this.maxOutputTokens,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnthropicModel(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('modelFamily: $modelFamily, ')
+          ..write('contextWindow: $contextWindow, ')
+          ..write('maxOutputTokens: $maxOutputTokens, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, displayName, modelFamily, contextWindow, maxOutputTokens, fetchedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AnthropicModel &&
+          other.id == this.id &&
+          other.displayName == this.displayName &&
+          other.modelFamily == this.modelFamily &&
+          other.contextWindow == this.contextWindow &&
+          other.maxOutputTokens == this.maxOutputTokens &&
+          other.fetchedAt == this.fetchedAt);
+}
+
+class AnthropicModelsCompanion extends UpdateCompanion<AnthropicModel> {
+  final Value<String> id;
+  final Value<String> displayName;
+  final Value<String?> modelFamily;
+  final Value<int?> contextWindow;
+  final Value<int?> maxOutputTokens;
+  final Value<DateTime> fetchedAt;
+  final Value<int> rowid;
+  const AnthropicModelsCompanion({
+    this.id = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.modelFamily = const Value.absent(),
+    this.contextWindow = const Value.absent(),
+    this.maxOutputTokens = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AnthropicModelsCompanion.insert({
+    required String id,
+    required String displayName,
+    this.modelFamily = const Value.absent(),
+    this.contextWindow = const Value.absent(),
+    this.maxOutputTokens = const Value.absent(),
+    required DateTime fetchedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        displayName = Value(displayName),
+        fetchedAt = Value(fetchedAt);
+  static Insertable<AnthropicModel> custom({
+    Expression<String>? id,
+    Expression<String>? displayName,
+    Expression<String>? modelFamily,
+    Expression<int>? contextWindow,
+    Expression<int>? maxOutputTokens,
+    Expression<DateTime>? fetchedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (displayName != null) 'display_name': displayName,
+      if (modelFamily != null) 'model_family': modelFamily,
+      if (contextWindow != null) 'context_window': contextWindow,
+      if (maxOutputTokens != null) 'max_output_tokens': maxOutputTokens,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AnthropicModelsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? displayName,
+      Value<String?>? modelFamily,
+      Value<int?>? contextWindow,
+      Value<int?>? maxOutputTokens,
+      Value<DateTime>? fetchedAt,
+      Value<int>? rowid}) {
+    return AnthropicModelsCompanion(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      modelFamily: modelFamily ?? this.modelFamily,
+      contextWindow: contextWindow ?? this.contextWindow,
+      maxOutputTokens: maxOutputTokens ?? this.maxOutputTokens,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (modelFamily.present) {
+      map['model_family'] = Variable<String>(modelFamily.value);
+    }
+    if (contextWindow.present) {
+      map['context_window'] = Variable<int>(contextWindow.value);
+    }
+    if (maxOutputTokens.present) {
+      map['max_output_tokens'] = Variable<int>(maxOutputTokens.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnthropicModelsCompanion(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('modelFamily: $modelFamily, ')
+          ..write('contextWindow: $contextWindow, ')
+          ..write('maxOutputTokens: $maxOutputTokens, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AgentDefinitionsTable extends AgentDefinitions
+    with TableInfo<$AgentDefinitionsTable, AgentDefinition> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AgentDefinitionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _agentTypeMeta =
+      const VerificationMeta('agentType');
+  @override
+  late final GeneratedColumn<String> agentType = GeneratedColumn<String>(
+      'agent_type', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isQaManagerMeta =
+      const VerificationMeta('isQaManager');
+  @override
+  late final GeneratedColumn<bool> isQaManager = GeneratedColumn<bool>(
+      'is_qa_manager', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_qa_manager" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _isBuiltInMeta =
+      const VerificationMeta('isBuiltIn');
+  @override
+  late final GeneratedColumn<bool> isBuiltIn = GeneratedColumn<bool>(
+      'is_built_in', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_built_in" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _isEnabledMeta =
+      const VerificationMeta('isEnabled');
+  @override
+  late final GeneratedColumn<bool> isEnabled = GeneratedColumn<bool>(
+      'is_enabled', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_enabled" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _modelIdMeta =
+      const VerificationMeta('modelId');
+  @override
+  late final GeneratedColumn<String> modelId = GeneratedColumn<String>(
+      'model_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _temperatureMeta =
+      const VerificationMeta('temperature');
+  @override
+  late final GeneratedColumn<double> temperature = GeneratedColumn<double>(
+      'temperature', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
+  static const VerificationMeta _maxRetriesMeta =
+      const VerificationMeta('maxRetries');
+  @override
+  late final GeneratedColumn<int> maxRetries = GeneratedColumn<int>(
+      'max_retries', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  static const VerificationMeta _timeoutMinutesMeta =
+      const VerificationMeta('timeoutMinutes');
+  @override
+  late final GeneratedColumn<int> timeoutMinutes = GeneratedColumn<int>(
+      'timeout_minutes', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _maxTurnsMeta =
+      const VerificationMeta('maxTurns');
+  @override
+  late final GeneratedColumn<int> maxTurns = GeneratedColumn<int>(
+      'max_turns', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(50));
+  static const VerificationMeta _systemPromptOverrideMeta =
+      const VerificationMeta('systemPromptOverride');
+  @override
+  late final GeneratedColumn<String> systemPromptOverride =
+      GeneratedColumn<String>('system_prompt_override', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _sortOrderMeta =
+      const VerificationMeta('sortOrder');
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+      'sort_order', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        agentType,
+        isQaManager,
+        isBuiltIn,
+        isEnabled,
+        modelId,
+        temperature,
+        maxRetries,
+        timeoutMinutes,
+        maxTurns,
+        systemPromptOverride,
+        description,
+        sortOrder,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'agent_definitions';
+  @override
+  VerificationContext validateIntegrity(Insertable<AgentDefinition> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('agent_type')) {
+      context.handle(_agentTypeMeta,
+          agentType.isAcceptableOrUnknown(data['agent_type']!, _agentTypeMeta));
+    }
+    if (data.containsKey('is_qa_manager')) {
+      context.handle(
+          _isQaManagerMeta,
+          isQaManager.isAcceptableOrUnknown(
+              data['is_qa_manager']!, _isQaManagerMeta));
+    }
+    if (data.containsKey('is_built_in')) {
+      context.handle(
+          _isBuiltInMeta,
+          isBuiltIn.isAcceptableOrUnknown(
+              data['is_built_in']!, _isBuiltInMeta));
+    }
+    if (data.containsKey('is_enabled')) {
+      context.handle(_isEnabledMeta,
+          isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta));
+    }
+    if (data.containsKey('model_id')) {
+      context.handle(_modelIdMeta,
+          modelId.isAcceptableOrUnknown(data['model_id']!, _modelIdMeta));
+    }
+    if (data.containsKey('temperature')) {
+      context.handle(
+          _temperatureMeta,
+          temperature.isAcceptableOrUnknown(
+              data['temperature']!, _temperatureMeta));
+    }
+    if (data.containsKey('max_retries')) {
+      context.handle(
+          _maxRetriesMeta,
+          maxRetries.isAcceptableOrUnknown(
+              data['max_retries']!, _maxRetriesMeta));
+    }
+    if (data.containsKey('timeout_minutes')) {
+      context.handle(
+          _timeoutMinutesMeta,
+          timeoutMinutes.isAcceptableOrUnknown(
+              data['timeout_minutes']!, _timeoutMinutesMeta));
+    }
+    if (data.containsKey('max_turns')) {
+      context.handle(_maxTurnsMeta,
+          maxTurns.isAcceptableOrUnknown(data['max_turns']!, _maxTurnsMeta));
+    }
+    if (data.containsKey('system_prompt_override')) {
+      context.handle(
+          _systemPromptOverrideMeta,
+          systemPromptOverride.isAcceptableOrUnknown(
+              data['system_prompt_override']!, _systemPromptOverrideMeta));
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(_sortOrderMeta,
+          sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AgentDefinition map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AgentDefinition(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      agentType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}agent_type']),
+      isQaManager: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_qa_manager'])!,
+      isBuiltIn: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_built_in'])!,
+      isEnabled: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_enabled'])!,
+      modelId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}model_id']),
+      temperature: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}temperature'])!,
+      maxRetries: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}max_retries'])!,
+      timeoutMinutes: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}timeout_minutes']),
+      maxTurns: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}max_turns'])!,
+      systemPromptOverride: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}system_prompt_override']),
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      sortOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $AgentDefinitionsTable createAlias(String alias) {
+    return $AgentDefinitionsTable(attachedDatabase, alias);
+  }
+}
+
+class AgentDefinition extends DataClass implements Insertable<AgentDefinition> {
+  /// UUID primary key.
+  final String id;
+
+  /// Agent display name.
+  final String name;
+
+  /// Agent type enum value (SCREAMING_SNAKE_CASE).
+  final String? agentType;
+
+  /// Whether this agent serves as the QA manager (Vera).
+  final bool isQaManager;
+
+  /// Whether this is a built-in agent (cannot be deleted).
+  final bool isBuiltIn;
+
+  /// Whether this agent is enabled for dispatch.
+  final bool isEnabled;
+
+  /// Override model ID for this agent (null = use system default).
+  final String? modelId;
+
+  /// Temperature setting for this agent (0.0–1.0).
+  final double temperature;
+
+  /// Maximum retry attempts on failure.
+  final int maxRetries;
+
+  /// Timeout override in minutes (null = use system default).
+  final int? timeoutMinutes;
+
+  /// Maximum agentic turns allowed.
+  final int maxTurns;
+
+  /// Optional system prompt override markdown.
+  final String? systemPromptOverride;
+
+  /// Human-readable description of the agent.
+  final String? description;
+
+  /// Display sort order.
+  final int sortOrder;
+
+  /// Creation timestamp.
+  final DateTime createdAt;
+
+  /// Last update timestamp.
+  final DateTime updatedAt;
+  const AgentDefinition(
+      {required this.id,
+      required this.name,
+      this.agentType,
+      required this.isQaManager,
+      required this.isBuiltIn,
+      required this.isEnabled,
+      this.modelId,
+      required this.temperature,
+      required this.maxRetries,
+      this.timeoutMinutes,
+      required this.maxTurns,
+      this.systemPromptOverride,
+      this.description,
+      required this.sortOrder,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || agentType != null) {
+      map['agent_type'] = Variable<String>(agentType);
+    }
+    map['is_qa_manager'] = Variable<bool>(isQaManager);
+    map['is_built_in'] = Variable<bool>(isBuiltIn);
+    map['is_enabled'] = Variable<bool>(isEnabled);
+    if (!nullToAbsent || modelId != null) {
+      map['model_id'] = Variable<String>(modelId);
+    }
+    map['temperature'] = Variable<double>(temperature);
+    map['max_retries'] = Variable<int>(maxRetries);
+    if (!nullToAbsent || timeoutMinutes != null) {
+      map['timeout_minutes'] = Variable<int>(timeoutMinutes);
+    }
+    map['max_turns'] = Variable<int>(maxTurns);
+    if (!nullToAbsent || systemPromptOverride != null) {
+      map['system_prompt_override'] = Variable<String>(systemPromptOverride);
+    }
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AgentDefinitionsCompanion toCompanion(bool nullToAbsent) {
+    return AgentDefinitionsCompanion(
+      id: Value(id),
+      name: Value(name),
+      agentType: agentType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(agentType),
+      isQaManager: Value(isQaManager),
+      isBuiltIn: Value(isBuiltIn),
+      isEnabled: Value(isEnabled),
+      modelId: modelId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(modelId),
+      temperature: Value(temperature),
+      maxRetries: Value(maxRetries),
+      timeoutMinutes: timeoutMinutes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timeoutMinutes),
+      maxTurns: Value(maxTurns),
+      systemPromptOverride: systemPromptOverride == null && nullToAbsent
+          ? const Value.absent()
+          : Value(systemPromptOverride),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      sortOrder: Value(sortOrder),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AgentDefinition.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AgentDefinition(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      agentType: serializer.fromJson<String?>(json['agentType']),
+      isQaManager: serializer.fromJson<bool>(json['isQaManager']),
+      isBuiltIn: serializer.fromJson<bool>(json['isBuiltIn']),
+      isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      modelId: serializer.fromJson<String?>(json['modelId']),
+      temperature: serializer.fromJson<double>(json['temperature']),
+      maxRetries: serializer.fromJson<int>(json['maxRetries']),
+      timeoutMinutes: serializer.fromJson<int?>(json['timeoutMinutes']),
+      maxTurns: serializer.fromJson<int>(json['maxTurns']),
+      systemPromptOverride:
+          serializer.fromJson<String?>(json['systemPromptOverride']),
+      description: serializer.fromJson<String?>(json['description']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'agentType': serializer.toJson<String?>(agentType),
+      'isQaManager': serializer.toJson<bool>(isQaManager),
+      'isBuiltIn': serializer.toJson<bool>(isBuiltIn),
+      'isEnabled': serializer.toJson<bool>(isEnabled),
+      'modelId': serializer.toJson<String?>(modelId),
+      'temperature': serializer.toJson<double>(temperature),
+      'maxRetries': serializer.toJson<int>(maxRetries),
+      'timeoutMinutes': serializer.toJson<int?>(timeoutMinutes),
+      'maxTurns': serializer.toJson<int>(maxTurns),
+      'systemPromptOverride': serializer.toJson<String?>(systemPromptOverride),
+      'description': serializer.toJson<String?>(description),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AgentDefinition copyWith(
+          {String? id,
+          String? name,
+          Value<String?> agentType = const Value.absent(),
+          bool? isQaManager,
+          bool? isBuiltIn,
+          bool? isEnabled,
+          Value<String?> modelId = const Value.absent(),
+          double? temperature,
+          int? maxRetries,
+          Value<int?> timeoutMinutes = const Value.absent(),
+          int? maxTurns,
+          Value<String?> systemPromptOverride = const Value.absent(),
+          Value<String?> description = const Value.absent(),
+          int? sortOrder,
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      AgentDefinition(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        agentType: agentType.present ? agentType.value : this.agentType,
+        isQaManager: isQaManager ?? this.isQaManager,
+        isBuiltIn: isBuiltIn ?? this.isBuiltIn,
+        isEnabled: isEnabled ?? this.isEnabled,
+        modelId: modelId.present ? modelId.value : this.modelId,
+        temperature: temperature ?? this.temperature,
+        maxRetries: maxRetries ?? this.maxRetries,
+        timeoutMinutes:
+            timeoutMinutes.present ? timeoutMinutes.value : this.timeoutMinutes,
+        maxTurns: maxTurns ?? this.maxTurns,
+        systemPromptOverride: systemPromptOverride.present
+            ? systemPromptOverride.value
+            : this.systemPromptOverride,
+        description: description.present ? description.value : this.description,
+        sortOrder: sortOrder ?? this.sortOrder,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  AgentDefinition copyWithCompanion(AgentDefinitionsCompanion data) {
+    return AgentDefinition(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      agentType: data.agentType.present ? data.agentType.value : this.agentType,
+      isQaManager:
+          data.isQaManager.present ? data.isQaManager.value : this.isQaManager,
+      isBuiltIn: data.isBuiltIn.present ? data.isBuiltIn.value : this.isBuiltIn,
+      isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      modelId: data.modelId.present ? data.modelId.value : this.modelId,
+      temperature:
+          data.temperature.present ? data.temperature.value : this.temperature,
+      maxRetries:
+          data.maxRetries.present ? data.maxRetries.value : this.maxRetries,
+      timeoutMinutes: data.timeoutMinutes.present
+          ? data.timeoutMinutes.value
+          : this.timeoutMinutes,
+      maxTurns: data.maxTurns.present ? data.maxTurns.value : this.maxTurns,
+      systemPromptOverride: data.systemPromptOverride.present
+          ? data.systemPromptOverride.value
+          : this.systemPromptOverride,
+      description:
+          data.description.present ? data.description.value : this.description,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AgentDefinition(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('agentType: $agentType, ')
+          ..write('isQaManager: $isQaManager, ')
+          ..write('isBuiltIn: $isBuiltIn, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('modelId: $modelId, ')
+          ..write('temperature: $temperature, ')
+          ..write('maxRetries: $maxRetries, ')
+          ..write('timeoutMinutes: $timeoutMinutes, ')
+          ..write('maxTurns: $maxTurns, ')
+          ..write('systemPromptOverride: $systemPromptOverride, ')
+          ..write('description: $description, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      name,
+      agentType,
+      isQaManager,
+      isBuiltIn,
+      isEnabled,
+      modelId,
+      temperature,
+      maxRetries,
+      timeoutMinutes,
+      maxTurns,
+      systemPromptOverride,
+      description,
+      sortOrder,
+      createdAt,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AgentDefinition &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.agentType == this.agentType &&
+          other.isQaManager == this.isQaManager &&
+          other.isBuiltIn == this.isBuiltIn &&
+          other.isEnabled == this.isEnabled &&
+          other.modelId == this.modelId &&
+          other.temperature == this.temperature &&
+          other.maxRetries == this.maxRetries &&
+          other.timeoutMinutes == this.timeoutMinutes &&
+          other.maxTurns == this.maxTurns &&
+          other.systemPromptOverride == this.systemPromptOverride &&
+          other.description == this.description &&
+          other.sortOrder == this.sortOrder &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AgentDefinitionsCompanion extends UpdateCompanion<AgentDefinition> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String?> agentType;
+  final Value<bool> isQaManager;
+  final Value<bool> isBuiltIn;
+  final Value<bool> isEnabled;
+  final Value<String?> modelId;
+  final Value<double> temperature;
+  final Value<int> maxRetries;
+  final Value<int?> timeoutMinutes;
+  final Value<int> maxTurns;
+  final Value<String?> systemPromptOverride;
+  final Value<String?> description;
+  final Value<int> sortOrder;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AgentDefinitionsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.agentType = const Value.absent(),
+    this.isQaManager = const Value.absent(),
+    this.isBuiltIn = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.modelId = const Value.absent(),
+    this.temperature = const Value.absent(),
+    this.maxRetries = const Value.absent(),
+    this.timeoutMinutes = const Value.absent(),
+    this.maxTurns = const Value.absent(),
+    this.systemPromptOverride = const Value.absent(),
+    this.description = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AgentDefinitionsCompanion.insert({
+    required String id,
+    required String name,
+    this.agentType = const Value.absent(),
+    this.isQaManager = const Value.absent(),
+    this.isBuiltIn = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.modelId = const Value.absent(),
+    this.temperature = const Value.absent(),
+    this.maxRetries = const Value.absent(),
+    this.timeoutMinutes = const Value.absent(),
+    this.maxTurns = const Value.absent(),
+    this.systemPromptOverride = const Value.absent(),
+    this.description = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        name = Value(name),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
+  static Insertable<AgentDefinition> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? agentType,
+    Expression<bool>? isQaManager,
+    Expression<bool>? isBuiltIn,
+    Expression<bool>? isEnabled,
+    Expression<String>? modelId,
+    Expression<double>? temperature,
+    Expression<int>? maxRetries,
+    Expression<int>? timeoutMinutes,
+    Expression<int>? maxTurns,
+    Expression<String>? systemPromptOverride,
+    Expression<String>? description,
+    Expression<int>? sortOrder,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (agentType != null) 'agent_type': agentType,
+      if (isQaManager != null) 'is_qa_manager': isQaManager,
+      if (isBuiltIn != null) 'is_built_in': isBuiltIn,
+      if (isEnabled != null) 'is_enabled': isEnabled,
+      if (modelId != null) 'model_id': modelId,
+      if (temperature != null) 'temperature': temperature,
+      if (maxRetries != null) 'max_retries': maxRetries,
+      if (timeoutMinutes != null) 'timeout_minutes': timeoutMinutes,
+      if (maxTurns != null) 'max_turns': maxTurns,
+      if (systemPromptOverride != null)
+        'system_prompt_override': systemPromptOverride,
+      if (description != null) 'description': description,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AgentDefinitionsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? name,
+      Value<String?>? agentType,
+      Value<bool>? isQaManager,
+      Value<bool>? isBuiltIn,
+      Value<bool>? isEnabled,
+      Value<String?>? modelId,
+      Value<double>? temperature,
+      Value<int>? maxRetries,
+      Value<int?>? timeoutMinutes,
+      Value<int>? maxTurns,
+      Value<String?>? systemPromptOverride,
+      Value<String?>? description,
+      Value<int>? sortOrder,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<int>? rowid}) {
+    return AgentDefinitionsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      agentType: agentType ?? this.agentType,
+      isQaManager: isQaManager ?? this.isQaManager,
+      isBuiltIn: isBuiltIn ?? this.isBuiltIn,
+      isEnabled: isEnabled ?? this.isEnabled,
+      modelId: modelId ?? this.modelId,
+      temperature: temperature ?? this.temperature,
+      maxRetries: maxRetries ?? this.maxRetries,
+      timeoutMinutes: timeoutMinutes ?? this.timeoutMinutes,
+      maxTurns: maxTurns ?? this.maxTurns,
+      systemPromptOverride: systemPromptOverride ?? this.systemPromptOverride,
+      description: description ?? this.description,
+      sortOrder: sortOrder ?? this.sortOrder,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (agentType.present) {
+      map['agent_type'] = Variable<String>(agentType.value);
+    }
+    if (isQaManager.present) {
+      map['is_qa_manager'] = Variable<bool>(isQaManager.value);
+    }
+    if (isBuiltIn.present) {
+      map['is_built_in'] = Variable<bool>(isBuiltIn.value);
+    }
+    if (isEnabled.present) {
+      map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (modelId.present) {
+      map['model_id'] = Variable<String>(modelId.value);
+    }
+    if (temperature.present) {
+      map['temperature'] = Variable<double>(temperature.value);
+    }
+    if (maxRetries.present) {
+      map['max_retries'] = Variable<int>(maxRetries.value);
+    }
+    if (timeoutMinutes.present) {
+      map['timeout_minutes'] = Variable<int>(timeoutMinutes.value);
+    }
+    if (maxTurns.present) {
+      map['max_turns'] = Variable<int>(maxTurns.value);
+    }
+    if (systemPromptOverride.present) {
+      map['system_prompt_override'] =
+          Variable<String>(systemPromptOverride.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AgentDefinitionsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('agentType: $agentType, ')
+          ..write('isQaManager: $isQaManager, ')
+          ..write('isBuiltIn: $isBuiltIn, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('modelId: $modelId, ')
+          ..write('temperature: $temperature, ')
+          ..write('maxRetries: $maxRetries, ')
+          ..write('timeoutMinutes: $timeoutMinutes, ')
+          ..write('maxTurns: $maxTurns, ')
+          ..write('systemPromptOverride: $systemPromptOverride, ')
+          ..write('description: $description, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AgentFilesTable extends AgentFiles
+    with TableInfo<$AgentFilesTable, AgentFile> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AgentFilesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _agentDefinitionIdMeta =
+      const VerificationMeta('agentDefinitionId');
+  @override
+  late final GeneratedColumn<String> agentDefinitionId =
+      GeneratedColumn<String>('agent_definition_id', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _fileNameMeta =
+      const VerificationMeta('fileName');
+  @override
+  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
+      'file_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _fileTypeMeta =
+      const VerificationMeta('fileType');
+  @override
+  late final GeneratedColumn<String> fileType = GeneratedColumn<String>(
+      'file_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _contentMdMeta =
+      const VerificationMeta('contentMd');
+  @override
+  late final GeneratedColumn<String> contentMd = GeneratedColumn<String>(
+      'content_md', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _filePathMeta =
+      const VerificationMeta('filePath');
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+      'file_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _sortOrderMeta =
+      const VerificationMeta('sortOrder');
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+      'sort_order', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        agentDefinitionId,
+        fileName,
+        fileType,
+        contentMd,
+        filePath,
+        sortOrder,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'agent_files';
+  @override
+  VerificationContext validateIntegrity(Insertable<AgentFile> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('agent_definition_id')) {
+      context.handle(
+          _agentDefinitionIdMeta,
+          agentDefinitionId.isAcceptableOrUnknown(
+              data['agent_definition_id']!, _agentDefinitionIdMeta));
+    } else if (isInserting) {
+      context.missing(_agentDefinitionIdMeta);
+    }
+    if (data.containsKey('file_name')) {
+      context.handle(_fileNameMeta,
+          fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta));
+    } else if (isInserting) {
+      context.missing(_fileNameMeta);
+    }
+    if (data.containsKey('file_type')) {
+      context.handle(_fileTypeMeta,
+          fileType.isAcceptableOrUnknown(data['file_type']!, _fileTypeMeta));
+    } else if (isInserting) {
+      context.missing(_fileTypeMeta);
+    }
+    if (data.containsKey('content_md')) {
+      context.handle(_contentMdMeta,
+          contentMd.isAcceptableOrUnknown(data['content_md']!, _contentMdMeta));
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(_filePathMeta,
+          filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta));
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(_sortOrderMeta,
+          sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AgentFile map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AgentFile(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      agentDefinitionId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}agent_definition_id'])!,
+      fileName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_name'])!,
+      fileType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_type'])!,
+      contentMd: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content_md']),
+      filePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_path']),
+      sortOrder: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sort_order'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $AgentFilesTable createAlias(String alias) {
+    return $AgentFilesTable(attachedDatabase, alias);
+  }
+}
+
+class AgentFile extends DataClass implements Insertable<AgentFile> {
+  /// UUID primary key.
+  final String id;
+
+  /// Parent agent definition UUID.
+  final String agentDefinitionId;
+
+  /// Display file name.
+  final String fileName;
+
+  /// File type (e.g. "persona", "prompt", "context").
+  final String fileType;
+
+  /// Markdown content of the file.
+  final String? contentMd;
+
+  /// Optional filesystem path reference.
+  final String? filePath;
+
+  /// Display sort order within the agent.
+  final int sortOrder;
+
+  /// Creation timestamp.
+  final DateTime createdAt;
+
+  /// Last update timestamp.
+  final DateTime updatedAt;
+  const AgentFile(
+      {required this.id,
+      required this.agentDefinitionId,
+      required this.fileName,
+      required this.fileType,
+      this.contentMd,
+      this.filePath,
+      required this.sortOrder,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['agent_definition_id'] = Variable<String>(agentDefinitionId);
+    map['file_name'] = Variable<String>(fileName);
+    map['file_type'] = Variable<String>(fileType);
+    if (!nullToAbsent || contentMd != null) {
+      map['content_md'] = Variable<String>(contentMd);
+    }
+    if (!nullToAbsent || filePath != null) {
+      map['file_path'] = Variable<String>(filePath);
+    }
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AgentFilesCompanion toCompanion(bool nullToAbsent) {
+    return AgentFilesCompanion(
+      id: Value(id),
+      agentDefinitionId: Value(agentDefinitionId),
+      fileName: Value(fileName),
+      fileType: Value(fileType),
+      contentMd: contentMd == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contentMd),
+      filePath: filePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(filePath),
+      sortOrder: Value(sortOrder),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AgentFile.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AgentFile(
+      id: serializer.fromJson<String>(json['id']),
+      agentDefinitionId: serializer.fromJson<String>(json['agentDefinitionId']),
+      fileName: serializer.fromJson<String>(json['fileName']),
+      fileType: serializer.fromJson<String>(json['fileType']),
+      contentMd: serializer.fromJson<String?>(json['contentMd']),
+      filePath: serializer.fromJson<String?>(json['filePath']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'agentDefinitionId': serializer.toJson<String>(agentDefinitionId),
+      'fileName': serializer.toJson<String>(fileName),
+      'fileType': serializer.toJson<String>(fileType),
+      'contentMd': serializer.toJson<String?>(contentMd),
+      'filePath': serializer.toJson<String?>(filePath),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AgentFile copyWith(
+          {String? id,
+          String? agentDefinitionId,
+          String? fileName,
+          String? fileType,
+          Value<String?> contentMd = const Value.absent(),
+          Value<String?> filePath = const Value.absent(),
+          int? sortOrder,
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      AgentFile(
+        id: id ?? this.id,
+        agentDefinitionId: agentDefinitionId ?? this.agentDefinitionId,
+        fileName: fileName ?? this.fileName,
+        fileType: fileType ?? this.fileType,
+        contentMd: contentMd.present ? contentMd.value : this.contentMd,
+        filePath: filePath.present ? filePath.value : this.filePath,
+        sortOrder: sortOrder ?? this.sortOrder,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  AgentFile copyWithCompanion(AgentFilesCompanion data) {
+    return AgentFile(
+      id: data.id.present ? data.id.value : this.id,
+      agentDefinitionId: data.agentDefinitionId.present
+          ? data.agentDefinitionId.value
+          : this.agentDefinitionId,
+      fileName: data.fileName.present ? data.fileName.value : this.fileName,
+      fileType: data.fileType.present ? data.fileType.value : this.fileType,
+      contentMd: data.contentMd.present ? data.contentMd.value : this.contentMd,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AgentFile(')
+          ..write('id: $id, ')
+          ..write('agentDefinitionId: $agentDefinitionId, ')
+          ..write('fileName: $fileName, ')
+          ..write('fileType: $fileType, ')
+          ..write('contentMd: $contentMd, ')
+          ..write('filePath: $filePath, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, agentDefinitionId, fileName, fileType,
+      contentMd, filePath, sortOrder, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AgentFile &&
+          other.id == this.id &&
+          other.agentDefinitionId == this.agentDefinitionId &&
+          other.fileName == this.fileName &&
+          other.fileType == this.fileType &&
+          other.contentMd == this.contentMd &&
+          other.filePath == this.filePath &&
+          other.sortOrder == this.sortOrder &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AgentFilesCompanion extends UpdateCompanion<AgentFile> {
+  final Value<String> id;
+  final Value<String> agentDefinitionId;
+  final Value<String> fileName;
+  final Value<String> fileType;
+  final Value<String?> contentMd;
+  final Value<String?> filePath;
+  final Value<int> sortOrder;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AgentFilesCompanion({
+    this.id = const Value.absent(),
+    this.agentDefinitionId = const Value.absent(),
+    this.fileName = const Value.absent(),
+    this.fileType = const Value.absent(),
+    this.contentMd = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AgentFilesCompanion.insert({
+    required String id,
+    required String agentDefinitionId,
+    required String fileName,
+    required String fileType,
+    this.contentMd = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        agentDefinitionId = Value(agentDefinitionId),
+        fileName = Value(fileName),
+        fileType = Value(fileType),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
+  static Insertable<AgentFile> custom({
+    Expression<String>? id,
+    Expression<String>? agentDefinitionId,
+    Expression<String>? fileName,
+    Expression<String>? fileType,
+    Expression<String>? contentMd,
+    Expression<String>? filePath,
+    Expression<int>? sortOrder,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (agentDefinitionId != null) 'agent_definition_id': agentDefinitionId,
+      if (fileName != null) 'file_name': fileName,
+      if (fileType != null) 'file_type': fileType,
+      if (contentMd != null) 'content_md': contentMd,
+      if (filePath != null) 'file_path': filePath,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AgentFilesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? agentDefinitionId,
+      Value<String>? fileName,
+      Value<String>? fileType,
+      Value<String?>? contentMd,
+      Value<String?>? filePath,
+      Value<int>? sortOrder,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<int>? rowid}) {
+    return AgentFilesCompanion(
+      id: id ?? this.id,
+      agentDefinitionId: agentDefinitionId ?? this.agentDefinitionId,
+      fileName: fileName ?? this.fileName,
+      fileType: fileType ?? this.fileType,
+      contentMd: contentMd ?? this.contentMd,
+      filePath: filePath ?? this.filePath,
+      sortOrder: sortOrder ?? this.sortOrder,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (agentDefinitionId.present) {
+      map['agent_definition_id'] = Variable<String>(agentDefinitionId.value);
+    }
+    if (fileName.present) {
+      map['file_name'] = Variable<String>(fileName.value);
+    }
+    if (fileType.present) {
+      map['file_type'] = Variable<String>(fileType.value);
+    }
+    if (contentMd.present) {
+      map['content_md'] = Variable<String>(contentMd.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AgentFilesCompanion(')
+          ..write('id: $id, ')
+          ..write('agentDefinitionId: $agentDefinitionId, ')
+          ..write('fileName: $fileName, ')
+          ..write('fileType: $fileType, ')
+          ..write('contentMd: $contentMd, ')
+          ..write('filePath: $filePath, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$CodeOpsDatabase extends GeneratedDatabase {
   _$CodeOpsDatabase(QueryExecutor e) : super(e);
   $CodeOpsDatabaseManager get managers => $CodeOpsDatabaseManager(this);
@@ -9963,6 +11641,11 @@ abstract class _$CodeOpsDatabase extends GeneratedDatabase {
   late final $SpecificationsTable specifications = $SpecificationsTable(this);
   late final $SyncMetadataTable syncMetadata = $SyncMetadataTable(this);
   late final $ClonedReposTable clonedRepos = $ClonedReposTable(this);
+  late final $AnthropicModelsTable anthropicModels =
+      $AnthropicModelsTable(this);
+  late final $AgentDefinitionsTable agentDefinitions =
+      $AgentDefinitionsTable(this);
+  late final $AgentFilesTable agentFiles = $AgentFilesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9984,7 +11667,10 @@ abstract class _$CodeOpsDatabase extends GeneratedDatabase {
         complianceItems,
         specifications,
         syncMetadata,
-        clonedRepos
+        clonedRepos,
+        anthropicModels,
+        agentDefinitions,
+        agentFiles
       ];
 }
 
@@ -14424,6 +16110,768 @@ typedef $$ClonedReposTableProcessedTableManager = ProcessedTableManager<
     ),
     ClonedRepo,
     PrefetchHooks Function()>;
+typedef $$AnthropicModelsTableCreateCompanionBuilder = AnthropicModelsCompanion
+    Function({
+  required String id,
+  required String displayName,
+  Value<String?> modelFamily,
+  Value<int?> contextWindow,
+  Value<int?> maxOutputTokens,
+  required DateTime fetchedAt,
+  Value<int> rowid,
+});
+typedef $$AnthropicModelsTableUpdateCompanionBuilder = AnthropicModelsCompanion
+    Function({
+  Value<String> id,
+  Value<String> displayName,
+  Value<String?> modelFamily,
+  Value<int?> contextWindow,
+  Value<int?> maxOutputTokens,
+  Value<DateTime> fetchedAt,
+  Value<int> rowid,
+});
+
+class $$AnthropicModelsTableFilterComposer
+    extends Composer<_$CodeOpsDatabase, $AnthropicModelsTable> {
+  $$AnthropicModelsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get modelFamily => $composableBuilder(
+      column: $table.modelFamily, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get contextWindow => $composableBuilder(
+      column: $table.contextWindow, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get maxOutputTokens => $composableBuilder(
+      column: $table.maxOutputTokens,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+      column: $table.fetchedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$AnthropicModelsTableOrderingComposer
+    extends Composer<_$CodeOpsDatabase, $AnthropicModelsTable> {
+  $$AnthropicModelsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get modelFamily => $composableBuilder(
+      column: $table.modelFamily, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get contextWindow => $composableBuilder(
+      column: $table.contextWindow,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get maxOutputTokens => $composableBuilder(
+      column: $table.maxOutputTokens,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+      column: $table.fetchedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$AnthropicModelsTableAnnotationComposer
+    extends Composer<_$CodeOpsDatabase, $AnthropicModelsTable> {
+  $$AnthropicModelsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => column);
+
+  GeneratedColumn<String> get modelFamily => $composableBuilder(
+      column: $table.modelFamily, builder: (column) => column);
+
+  GeneratedColumn<int> get contextWindow => $composableBuilder(
+      column: $table.contextWindow, builder: (column) => column);
+
+  GeneratedColumn<int> get maxOutputTokens => $composableBuilder(
+      column: $table.maxOutputTokens, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+}
+
+class $$AnthropicModelsTableTableManager extends RootTableManager<
+    _$CodeOpsDatabase,
+    $AnthropicModelsTable,
+    AnthropicModel,
+    $$AnthropicModelsTableFilterComposer,
+    $$AnthropicModelsTableOrderingComposer,
+    $$AnthropicModelsTableAnnotationComposer,
+    $$AnthropicModelsTableCreateCompanionBuilder,
+    $$AnthropicModelsTableUpdateCompanionBuilder,
+    (
+      AnthropicModel,
+      BaseReferences<_$CodeOpsDatabase, $AnthropicModelsTable, AnthropicModel>
+    ),
+    AnthropicModel,
+    PrefetchHooks Function()> {
+  $$AnthropicModelsTableTableManager(
+      _$CodeOpsDatabase db, $AnthropicModelsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AnthropicModelsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AnthropicModelsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AnthropicModelsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> displayName = const Value.absent(),
+            Value<String?> modelFamily = const Value.absent(),
+            Value<int?> contextWindow = const Value.absent(),
+            Value<int?> maxOutputTokens = const Value.absent(),
+            Value<DateTime> fetchedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AnthropicModelsCompanion(
+            id: id,
+            displayName: displayName,
+            modelFamily: modelFamily,
+            contextWindow: contextWindow,
+            maxOutputTokens: maxOutputTokens,
+            fetchedAt: fetchedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String displayName,
+            Value<String?> modelFamily = const Value.absent(),
+            Value<int?> contextWindow = const Value.absent(),
+            Value<int?> maxOutputTokens = const Value.absent(),
+            required DateTime fetchedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AnthropicModelsCompanion.insert(
+            id: id,
+            displayName: displayName,
+            modelFamily: modelFamily,
+            contextWindow: contextWindow,
+            maxOutputTokens: maxOutputTokens,
+            fetchedAt: fetchedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AnthropicModelsTableProcessedTableManager = ProcessedTableManager<
+    _$CodeOpsDatabase,
+    $AnthropicModelsTable,
+    AnthropicModel,
+    $$AnthropicModelsTableFilterComposer,
+    $$AnthropicModelsTableOrderingComposer,
+    $$AnthropicModelsTableAnnotationComposer,
+    $$AnthropicModelsTableCreateCompanionBuilder,
+    $$AnthropicModelsTableUpdateCompanionBuilder,
+    (
+      AnthropicModel,
+      BaseReferences<_$CodeOpsDatabase, $AnthropicModelsTable, AnthropicModel>
+    ),
+    AnthropicModel,
+    PrefetchHooks Function()>;
+typedef $$AgentDefinitionsTableCreateCompanionBuilder
+    = AgentDefinitionsCompanion Function({
+  required String id,
+  required String name,
+  Value<String?> agentType,
+  Value<bool> isQaManager,
+  Value<bool> isBuiltIn,
+  Value<bool> isEnabled,
+  Value<String?> modelId,
+  Value<double> temperature,
+  Value<int> maxRetries,
+  Value<int?> timeoutMinutes,
+  Value<int> maxTurns,
+  Value<String?> systemPromptOverride,
+  Value<String?> description,
+  Value<int> sortOrder,
+  required DateTime createdAt,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$AgentDefinitionsTableUpdateCompanionBuilder
+    = AgentDefinitionsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String?> agentType,
+  Value<bool> isQaManager,
+  Value<bool> isBuiltIn,
+  Value<bool> isEnabled,
+  Value<String?> modelId,
+  Value<double> temperature,
+  Value<int> maxRetries,
+  Value<int?> timeoutMinutes,
+  Value<int> maxTurns,
+  Value<String?> systemPromptOverride,
+  Value<String?> description,
+  Value<int> sortOrder,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
+
+class $$AgentDefinitionsTableFilterComposer
+    extends Composer<_$CodeOpsDatabase, $AgentDefinitionsTable> {
+  $$AgentDefinitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get agentType => $composableBuilder(
+      column: $table.agentType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isQaManager => $composableBuilder(
+      column: $table.isQaManager, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isBuiltIn => $composableBuilder(
+      column: $table.isBuiltIn, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isEnabled => $composableBuilder(
+      column: $table.isEnabled, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get modelId => $composableBuilder(
+      column: $table.modelId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get temperature => $composableBuilder(
+      column: $table.temperature, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get maxRetries => $composableBuilder(
+      column: $table.maxRetries, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get timeoutMinutes => $composableBuilder(
+      column: $table.timeoutMinutes,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get maxTurns => $composableBuilder(
+      column: $table.maxTurns, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get systemPromptOverride => $composableBuilder(
+      column: $table.systemPromptOverride,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$AgentDefinitionsTableOrderingComposer
+    extends Composer<_$CodeOpsDatabase, $AgentDefinitionsTable> {
+  $$AgentDefinitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get agentType => $composableBuilder(
+      column: $table.agentType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isQaManager => $composableBuilder(
+      column: $table.isQaManager, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isBuiltIn => $composableBuilder(
+      column: $table.isBuiltIn, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isEnabled => $composableBuilder(
+      column: $table.isEnabled, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get modelId => $composableBuilder(
+      column: $table.modelId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get temperature => $composableBuilder(
+      column: $table.temperature, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get maxRetries => $composableBuilder(
+      column: $table.maxRetries, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get timeoutMinutes => $composableBuilder(
+      column: $table.timeoutMinutes,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get maxTurns => $composableBuilder(
+      column: $table.maxTurns, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get systemPromptOverride => $composableBuilder(
+      column: $table.systemPromptOverride,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$AgentDefinitionsTableAnnotationComposer
+    extends Composer<_$CodeOpsDatabase, $AgentDefinitionsTable> {
+  $$AgentDefinitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get agentType =>
+      $composableBuilder(column: $table.agentType, builder: (column) => column);
+
+  GeneratedColumn<bool> get isQaManager => $composableBuilder(
+      column: $table.isQaManager, builder: (column) => column);
+
+  GeneratedColumn<bool> get isBuiltIn =>
+      $composableBuilder(column: $table.isBuiltIn, builder: (column) => column);
+
+  GeneratedColumn<bool> get isEnabled =>
+      $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<String> get modelId =>
+      $composableBuilder(column: $table.modelId, builder: (column) => column);
+
+  GeneratedColumn<double> get temperature => $composableBuilder(
+      column: $table.temperature, builder: (column) => column);
+
+  GeneratedColumn<int> get maxRetries => $composableBuilder(
+      column: $table.maxRetries, builder: (column) => column);
+
+  GeneratedColumn<int> get timeoutMinutes => $composableBuilder(
+      column: $table.timeoutMinutes, builder: (column) => column);
+
+  GeneratedColumn<int> get maxTurns =>
+      $composableBuilder(column: $table.maxTurns, builder: (column) => column);
+
+  GeneratedColumn<String> get systemPromptOverride => $composableBuilder(
+      column: $table.systemPromptOverride, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AgentDefinitionsTableTableManager extends RootTableManager<
+    _$CodeOpsDatabase,
+    $AgentDefinitionsTable,
+    AgentDefinition,
+    $$AgentDefinitionsTableFilterComposer,
+    $$AgentDefinitionsTableOrderingComposer,
+    $$AgentDefinitionsTableAnnotationComposer,
+    $$AgentDefinitionsTableCreateCompanionBuilder,
+    $$AgentDefinitionsTableUpdateCompanionBuilder,
+    (
+      AgentDefinition,
+      BaseReferences<_$CodeOpsDatabase, $AgentDefinitionsTable, AgentDefinition>
+    ),
+    AgentDefinition,
+    PrefetchHooks Function()> {
+  $$AgentDefinitionsTableTableManager(
+      _$CodeOpsDatabase db, $AgentDefinitionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AgentDefinitionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AgentDefinitionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AgentDefinitionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> agentType = const Value.absent(),
+            Value<bool> isQaManager = const Value.absent(),
+            Value<bool> isBuiltIn = const Value.absent(),
+            Value<bool> isEnabled = const Value.absent(),
+            Value<String?> modelId = const Value.absent(),
+            Value<double> temperature = const Value.absent(),
+            Value<int> maxRetries = const Value.absent(),
+            Value<int?> timeoutMinutes = const Value.absent(),
+            Value<int> maxTurns = const Value.absent(),
+            Value<String?> systemPromptOverride = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<int> sortOrder = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AgentDefinitionsCompanion(
+            id: id,
+            name: name,
+            agentType: agentType,
+            isQaManager: isQaManager,
+            isBuiltIn: isBuiltIn,
+            isEnabled: isEnabled,
+            modelId: modelId,
+            temperature: temperature,
+            maxRetries: maxRetries,
+            timeoutMinutes: timeoutMinutes,
+            maxTurns: maxTurns,
+            systemPromptOverride: systemPromptOverride,
+            description: description,
+            sortOrder: sortOrder,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String name,
+            Value<String?> agentType = const Value.absent(),
+            Value<bool> isQaManager = const Value.absent(),
+            Value<bool> isBuiltIn = const Value.absent(),
+            Value<bool> isEnabled = const Value.absent(),
+            Value<String?> modelId = const Value.absent(),
+            Value<double> temperature = const Value.absent(),
+            Value<int> maxRetries = const Value.absent(),
+            Value<int?> timeoutMinutes = const Value.absent(),
+            Value<int> maxTurns = const Value.absent(),
+            Value<String?> systemPromptOverride = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<int> sortOrder = const Value.absent(),
+            required DateTime createdAt,
+            required DateTime updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AgentDefinitionsCompanion.insert(
+            id: id,
+            name: name,
+            agentType: agentType,
+            isQaManager: isQaManager,
+            isBuiltIn: isBuiltIn,
+            isEnabled: isEnabled,
+            modelId: modelId,
+            temperature: temperature,
+            maxRetries: maxRetries,
+            timeoutMinutes: timeoutMinutes,
+            maxTurns: maxTurns,
+            systemPromptOverride: systemPromptOverride,
+            description: description,
+            sortOrder: sortOrder,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AgentDefinitionsTableProcessedTableManager = ProcessedTableManager<
+    _$CodeOpsDatabase,
+    $AgentDefinitionsTable,
+    AgentDefinition,
+    $$AgentDefinitionsTableFilterComposer,
+    $$AgentDefinitionsTableOrderingComposer,
+    $$AgentDefinitionsTableAnnotationComposer,
+    $$AgentDefinitionsTableCreateCompanionBuilder,
+    $$AgentDefinitionsTableUpdateCompanionBuilder,
+    (
+      AgentDefinition,
+      BaseReferences<_$CodeOpsDatabase, $AgentDefinitionsTable, AgentDefinition>
+    ),
+    AgentDefinition,
+    PrefetchHooks Function()>;
+typedef $$AgentFilesTableCreateCompanionBuilder = AgentFilesCompanion Function({
+  required String id,
+  required String agentDefinitionId,
+  required String fileName,
+  required String fileType,
+  Value<String?> contentMd,
+  Value<String?> filePath,
+  Value<int> sortOrder,
+  required DateTime createdAt,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$AgentFilesTableUpdateCompanionBuilder = AgentFilesCompanion Function({
+  Value<String> id,
+  Value<String> agentDefinitionId,
+  Value<String> fileName,
+  Value<String> fileType,
+  Value<String?> contentMd,
+  Value<String?> filePath,
+  Value<int> sortOrder,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
+
+class $$AgentFilesTableFilterComposer
+    extends Composer<_$CodeOpsDatabase, $AgentFilesTable> {
+  $$AgentFilesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get agentDefinitionId => $composableBuilder(
+      column: $table.agentDefinitionId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fileName => $composableBuilder(
+      column: $table.fileName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fileType => $composableBuilder(
+      column: $table.fileType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get contentMd => $composableBuilder(
+      column: $table.contentMd, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$AgentFilesTableOrderingComposer
+    extends Composer<_$CodeOpsDatabase, $AgentFilesTable> {
+  $$AgentFilesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get agentDefinitionId => $composableBuilder(
+      column: $table.agentDefinitionId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fileName => $composableBuilder(
+      column: $table.fileName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fileType => $composableBuilder(
+      column: $table.fileType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get contentMd => $composableBuilder(
+      column: $table.contentMd, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+      column: $table.sortOrder, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$AgentFilesTableAnnotationComposer
+    extends Composer<_$CodeOpsDatabase, $AgentFilesTable> {
+  $$AgentFilesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get agentDefinitionId => $composableBuilder(
+      column: $table.agentDefinitionId, builder: (column) => column);
+
+  GeneratedColumn<String> get fileName =>
+      $composableBuilder(column: $table.fileName, builder: (column) => column);
+
+  GeneratedColumn<String> get fileType =>
+      $composableBuilder(column: $table.fileType, builder: (column) => column);
+
+  GeneratedColumn<String> get contentMd =>
+      $composableBuilder(column: $table.contentMd, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AgentFilesTableTableManager extends RootTableManager<
+    _$CodeOpsDatabase,
+    $AgentFilesTable,
+    AgentFile,
+    $$AgentFilesTableFilterComposer,
+    $$AgentFilesTableOrderingComposer,
+    $$AgentFilesTableAnnotationComposer,
+    $$AgentFilesTableCreateCompanionBuilder,
+    $$AgentFilesTableUpdateCompanionBuilder,
+    (AgentFile, BaseReferences<_$CodeOpsDatabase, $AgentFilesTable, AgentFile>),
+    AgentFile,
+    PrefetchHooks Function()> {
+  $$AgentFilesTableTableManager(_$CodeOpsDatabase db, $AgentFilesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AgentFilesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AgentFilesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AgentFilesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> agentDefinitionId = const Value.absent(),
+            Value<String> fileName = const Value.absent(),
+            Value<String> fileType = const Value.absent(),
+            Value<String?> contentMd = const Value.absent(),
+            Value<String?> filePath = const Value.absent(),
+            Value<int> sortOrder = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AgentFilesCompanion(
+            id: id,
+            agentDefinitionId: agentDefinitionId,
+            fileName: fileName,
+            fileType: fileType,
+            contentMd: contentMd,
+            filePath: filePath,
+            sortOrder: sortOrder,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String agentDefinitionId,
+            required String fileName,
+            required String fileType,
+            Value<String?> contentMd = const Value.absent(),
+            Value<String?> filePath = const Value.absent(),
+            Value<int> sortOrder = const Value.absent(),
+            required DateTime createdAt,
+            required DateTime updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AgentFilesCompanion.insert(
+            id: id,
+            agentDefinitionId: agentDefinitionId,
+            fileName: fileName,
+            fileType: fileType,
+            contentMd: contentMd,
+            filePath: filePath,
+            sortOrder: sortOrder,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$AgentFilesTableProcessedTableManager = ProcessedTableManager<
+    _$CodeOpsDatabase,
+    $AgentFilesTable,
+    AgentFile,
+    $$AgentFilesTableFilterComposer,
+    $$AgentFilesTableOrderingComposer,
+    $$AgentFilesTableAnnotationComposer,
+    $$AgentFilesTableCreateCompanionBuilder,
+    $$AgentFilesTableUpdateCompanionBuilder,
+    (AgentFile, BaseReferences<_$CodeOpsDatabase, $AgentFilesTable, AgentFile>),
+    AgentFile,
+    PrefetchHooks Function()>;
 
 class $CodeOpsDatabaseManager {
   final _$CodeOpsDatabase _db;
@@ -14463,4 +16911,10 @@ class $CodeOpsDatabaseManager {
       $$SyncMetadataTableTableManager(_db, _db.syncMetadata);
   $$ClonedReposTableTableManager get clonedRepos =>
       $$ClonedReposTableTableManager(_db, _db.clonedRepos);
+  $$AnthropicModelsTableTableManager get anthropicModels =>
+      $$AnthropicModelsTableTableManager(_db, _db.anthropicModels);
+  $$AgentDefinitionsTableTableManager get agentDefinitions =>
+      $$AgentDefinitionsTableTableManager(_db, _db.agentDefinitions);
+  $$AgentFilesTableTableManager get agentFiles =>
+      $$AgentFilesTableTableManager(_db, _db.agentFiles);
 }

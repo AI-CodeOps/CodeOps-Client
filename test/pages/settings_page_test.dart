@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:codeops/models/anthropic_model_info.dart';
 import 'package:codeops/models/health_snapshot.dart';
 import 'package:codeops/models/team.dart';
 import 'package:codeops/models/user.dart';
 import 'package:codeops/pages/settings_page.dart';
+import 'package:codeops/providers/agent_config_providers.dart';
 import 'package:codeops/providers/auth_providers.dart';
 import 'package:codeops/providers/github_providers.dart';
 import 'package:codeops/providers/health_providers.dart';
@@ -36,6 +38,10 @@ void main() {
           (ref) => Future.value(<JiraConnection>[]),
         ),
         teamMetricsProvider.overrideWith((ref) => Future.value(null)),
+        anthropicApiKeyProvider
+            .overrideWith((ref) => Future.value(null)),
+        anthropicModelsProvider
+            .overrideWith((ref) => Future.value(<AnthropicModelInfo>[])),
         ...overrides,
       ],
       child: const MaterialApp(home: Scaffold(body: SettingsPage())),
@@ -74,17 +80,26 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Agent Configuration'), findsOneWidget);
-      expect(find.text('Claude Model'), findsOneWidget);
+      expect(find.text('API Key'), findsOneWidget);
+      expect(find.text('Agents'), findsOneWidget);
+      expect(find.text('General'), findsOneWidget);
     });
 
-    testWidgets('agent config section has sliders', (tester) async {
+    testWidgets('agent config general tab has sliders', (tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Agent Config'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(Slider), findsNWidgets(2));
+      // Scroll the General tab button into view and tap it.
+      await tester.ensureVisible(find.text('General'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('General'));
+      await tester.pumpAndSettle();
+
+      // Concurrent Agents + Default Timeout + Default Temperature = 3 sliders.
+      expect(find.byType(Slider), findsNWidgets(3));
     });
 
     testWidgets('switches to about section', (tester) async {
