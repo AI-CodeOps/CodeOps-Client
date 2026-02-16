@@ -50,10 +50,13 @@ class MarkdownEditorPanel extends StatefulWidget {
 class _MarkdownEditorPanelState extends State<MarkdownEditorPanel> {
   late final TextEditingController _contentController;
   late final TextEditingController _nameController;
+  final ScrollController _editorScroll = ScrollController();
+  final ScrollController _previewScroll = ScrollController();
   late String _fileType;
   bool _editing = false;
   bool _saving = false;
   bool _dirty = false;
+  bool _syncing = false;
 
   @override
   void initState() {
@@ -62,6 +65,8 @@ class _MarkdownEditorPanelState extends State<MarkdownEditorPanel> {
     _nameController = TextEditingController(text: widget.fileName);
     _fileType = widget.fileType;
     _contentController.addListener(_onContentChanged);
+    _editorScroll.addListener(_onEditorScrolled);
+    _previewScroll.addListener(_onPreviewScrolled);
   }
 
   void _onContentChanged() {
@@ -70,8 +75,36 @@ class _MarkdownEditorPanelState extends State<MarkdownEditorPanel> {
     }
   }
 
+  /// Sync preview scroll to match editor scroll position proportionally.
+  void _onEditorScrolled() {
+    if (_syncing) return;
+    _syncScroll(_editorScroll, _previewScroll);
+  }
+
+  /// Sync editor scroll to match preview scroll position proportionally.
+  void _onPreviewScrolled() {
+    if (_syncing) return;
+    _syncScroll(_previewScroll, _editorScroll);
+  }
+
+  void _syncScroll(ScrollController source, ScrollController target) {
+    if (!source.hasClients || !target.hasClients) return;
+    final sourceMax = source.position.maxScrollExtent;
+    final targetMax = target.position.maxScrollExtent;
+    if (sourceMax <= 0 || targetMax <= 0) return;
+
+    final ratio = source.offset / sourceMax;
+    _syncing = true;
+    target.jumpTo((ratio * targetMax).clamp(0.0, targetMax));
+    _syncing = false;
+  }
+
   @override
   void dispose() {
+    _editorScroll.removeListener(_onEditorScrolled);
+    _previewScroll.removeListener(_onPreviewScrolled);
+    _editorScroll.dispose();
+    _previewScroll.dispose();
     _contentController.removeListener(_onContentChanged);
     _contentController.dispose();
     _nameController.dispose();
@@ -260,6 +293,7 @@ class _MarkdownEditorPanelState extends State<MarkdownEditorPanel> {
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _contentController,
+              scrollController: _editorScroll,
               maxLines: null,
               expands: true,
               textAlignVertical: TextAlignVertical.top,
@@ -276,9 +310,10 @@ class _MarkdownEditorPanelState extends State<MarkdownEditorPanel> {
           ),
         ),
         const VerticalDivider(width: 1),
-        // Right: live preview.
+        // Right: live preview with synchronized scrolling.
         Expanded(
           child: Markdown(
+            controller: _previewScroll,
             data: _contentController.text,
             padding: const EdgeInsets.all(16),
           ),
