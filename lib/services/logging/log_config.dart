@@ -55,8 +55,13 @@ class LogConfig {
     }
 
     try {
-      final appDir = await getApplicationSupportDirectory();
-      logDirectory = '${appDir.path}${Platform.pathSeparator}logs';
+      if (kDebugMode) {
+        // In debug mode, write logs to the project directory for easy access.
+        logDirectory = '${Directory.current.path}${Platform.pathSeparator}logs';
+      } else {
+        final appDir = await getApplicationSupportDirectory();
+        logDirectory = '${appDir.path}${Platform.pathSeparator}logs';
+      }
     } on Object {
       // path_provider may fail in test environments — leave null.
       logDirectory = null;
