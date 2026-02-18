@@ -572,6 +572,7 @@ class _DebtItemCard extends StatelessWidget {
         ),
       ],
     ).then((value) {
+      if (!context.mounted) return;
       if (value == 'delete') {
         onDelete?.call(item);
       } else if (value == 'status') {

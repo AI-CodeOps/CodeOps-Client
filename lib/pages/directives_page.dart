@@ -720,12 +720,12 @@ class _DirectiveEditorState extends ConsumerState<_DirectiveEditor> {
       ref.invalidate(teamDirectivesProvider);
       ref.read(selectedDirectiveProvider.notifier).state = null;
       _currentId = null;
-      if (mounted) {
+      if (context.mounted) {
         showToast(context,
             message: 'Directive deleted', type: ToastType.success);
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         showToast(context,
             message: 'Delete failed: $e', type: ToastType.error);
       }

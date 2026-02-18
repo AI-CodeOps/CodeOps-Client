@@ -185,35 +185,41 @@ class _GeneralSettingsTabState extends ConsumerState<GeneralSettingsTab> {
                   fontWeight: FontWeight.w500,
                   color: CodeOpsColors.textSecondary)),
           const SizedBox(height: 8),
-          ListTile(
-            leading: Radio<bool>(
-              value: true,
-              groupValue: _parallelQueue,
-              onChanged: (v) => setState(() => _parallelQueue = v ?? true),
+          RadioGroup<bool>(
+            groupValue: _parallelQueue,
+            onChanged: (v) {
+              if (v != null) setState(() => _parallelQueue = v);
+            },
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Radio<bool>(value: true),
+                  title:
+                      const Text('Parallel', style: TextStyle(fontSize: 13)),
+                  subtitle: const Text(
+                    'Run agents concurrently up to the limit',
+                    style: TextStyle(
+                        fontSize: 11, color: CodeOpsColors.textTertiary),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  onTap: () => setState(() => _parallelQueue = true),
+                ),
+                ListTile(
+                  leading: const Radio<bool>(value: false),
+                  title: const Text('Sequential',
+                      style: TextStyle(fontSize: 13)),
+                  subtitle: const Text(
+                    'Run agents one at a time',
+                    style: TextStyle(
+                        fontSize: 11, color: CodeOpsColors.textTertiary),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  onTap: () => setState(() => _parallelQueue = false),
+                ),
+              ],
             ),
-            title: const Text('Parallel', style: TextStyle(fontSize: 13)),
-            subtitle: const Text(
-              'Run agents concurrently up to the limit',
-              style: TextStyle(fontSize: 11, color: CodeOpsColors.textTertiary),
-            ),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-            onTap: () => setState(() => _parallelQueue = true),
-          ),
-          ListTile(
-            leading: Radio<bool>(
-              value: false,
-              groupValue: _parallelQueue,
-              onChanged: (v) => setState(() => _parallelQueue = v ?? true),
-            ),
-            title: const Text('Sequential', style: TextStyle(fontSize: 13)),
-            subtitle: const Text(
-              'Run agents one at a time',
-              style: TextStyle(fontSize: 11, color: CodeOpsColors.textTertiary),
-            ),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-            onTap: () => setState(() => _parallelQueue = false),
           ),
         ],
       ),
