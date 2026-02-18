@@ -68,7 +68,7 @@ CodeOps provides a complete GitHub Desktop equivalent built into the native desk
 
 ### Team Collaboration
 
-CodeOps is a multi-tenant, team-oriented platform. Users belong to teams, teams own projects, and all data — findings, audits, health scores, personas, directives, tasks — is scoped to the team. Team members share the same view of project health, the same custom personas, the same coding directives, and the same integration configurations. Invitations, role management (owner, admin, member, viewer), and activity tracking are built into the core platform. Notifications flow through in-app alerts, email via AWS SES, and Microsoft Teams via incoming webhooks.
+CodeOps is a multi-tenant, team-oriented platform. Users belong to teams, teams own projects, and all data — findings, audits, health scores, personas, directives, tasks — is scoped to the team. Team members share the same view of project health, the same custom personas, the same coding directives, and the same integration configurations. Invitations, role management (owner, admin, member, viewer), and activity tracking are built into the core platform. Notifications flow through in-app alerts, email via AWS SES, and Microsoft Teams or Slack via incoming webhooks.
 
 ### Personas & Directives
 
