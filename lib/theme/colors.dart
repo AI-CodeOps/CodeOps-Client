@@ -7,6 +7,7 @@ library;
 import 'dart:ui';
 
 import 'package:codeops/models/enums.dart';
+import 'package:codeops/models/vault_enums.dart';
 
 /// Centralized color definitions for the CodeOps dark theme.
 class CodeOpsColors {
@@ -122,5 +123,53 @@ class CodeOpsColors {
     VulnerabilityStatus.updating: Color(0xFF3B82F6),
     VulnerabilityStatus.suppressed: textTertiary,
     VulnerabilityStatus.resolved: success,
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Vault enum color maps
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Maps each [SecretType] to its corresponding color.
+  static const Map<SecretType, Color> secretTypeColors = {
+    SecretType.static_: primary,
+    SecretType.dynamic_: secondary,
+    SecretType.reference: warning,
+  };
+
+  /// Maps each [SealStatus] to its corresponding color.
+  static const Map<SealStatus, Color> sealStatusColors = {
+    SealStatus.sealed: error,
+    SealStatus.unsealed: success,
+    SealStatus.unsealing: warning,
+  };
+
+  /// Maps each [PolicyPermission] to its corresponding color.
+  static const Map<PolicyPermission, Color> policyPermissionColors = {
+    PolicyPermission.read: Color(0xFF3B82F6),
+    PolicyPermission.write: success,
+    PolicyPermission.delete: error,
+    PolicyPermission.list: secondary,
+    PolicyPermission.rotate: Color(0xFFA855F7),
+  };
+
+  /// Maps each [BindingType] to its corresponding color.
+  static const Map<BindingType, Color> bindingTypeColors = {
+    BindingType.user: primary,
+    BindingType.team: secondary,
+    BindingType.service: warning,
+  };
+
+  /// Maps each [RotationStrategy] to its corresponding color.
+  static const Map<RotationStrategy, Color> rotationStrategyColors = {
+    RotationStrategy.randomGenerate: success,
+    RotationStrategy.externalApi: Color(0xFF3B82F6),
+    RotationStrategy.customScript: Color(0xFFA855F7),
+  };
+
+  /// Maps each [LeaseStatus] to its corresponding color.
+  static const Map<LeaseStatus, Color> leaseStatusColors = {
+    LeaseStatus.active: success,
+    LeaseStatus.expired: textTertiary,
+    LeaseStatus.revoked: error,
   };
 }

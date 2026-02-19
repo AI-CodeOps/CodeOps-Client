@@ -20,6 +20,12 @@ class AppConstants {
   /// API path prefix for all endpoints.
   static const String apiPrefix = '/api/v1';
 
+  /// Base URL for the CodeOps Vault API.
+  static const String vaultApiBaseUrl = 'http://localhost:8097';
+
+  /// API path prefix for all Vault endpoints.
+  static const String vaultApiPrefix = '/api/v1/vault';
+
   /// Maximum number of members allowed in a team.
   static const int maxTeamMembers = 50;
 
