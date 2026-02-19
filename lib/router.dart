@@ -31,6 +31,7 @@ import 'pages/vault_dynamic_page.dart';
 import 'pages/vault_policies_page.dart';
 import 'pages/vault_transit_page.dart';
 import 'pages/vault_secret_detail_page.dart';
+import 'pages/vault_seal_page.dart';
 import 'pages/vault_secrets_page.dart';
 import 'pages/tech_debt_page.dart';
 import 'pages/project_detail_page.dart';
@@ -349,7 +350,7 @@ final GoRouter router = GoRouter(
           path: '/vault/seal',
           name: 'vault-seal',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Seal'),
+            child: VaultSealPage(),
           ),
         ),
       ],
