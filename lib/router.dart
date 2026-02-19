@@ -28,6 +28,7 @@ import 'pages/dependency_scan_page.dart';
 import 'pages/placeholder_page.dart';
 import 'pages/vault_dashboard_page.dart';
 import 'pages/vault_policies_page.dart';
+import 'pages/vault_transit_page.dart';
 import 'pages/vault_secret_detail_page.dart';
 import 'pages/vault_secrets_page.dart';
 import 'pages/tech_debt_page.dart';
@@ -331,7 +332,7 @@ final GoRouter router = GoRouter(
           path: '/vault/transit',
           name: 'vault-transit',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Transit'),
+            child: VaultTransitPage(),
           ),
         ),
         // 30. Vault Dynamic Secrets
