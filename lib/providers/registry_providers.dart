@@ -259,6 +259,28 @@ final registrySolutionPageProvider = StateProvider<int>((ref) => 0);
 final selectedRegistrySolutionIdProvider =
     StateProvider<String?>((ref) => null);
 
+/// Search text for filtering solutions client-side.
+final registrySolutionSearchProvider = StateProvider<String>((ref) => '');
+
+/// Filtered solution list derived from [registrySolutionsProvider].
+///
+/// Applies client-side search filtering by name and description.
+final filteredRegistrySolutionsProvider =
+    Provider<List<SolutionResponse>>((ref) {
+  final page = ref.watch(registrySolutionsProvider);
+  final solutions = page.valueOrNull?.content ?? [];
+  final search = ref.watch(registrySolutionSearchProvider).toLowerCase();
+
+  if (search.isEmpty) return solutions;
+
+  return solutions
+      .where((s) =>
+          s.name.toLowerCase().contains(search) ||
+          (s.description?.toLowerCase().contains(search) ?? false) ||
+          s.slug.toLowerCase().contains(search))
+      .toList();
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Dependencies — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────

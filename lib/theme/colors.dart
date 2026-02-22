@@ -193,4 +193,30 @@ class CodeOpsColors {
     HealthStatus.degraded: warning,
     HealthStatus.unknown: textTertiary,
   };
+
+  /// Maps each [SolutionStatus] to its corresponding color.
+  static const Map<SolutionStatus, Color> solutionStatusColors = {
+    SolutionStatus.active: success,
+    SolutionStatus.inDevelopment: Color(0xFF3B82F6),
+    SolutionStatus.deprecated: warning,
+    SolutionStatus.archived: Color(0xFF475569),
+  };
+
+  /// Maps each [SolutionCategory] to its corresponding color.
+  static const Map<SolutionCategory, Color> solutionCategoryColors = {
+    SolutionCategory.platform: Color(0xFFA855F7),
+    SolutionCategory.application: Color(0xFF3B82F6),
+    SolutionCategory.librarySuite: Color(0xFF14B8A6),
+    SolutionCategory.infrastructure: Color(0xFFF97316),
+    SolutionCategory.tooling: Color(0xFF06B6D4),
+    SolutionCategory.other: textTertiary,
+  };
+
+  /// Maps each [SolutionMemberRole] to its corresponding color.
+  static const Map<SolutionMemberRole, Color> solutionMemberRoleColors = {
+    SolutionMemberRole.core: Color(0xFFA855F7),
+    SolutionMemberRole.supporting: Color(0xFF3B82F6),
+    SolutionMemberRole.infrastructure: Color(0xFFF97316),
+    SolutionMemberRole.externalDependency: textTertiary,
+  };
 }

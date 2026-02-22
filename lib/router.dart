@@ -1,4 +1,4 @@
-/// GoRouter configuration with all 37 application routes.
+/// GoRouter configuration with all 39 application routes.
 ///
 /// Uses an [AuthNotifier] listenable connected to [AuthService] for
 /// reactive auth state. Unauthenticated users are redirected to `/login`.
@@ -29,6 +29,8 @@ import 'pages/placeholder_page.dart';
 import 'pages/registry/service_detail_page.dart';
 import 'pages/registry/port_allocation_page.dart';
 import 'pages/registry/service_form_page.dart';
+import 'pages/registry/solution_detail_page.dart';
+import 'pages/registry/solution_list_page.dart';
 import 'pages/registry/service_list_page.dart';
 import 'pages/vault_dashboard_page.dart';
 import 'pages/vault_dynamic_page.dart';
@@ -70,7 +72,7 @@ class AuthNotifier extends ChangeNotifier {
 /// [AuthService] updates this when auth state changes.
 final AuthNotifier authNotifier = AuthNotifier();
 
-/// The application router with all 37 routes.
+/// The application router with all 39 routes.
 final GoRouter router = GoRouter(
   initialLocation: '/login',
   refreshListenable: authNotifier,
@@ -402,6 +404,25 @@ final GoRouter router = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(
             child: PortAllocationPage(),
           ),
+        ),
+        // 37. Registry — Solutions List
+        GoRoute(
+          path: '/registry/solutions',
+          name: 'registry-solutions',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: SolutionListPage(),
+          ),
+        ),
+        // 38. Registry — Solution Detail
+        GoRoute(
+          path: '/registry/solutions/:solutionId',
+          name: 'registry-solution-detail',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['solutionId']!;
+            return NoTransitionPage(
+              child: SolutionDetailPage(solutionId: id),
+            );
+          },
         ),
       ],
     ),
