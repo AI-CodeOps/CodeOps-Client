@@ -26,6 +26,7 @@ import 'pages/persona_editor_page.dart';
 import 'pages/personas_page.dart';
 import 'pages/dependency_scan_page.dart';
 import 'pages/placeholder_page.dart';
+import 'pages/registry/service_detail_page.dart';
 import 'pages/registry/service_list_page.dart';
 import 'pages/vault_dashboard_page.dart';
 import 'pages/vault_dynamic_page.dart';
@@ -370,15 +371,16 @@ final GoRouter router = GoRouter(
             child: PlaceholderPage(title: 'Register Service'),
           ),
         ),
-        // 34. Registry — Service Detail (placeholder)
+        // 34. Registry — Service Detail
         GoRoute(
           path: '/registry/services/:id',
           name: 'registry-service-detail',
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: PlaceholderPage(
-              title: 'Service: ${state.pathParameters['id']}',
-            ),
-          ),
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return NoTransitionPage(
+              child: ServiceDetailPage(serviceId: id),
+            );
+          },
         ),
       ],
     ),
