@@ -717,10 +717,12 @@ class _TopBar extends StatelessWidget {
       '/vault/transit': 'Transit',
       '/vault/dynamic': 'Dynamic Secrets',
       '/vault/seal': 'Seal',
-      '/registry': 'Registry',
+      '/registry': 'Service Registry',
+      '/registry/services/new': 'Register Service',
     };
     // Check exact match first, then prefix matches for parameterized routes
     if (routes.containsKey(path)) return routes[path]!;
+    if (path.startsWith('/registry/services/')) return 'Service Detail';
     if (path.startsWith('/vault/secrets/')) return 'Secret Detail';
     if (path.startsWith('/projects/')) return 'Project Detail';
     if (path.startsWith('/jobs/') && path.endsWith('/report')) return 'Job Report';

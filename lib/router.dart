@@ -1,4 +1,4 @@
-/// GoRouter configuration with all 32 application routes.
+/// GoRouter configuration with all 34 application routes.
 ///
 /// Uses an [AuthNotifier] listenable connected to [AuthService] for
 /// reactive auth state. Unauthenticated users are redirected to `/login`.
@@ -26,7 +26,7 @@ import 'pages/persona_editor_page.dart';
 import 'pages/personas_page.dart';
 import 'pages/dependency_scan_page.dart';
 import 'pages/placeholder_page.dart';
-import 'pages/registry_dashboard_page.dart';
+import 'pages/registry/service_list_page.dart';
 import 'pages/vault_dashboard_page.dart';
 import 'pages/vault_dynamic_page.dart';
 import 'pages/vault_policies_page.dart';
@@ -67,7 +67,7 @@ class AuthNotifier extends ChangeNotifier {
 /// [AuthService] updates this when auth state changes.
 final AuthNotifier authNotifier = AuthNotifier();
 
-/// The application router with all 32 routes.
+/// The application router with all 34 routes.
 final GoRouter router = GoRouter(
   initialLocation: '/login',
   refreshListenable: authNotifier,
@@ -354,12 +354,30 @@ final GoRouter router = GoRouter(
             child: VaultSealPage(),
           ),
         ),
-        // 32. Registry Dashboard
+        // 32. Registry — Service List
         GoRoute(
           path: '/registry',
           name: 'registry',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: RegistryDashboardPage(),
+            child: ServiceListPage(),
+          ),
+        ),
+        // 33. Registry — Register Service (placeholder)
+        GoRoute(
+          path: '/registry/services/new',
+          name: 'registry-service-new',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Register Service'),
+          ),
+        ),
+        // 34. Registry — Service Detail (placeholder)
+        GoRoute(
+          path: '/registry/services/:id',
+          name: 'registry-service-detail',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Service: ${state.pathParameters['id']}',
+            ),
           ),
         ),
       ],

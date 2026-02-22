@@ -103,6 +103,99 @@ final registryServicePageProvider = StateProvider<int>((ref) => 0);
 final selectedRegistryServiceIdProvider =
     StateProvider<String?>((ref) => null);
 
+/// Currently selected health filter for the service list (null = all).
+final registryServiceHealthFilterProvider =
+    StateProvider<HealthStatus?>((ref) => null);
+
+/// Sort field for the service list table.
+final registryServiceSortFieldProvider =
+    StateProvider<String>((ref) => 'name');
+
+/// Sort direction for the service list table.
+final registryServiceSortAscendingProvider =
+    StateProvider<bool>((ref) => true);
+
+/// Page size for client-side pagination of the service list.
+final registryServicePageSizeProvider = StateProvider<int>((ref) => 10);
+
+/// Filtered, sorted service list derived from [registryServicesProvider].
+///
+/// Applies search, status, type, and health filters client-side, then sorts
+/// by the currently selected sort field.
+final filteredRegistryServicesProvider =
+    Provider<List<ServiceRegistrationResponse>>((ref) {
+  final page = ref.watch(registryServicesProvider);
+  final services = page.valueOrNull?.content ?? [];
+  final search = ref.watch(registryServiceSearchProvider).toLowerCase();
+  final statusFilter = ref.watch(registryServiceStatusFilterProvider);
+  final typeFilter = ref.watch(registryServiceTypeFilterProvider);
+  final healthFilter = ref.watch(registryServiceHealthFilterProvider);
+  final sortField = ref.watch(registryServiceSortFieldProvider);
+  final sortAsc = ref.watch(registryServiceSortAscendingProvider);
+
+  var result = services.toList();
+
+  // Search filter
+  if (search.isNotEmpty) {
+    result = result
+        .where((s) =>
+            s.name.toLowerCase().contains(search) ||
+            s.slug.toLowerCase().contains(search) ||
+            (s.description?.toLowerCase().contains(search) ?? false))
+        .toList();
+  }
+
+  // Status filter
+  if (statusFilter != null) {
+    result = result.where((s) => s.status == statusFilter).toList();
+  }
+
+  // Type filter
+  if (typeFilter != null) {
+    result = result.where((s) => s.serviceType == typeFilter).toList();
+  }
+
+  // Health filter
+  if (healthFilter != null) {
+    result =
+        result.where((s) => s.lastHealthStatus == healthFilter).toList();
+  }
+
+  // Sort
+  result.sort((a, b) {
+    final cmp = switch (sortField) {
+      'name' => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      'type' => a.serviceType.displayName
+          .compareTo(b.serviceType.displayName),
+      'status' => a.status.displayName.compareTo(b.status.displayName),
+      'health' => (a.lastHealthStatus?.displayName ?? '')
+          .compareTo(b.lastHealthStatus?.displayName ?? ''),
+      'lastCheck' => (a.lastHealthCheckAt ?? DateTime(2000))
+          .compareTo(b.lastHealthCheckAt ?? DateTime(2000)),
+      _ => 0,
+    };
+    return sortAsc ? cmp : -cmp;
+  });
+
+  return result;
+});
+
+/// Paginated slice of filtered services for display.
+final paginatedRegistryServicesProvider =
+    Provider<List<ServiceRegistrationResponse>>((ref) {
+  final all = ref.watch(filteredRegistryServicesProvider);
+  final page = ref.watch(registryServicePageProvider);
+  final pageSize = ref.watch(registryServicePageSizeProvider);
+  final start = (page * pageSize).clamp(0, all.length);
+  final end = (start + pageSize).clamp(0, all.length);
+  return all.sublist(start, end);
+});
+
+/// Total count of filtered services (for pagination display).
+final filteredRegistryServiceCountProvider = Provider<int>((ref) {
+  return ref.watch(filteredRegistryServicesProvider).length;
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Solutions — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────

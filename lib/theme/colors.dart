@@ -7,6 +7,7 @@ library;
 import 'dart:ui';
 
 import 'package:codeops/models/enums.dart';
+import 'package:codeops/models/registry_enums.dart';
 import 'package:codeops/models/vault_enums.dart';
 
 /// Centralized color definitions for the CodeOps dark theme.
@@ -171,5 +172,25 @@ class CodeOpsColors {
     LeaseStatus.active: success,
     LeaseStatus.expired: textTertiary,
     LeaseStatus.revoked: error,
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Registry enum color maps
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Maps each [ServiceStatus] to its corresponding color.
+  static const Map<ServiceStatus, Color> serviceStatusColors = {
+    ServiceStatus.active: success,
+    ServiceStatus.inactive: textTertiary,
+    ServiceStatus.deprecated: warning,
+    ServiceStatus.archived: Color(0xFF475569),
+  };
+
+  /// Maps each [HealthStatus] to its corresponding color.
+  static const Map<HealthStatus, Color> healthStatusColors = {
+    HealthStatus.up: success,
+    HealthStatus.down: error,
+    HealthStatus.degraded: warning,
+    HealthStatus.unknown: textTertiary,
   };
 }
