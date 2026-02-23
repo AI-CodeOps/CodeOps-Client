@@ -20,7 +20,7 @@ void main() {
         return count;
       }
 
-      expect(countRoutes(router.configuration.routes), 41);
+      expect(countRoutes(router.configuration.routes), 42);
     });
 
     test('initial location is /login', () {
@@ -70,6 +70,7 @@ void main() {
         '/registry/solutions/:solutionId',
         '/registry/dependencies',
         '/registry/dependencies/impact',
+        '/registry/topology',
       ];
 
       final registeredPaths = <String>[];

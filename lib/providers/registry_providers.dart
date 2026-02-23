@@ -517,6 +517,89 @@ final registryEcosystemStatsProvider =
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Topology — UI State Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Filter state for the topology viewer.
+class TopologyFilter {
+  /// Service type filter (null = all).
+  final ServiceType? typeFilter;
+
+  /// Health status filter (null = all).
+  final HealthStatus? healthFilter;
+
+  /// Solution ID filter (null = all).
+  final String? solutionIdFilter;
+
+  /// Text search query.
+  final String searchQuery;
+
+  /// Creates a [TopologyFilter].
+  const TopologyFilter({
+    this.typeFilter,
+    this.healthFilter,
+    this.solutionIdFilter,
+    this.searchQuery = '',
+  });
+
+  /// Returns a copy with the specified fields replaced.
+  TopologyFilter copyWith({
+    ServiceType? Function()? typeFilter,
+    HealthStatus? Function()? healthFilter,
+    String? Function()? solutionIdFilter,
+    String? searchQuery,
+  }) =>
+      TopologyFilter(
+        typeFilter: typeFilter != null ? typeFilter() : this.typeFilter,
+        healthFilter: healthFilter != null ? healthFilter() : this.healthFilter,
+        solutionIdFilter: solutionIdFilter != null
+            ? solutionIdFilter()
+            : this.solutionIdFilter,
+        searchQuery: searchQuery ?? this.searchQuery,
+      );
+}
+
+/// Current topology filter state.
+final topologyFilterProvider =
+    StateProvider<TopologyFilter>((ref) => const TopologyFilter());
+
+/// Set of visible topology node IDs after applying filters.
+///
+/// Filtered-out nodes are dimmed, not hidden, so they remain in the graph.
+final visibleTopologyNodeIdsProvider = Provider<Set<String>>((ref) {
+  final topology = ref.watch(registryTopologyProvider).valueOrNull;
+  final filter = ref.watch(topologyFilterProvider);
+  if (topology == null) return {};
+
+  return topology.nodes.where((n) {
+    if (filter.typeFilter != null && n.serviceType != filter.typeFilter) {
+      return false;
+    }
+    if (filter.healthFilter != null && n.healthStatus != filter.healthFilter) {
+      return false;
+    }
+    if (filter.solutionIdFilter != null) {
+      final ids = n.solutionIds ?? [];
+      if (!ids.contains(filter.solutionIdFilter)) return false;
+    }
+    if (filter.searchQuery.isNotEmpty) {
+      final query = filter.searchQuery.toLowerCase();
+      if (!n.name.toLowerCase().contains(query) &&
+          !n.slug.toLowerCase().contains(query)) {
+        return false;
+      }
+    }
+    return true;
+  }).map((n) => n.serviceId).toSet();
+});
+
+/// Currently selected node in the topology viewer.
+final selectedTopologyNodeProvider = StateProvider<String?>((ref) => null);
+
+/// Whether the topology stats panel sidebar is visible.
+final topologyStatsPanelVisibleProvider = StateProvider<bool>((ref) => true);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Health Management — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────
 
