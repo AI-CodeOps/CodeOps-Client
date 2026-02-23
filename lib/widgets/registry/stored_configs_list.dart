@@ -1,0 +1,199 @@
+/// List of previously generated config templates for a service.
+///
+/// Each row shows the template type label, environment, version badge,
+/// auto/manual indicator, and last updated date. Includes View and
+/// Delete action buttons.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../../models/registry_models.dart';
+import '../../theme/colors.dart';
+
+/// Displays a list of stored [ConfigTemplateResponse] items.
+///
+/// Provides View (eye) and Delete (trash) actions per row.
+/// Shows an empty state message when [configs] is empty.
+class StoredConfigsList extends StatelessWidget {
+  /// The stored config templates to display.
+  final List<ConfigTemplateResponse> configs;
+
+  /// Called when the user taps the View button for a config.
+  final ValueChanged<ConfigTemplateResponse>? onView;
+
+  /// Called when the user taps the Delete button for a config.
+  final ValueChanged<ConfigTemplateResponse>? onDelete;
+
+  /// Creates a [StoredConfigsList].
+  const StoredConfigsList({
+    super.key,
+    required this.configs,
+    this.onView,
+    this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (configs.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: CodeOpsColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: CodeOpsColors.border),
+        ),
+        child: const Center(
+          child: Text(
+            'No stored configs for this service',
+            style: TextStyle(
+              color: CodeOpsColors.textTertiary,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: CodeOpsColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: CodeOpsColors.border),
+      ),
+      child: Column(
+        children: [
+          for (int i = 0; i < configs.length; i++) ...[
+            if (i > 0)
+              const Divider(height: 1, color: CodeOpsColors.border),
+            _ConfigRow(
+              config: configs[i],
+              onView: onView,
+              onDelete: onDelete,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ConfigRow extends StatelessWidget {
+  final ConfigTemplateResponse config;
+  final ValueChanged<ConfigTemplateResponse>? onView;
+  final ValueChanged<ConfigTemplateResponse>? onDelete;
+
+  const _ConfigRow({
+    required this.config,
+    this.onView,
+    this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr = config.updatedAt != null
+        ? DateFormat('yyyy-MM-dd').format(config.updatedAt!)
+        : config.createdAt != null
+            ? DateFormat('yyyy-MM-dd').format(config.createdAt!)
+            : '';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          // Type label
+          SizedBox(
+            width: 160,
+            child: Text(
+              config.templateType.displayName,
+              style: const TextStyle(
+                fontSize: 13,
+                color: CodeOpsColors.textPrimary,
+              ),
+            ),
+          ),
+          // Environment badge
+          if (config.environment != null)
+            Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: CodeOpsColors.textTertiary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                config.environment!,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: CodeOpsColors.textTertiary,
+                ),
+              ),
+            ),
+          // Version badge
+          if (config.version != null)
+            Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: CodeOpsColors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'v${config.version}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: CodeOpsColors.primary,
+                ),
+              ),
+            ),
+          // Auto/manual indicator
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: (config.isAutoGenerated == true
+                      ? CodeOpsColors.secondary
+                      : CodeOpsColors.textTertiary)
+                  .withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              config.isAutoGenerated == true ? 'auto' : 'manual',
+              style: TextStyle(
+                fontSize: 11,
+                color: config.isAutoGenerated == true
+                    ? CodeOpsColors.secondary
+                    : CodeOpsColors.textTertiary,
+              ),
+            ),
+          ),
+          // Date
+          Text(
+            dateStr,
+            style: const TextStyle(
+              fontSize: 12,
+              color: CodeOpsColors.textTertiary,
+            ),
+          ),
+          const Spacer(),
+          // View button
+          IconButton(
+            icon: const Icon(Icons.visibility, size: 16),
+            tooltip: 'View',
+            color: CodeOpsColors.textSecondary,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            onPressed: onView != null ? () => onView!(config) : null,
+          ),
+          // Delete button
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 16),
+            tooltip: 'Delete',
+            color: CodeOpsColors.error,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            onPressed: onDelete != null ? () => onDelete!(config) : null,
+          ),
+        ],
+      ),
+    );
+  }
+}

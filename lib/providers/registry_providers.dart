@@ -706,6 +706,49 @@ final registryDefaultWorkstationProvider =
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Config Generation — State Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Config generator mode: single service or entire solution.
+enum ConfigGeneratorMode {
+  /// Generate config for a single service.
+  service,
+
+  /// Generate docker-compose for a solution.
+  solution,
+}
+
+/// Selected config generator mode.
+final configModeProvider =
+    StateProvider<ConfigGeneratorMode>((ref) => ConfigGeneratorMode.service);
+
+/// Selected service ID for config generation.
+final configServiceIdProvider = StateProvider<String?>((ref) => null);
+
+/// Selected solution ID for config generation.
+final configSolutionIdProvider = StateProvider<String?>((ref) => null);
+
+/// Selected environment for config generation.
+final configEnvironmentProvider = StateProvider<String>((ref) => 'dev');
+
+/// Selected config template types for generation.
+final selectedConfigTypesProvider =
+    StateProvider<Set<ConfigTemplateType>>((ref) => {});
+
+/// Currently previewed config template.
+final configPreviewProvider =
+    StateProvider<ConfigTemplateResponse?>((ref) => null);
+
+/// Stored config templates for the selected service.
+final storedConfigsProvider =
+    FutureProvider<List<ConfigTemplateResponse>>((ref) async {
+  final serviceId = ref.watch(configServiceIdProvider);
+  if (serviceId == null) return [];
+  final api = ref.watch(registryApiProvider);
+  return api.getTemplatesForService(serviceId);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Navigation State
 // ─────────────────────────────────────────────────────────────────────────────
 
