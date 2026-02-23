@@ -1,4 +1,4 @@
-/// GoRouter configuration with all 45 application routes.
+/// GoRouter configuration with all 47 application routes.
 ///
 /// Uses an [AuthNotifier] listenable connected to [AuthService] for
 /// reactive auth state. Unauthenticated users are redirected to `/login`.
@@ -38,6 +38,8 @@ import 'pages/registry/service_form_page.dart';
 import 'pages/registry/solution_detail_page.dart';
 import 'pages/registry/solution_list_page.dart';
 import 'pages/registry/service_list_page.dart';
+import 'pages/registry/workstation_detail_page.dart';
+import 'pages/registry/workstation_list_page.dart';
 import 'pages/vault_dashboard_page.dart';
 import 'pages/vault_dynamic_page.dart';
 import 'pages/vault_policies_page.dart';
@@ -477,6 +479,25 @@ final GoRouter router = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(
             child: ConfigGeneratorPage(),
           ),
+        ),
+        // 45. Registry — Workstation Profiles
+        GoRoute(
+          path: '/registry/workstations',
+          name: 'registry-workstations',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: WorkstationListPage(),
+          ),
+        ),
+        // 46. Registry — Workstation Detail
+        GoRoute(
+          path: '/registry/workstations/:profileId',
+          name: 'registry-workstation-detail',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['profileId']!;
+            return NoTransitionPage(
+              child: WorkstationDetailPage(profileId: id),
+            );
+          },
         ),
       ],
     ),
