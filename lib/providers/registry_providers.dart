@@ -414,6 +414,43 @@ final registryRoutesForServiceProvider =
   return api.getRoutesForService(serviceId);
 });
 
+/// Fetches all routes aggregated across services for the selected team.
+final registryAllRoutesProvider =
+    FutureProvider<List<ApiRouteResponse>>((ref) async {
+  final servicesAsync = await ref.watch(registryServicesProvider.future);
+  final api = ref.watch(registryApiProvider);
+  final routeLists = await Future.wait(
+    servicesAsync.content.map((s) => api.getRoutesForService(s.id)),
+  );
+  return routeLists.expand((list) => list).toList();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Routes — UI State Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Search filter for routes (matches prefix).
+final registryRouteSearchProvider = StateProvider<String>((ref) => '');
+
+/// Service filter for routes (null = all services).
+final registryRouteServiceFilterProvider =
+    StateProvider<String?>((ref) => null);
+
+/// Environment filter for routes (empty = all environments).
+final registryRouteEnvironmentFilterProvider =
+    StateProvider<String>((ref) => '');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InfraResources — Additional UI State Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Service filter for infra resources (null = all services).
+final registryInfraServiceFilterProvider =
+    StateProvider<String?>((ref) => null);
+
+/// Search filter for infra resources (matches resource name).
+final registryInfraSearchProvider = StateProvider<String>((ref) => '');
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Config — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────
