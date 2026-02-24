@@ -63,7 +63,9 @@ class ApiClient {
   }
 
   /// Exposes the underlying [Dio] instance for advanced usage.
-  @visibleForTesting
+  ///
+  /// Used by module API services (e.g., [LoggerApi]) that require custom
+  /// headers such as `X-Team-Id`.
   Dio get dio => _dio;
 
   // ---------------------------------------------------------------------------
