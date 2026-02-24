@@ -1,8 +1,10 @@
-/// Paginated audit log table for the Vault audit log tab.
+/// Paginated audit log table for the Vault audit log page.
 ///
-/// Displays a filterable, paginated [DataTable] of [AuditEntryResponse]
-/// entries with operation badges, success/fail indicators, expandable
-/// error details, and pagination controls.
+/// Displays a paginated [DataTable] of [AuditEntryResponse] entries
+/// with [VaultAuditOperationBadge] operation badges, success/fail
+/// indicators, expandable [VaultAuditDetailRow] detail panels, and
+/// pagination controls. Filtering is handled externally by
+/// [VaultAuditFilters].
 library;
 
 import 'package:flutter/material.dart';
@@ -13,8 +15,10 @@ import '../../models/vault_models.dart';
 import '../../providers/vault_providers.dart';
 import '../../theme/colors.dart';
 import '../../utils/date_utils.dart';
+import 'vault_audit_detail_row.dart';
+import 'vault_audit_operation_badge.dart';
 
-/// Common vault operations for the filter dropdown.
+/// Common vault operations for the filter dropdowns.
 const vaultAuditOperations = [
   'READ',
   'WRITE',
@@ -29,7 +33,7 @@ const vaultAuditOperations = [
   'REVOKE_LEASE',
 ];
 
-/// Resource types for the filter dropdown.
+/// Resource types for the filter dropdowns.
 const vaultAuditResourceTypes = [
   'Secret',
   'Policy',
@@ -38,12 +42,12 @@ const vaultAuditResourceTypes = [
   'Lease',
 ];
 
-/// Displays a filterable, paginated audit log table.
+/// Displays a paginated audit log data table.
 ///
-/// Provides dropdowns for operation and resource type filters, a
-/// success/failure filter, and a paginated [DataTable] with columns
-/// for operation, path, resource type, success, user, correlation ID,
-/// and timestamp. Failed entries have expandable error detail rows.
+/// Renders a [DataTable] with columns for operation, path, resource
+/// type, status, user, correlation ID, and timestamp. Clicking any row
+/// toggles an expandable [VaultAuditDetailRow] beneath the table.
+/// Pagination controls appear below.
 class VaultAuditTable extends ConsumerStatefulWidget {
   /// Creates a [VaultAuditTable].
   const VaultAuditTable({super.key});
@@ -53,204 +57,107 @@ class VaultAuditTable extends ConsumerStatefulWidget {
 }
 
 class _VaultAuditTableState extends ConsumerState<VaultAuditTable> {
-  String? _expandedId;
+  int? _expandedId;
 
   @override
   Widget build(BuildContext context) {
     final auditAsync = ref.watch(vaultAuditLogProvider);
-    final operationFilter = ref.watch(vaultAuditOperationFilterProvider);
-    final resourceFilter = ref.watch(vaultAuditResourceTypeFilterProvider);
-    final successFilter = ref.watch(vaultAuditSuccessOnlyProvider);
     final currentPage = ref.watch(vaultAuditPageProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Filters row
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
+    return auditAsync.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: CodeOpsColors.primary,
+          ),
+        ),
+      ),
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
           children: [
-            // Operation filter
-            SizedBox(
-              width: 180,
-              child: DropdownButton<String>(
-                value:
-                    operationFilter.isEmpty ? null : operationFilter,
-                isExpanded: true,
-                hint: const Text('Operation',
-                    style: TextStyle(fontSize: 13)),
-                dropdownColor: CodeOpsColors.surface,
-                items: [
-                  const DropdownMenuItem(
-                    value: '',
-                    child: Text('All Operations'),
-                  ),
-                  ...vaultAuditOperations.map(
-                    (op) => DropdownMenuItem(
-                      value: op,
-                      child: Text(op, style: const TextStyle(fontSize: 13)),
-                    ),
-                  ),
-                ],
-                onChanged: (v) {
-                  ref.read(vaultAuditOperationFilterProvider.notifier).state =
-                      v ?? '';
-                  ref.read(vaultAuditPageProvider.notifier).state = 0;
-                },
+            const Icon(Icons.error_outline,
+                size: 18, color: CodeOpsColors.error),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Failed to load audit log',
+                style: const TextStyle(
+                    color: CodeOpsColors.error, fontSize: 13),
               ),
             ),
-            // Resource type filter
-            SizedBox(
-              width: 160,
-              child: DropdownButton<String>(
-                value:
-                    resourceFilter.isEmpty ? null : resourceFilter,
-                isExpanded: true,
-                hint: const Text('Resource',
-                    style: TextStyle(fontSize: 13)),
-                dropdownColor: CodeOpsColors.surface,
-                items: [
-                  const DropdownMenuItem(
-                    value: '',
-                    child: Text('All Resources'),
-                  ),
-                  ...vaultAuditResourceTypes.map(
-                    (rt) => DropdownMenuItem(
-                      value: rt,
-                      child: Text(rt, style: const TextStyle(fontSize: 13)),
-                    ),
-                  ),
-                ],
-                onChanged: (v) {
-                  ref
-                      .read(vaultAuditResourceTypeFilterProvider.notifier)
-                      .state = v ?? '';
-                  ref.read(vaultAuditPageProvider.notifier).state = 0;
-                },
-              ),
-            ),
-            // Success filter
-            SizedBox(
-              width: 150,
-              child: DropdownButton<bool?>(
-                value: successFilter,
-                isExpanded: true,
-                hint: const Text('Success',
-                    style: TextStyle(fontSize: 13)),
-                dropdownColor: CodeOpsColors.surface,
-                items: const [
-                  DropdownMenuItem(value: null, child: Text('All')),
-                  DropdownMenuItem(value: true, child: Text('Success Only')),
-                  DropdownMenuItem(
-                      value: false, child: Text('Failures Only')),
-                ],
-                onChanged: (v) {
-                  ref.read(vaultAuditSuccessOnlyProvider.notifier).state = v;
-                  ref.read(vaultAuditPageProvider.notifier).state = 0;
-                },
-              ),
+            TextButton(
+              onPressed: () => ref.invalidate(vaultAuditLogProvider),
+              child: const Text('Retry'),
             ),
           ],
         ),
-        const SizedBox(height: 16),
-
-        // Table
-        auditAsync.when(
-          loading: () => const Center(
-            child: Padding(
-              padding: EdgeInsets.all(32),
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: CodeOpsColors.primary,
+      ),
+      data: (pageResponse) {
+        if (pageResponse.content.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(32),
+            child: Center(
+              child: Text(
+                'No audit entries found.',
+                style: TextStyle(
+                  color: CodeOpsColors.textTertiary,
+                  fontSize: 13,
+                ),
               ),
             ),
-          ),
-          error: (e, _) => Text(
-            'Failed to load audit log: $e',
-            style:
-                const TextStyle(color: CodeOpsColors.error, fontSize: 13),
-          ),
-          data: (pageResponse) {
-            if (pageResponse.content.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(
-                  child: Text(
-                    'No audit entries found.',
-                    style: TextStyle(
-                      color: CodeOpsColors.textTertiary,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              );
-            }
+          );
+        }
 
-            return Column(
-              children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    headingRowColor:
-                        WidgetStateProperty.all(CodeOpsColors.surfaceVariant),
-                    columns: const [
-                      DataColumn(label: Text('Operation')),
-                      DataColumn(label: Text('Path')),
-                      DataColumn(label: Text('Resource')),
-                      DataColumn(label: Text('Status')),
-                      DataColumn(label: Text('User')),
-                      DataColumn(label: Text('Correlation')),
-                      DataColumn(label: Text('Time')),
-                    ],
-                    rows: pageResponse.content
-                        .map((entry) => _buildRow(entry))
-                        .toList(),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // Expanded error detail
-                ..._buildExpandedErrors(pageResponse.content),
-                const SizedBox(height: 8),
-                // Pagination
-                _buildPagination(currentPage, pageResponse),
-              ],
-            );
-          },
-        ),
-      ],
+        return Column(
+          children: [
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                headingRowColor:
+                    WidgetStateProperty.all(CodeOpsColors.surfaceVariant),
+                columns: const [
+                  DataColumn(label: Text('Operation')),
+                  DataColumn(label: Text('Path')),
+                  DataColumn(label: Text('Resource')),
+                  DataColumn(label: Text('Status')),
+                  DataColumn(label: Text('User')),
+                  DataColumn(label: Text('Correlation')),
+                  DataColumn(label: Text('Time')),
+                ],
+                rows: pageResponse.content
+                    .map((entry) => _buildRow(entry))
+                    .toList(),
+              ),
+            ),
+
+            // Expanded detail row
+            if (_expandedId != null)
+              ..._buildExpandedDetail(pageResponse.content),
+
+            const SizedBox(height: 8),
+
+            // Pagination
+            _buildPagination(currentPage, pageResponse),
+          ],
+        );
+      },
     );
   }
 
   DataRow _buildRow(AuditEntryResponse entry) {
-    final opColor = _operationColor(entry.operation);
-    final entryKey = '${entry.id}';
+    final isExpanded = _expandedId == entry.id;
 
     return DataRow(
-      onSelectChanged: entry.errorMessage != null
-          ? (_) => setState(() {
-                _expandedId = _expandedId == entryKey ? null : entryKey;
-              })
-          : null,
+      selected: isExpanded,
+      onSelectChanged: (_) => setState(() {
+        _expandedId = _expandedId == entry.id ? null : entry.id;
+      }),
       cells: [
         // Operation badge
-        DataCell(
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: opColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              entry.operation,
-              style: TextStyle(
-                fontSize: 11,
-                color: opColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
+        DataCell(VaultAuditOperationBadge(entry.operation)),
         // Path
         DataCell(
           Tooltip(
@@ -322,8 +229,7 @@ class _VaultAuditTableState extends ConsumerState<VaultAuditTable> {
                     ),
                   ),
                 )
-              : const Text('\u2014',
-                  style: TextStyle(fontSize: 12)),
+              : const Text('\u2014', style: TextStyle(fontSize: 12)),
         ),
         // Timestamp
         DataCell(Text(
@@ -337,31 +243,13 @@ class _VaultAuditTableState extends ConsumerState<VaultAuditTable> {
     );
   }
 
-  List<Widget> _buildExpandedErrors(List<AuditEntryResponse> entries) {
-    return entries
-        .where(
-          (e) => e.errorMessage != null && '${e.id}' == _expandedId,
-        )
-        .map(
-          (e) => Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(8),
-            margin: const EdgeInsets.only(bottom: 4),
-            decoration: BoxDecoration(
-              color: CodeOpsColors.error.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              e.errorMessage!,
-              style: const TextStyle(
-                fontSize: 11,
-                fontFamily: 'monospace',
-                color: CodeOpsColors.error,
-              ),
-            ),
-          ),
-        )
-        .toList();
+  List<Widget> _buildExpandedDetail(List<AuditEntryResponse> entries) {
+    final entry = entries.where((e) => e.id == _expandedId).firstOrNull;
+    if (entry == null) return [];
+    return [
+      const SizedBox(height: 8),
+      VaultAuditDetailRow(entry: entry),
+    ];
   }
 
   Widget _buildPagination(
@@ -369,56 +257,43 @@ class _VaultAuditTableState extends ConsumerState<VaultAuditTable> {
     dynamic pageResponse,
   ) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left, size: 20),
-          onPressed: currentPage > 0
-              ? () =>
-                  ref.read(vaultAuditPageProvider.notifier).state =
-                      currentPage - 1
-              : null,
-        ),
         Text(
-          'Page ${currentPage + 1} of ${pageResponse.totalPages}',
+          '${pageResponse.totalElements} entries',
           style: const TextStyle(
-            fontSize: 13,
-            color: CodeOpsColors.textSecondary,
+            fontSize: 12,
+            color: CodeOpsColors.textTertiary,
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.chevron_right, size: 20),
-          onPressed: !pageResponse.isLast
-              ? () =>
-                  ref.read(vaultAuditPageProvider.notifier).state =
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left, size: 20),
+              onPressed: currentPage > 0
+                  ? () => ref.read(vaultAuditPageProvider.notifier).state =
+                      currentPage - 1
+                  : null,
+            ),
+            Text(
+              'Page ${currentPage + 1} of ${pageResponse.totalPages}',
+              style: const TextStyle(
+                fontSize: 13,
+                color: CodeOpsColors.textSecondary,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right, size: 20),
+              onPressed: !pageResponse.isLast
+                  ? () => ref.read(vaultAuditPageProvider.notifier).state =
                       currentPage + 1
-              : null,
+                  : null,
+            ),
+          ],
         ),
       ],
     );
-  }
-
-  static Color _operationColor(String op) {
-    final upper = op.toUpperCase();
-    if (upper.contains('READ') || upper.contains('LIST')) {
-      return CodeOpsColors.success;
-    }
-    if (upper.contains('WRITE') || upper.contains('CREATE')) {
-      return const Color(0xFF3B82F6);
-    }
-    if (upper.contains('DELETE') || upper.contains('REVOKE')) {
-      return CodeOpsColors.error;
-    }
-    if (upper.contains('SEAL') || upper.contains('UNSEAL')) {
-      return CodeOpsColors.warning;
-    }
-    if (upper.contains('ENCRYPT') || upper.contains('DECRYPT')) {
-      return const Color(0xFFA855F7);
-    }
-    if (upper.contains('ROTATE')) {
-      return CodeOpsColors.secondary;
-    }
-    return CodeOpsColors.textTertiary;
   }
 
   static String _truncate(String s, int max) {

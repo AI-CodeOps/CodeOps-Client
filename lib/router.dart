@@ -1,4 +1,4 @@
-/// GoRouter configuration with all 49 application routes.
+/// GoRouter configuration with all 50 application routes.
 ///
 /// Uses an [AuthNotifier] listenable connected to [AuthService] for
 /// reactive auth state. Unauthenticated users are redirected to `/login`.
@@ -48,6 +48,7 @@ import 'pages/vault_policy_detail_page.dart';
 import 'pages/vault_rotation_page.dart';
 import 'pages/vault_transit_page.dart';
 import 'pages/vault_secret_detail_page.dart';
+import 'pages/vault_audit_page.dart';
 import 'pages/vault_seal_page.dart';
 import 'pages/vault_secrets_page.dart';
 import 'pages/tech_debt_page.dart';
@@ -387,6 +388,14 @@ final GoRouter router = GoRouter(
           name: 'vault-seal',
           pageBuilder: (context, state) => const NoTransitionPage(
             child: VaultSealPage(),
+          ),
+        ),
+        // 31a. Vault Audit
+        GoRoute(
+          path: '/vault/audit',
+          name: 'vault-audit',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: VaultAuditPage(),
           ),
         ),
         // 32. Registry — Service List

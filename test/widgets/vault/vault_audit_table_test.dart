@@ -1,4 +1,4 @@
-// Widget tests for VaultAuditTable.
+// Widget tests for VaultAuditTable (updated for CVF-008).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,9 +71,9 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Operation'), findsWidgets);
+      expect(find.text('Operation'), findsOneWidget);
       expect(find.text('Path'), findsOneWidget);
-      expect(find.text('Resource'), findsWidgets);
+      expect(find.text('Resource'), findsOneWidget);
       expect(find.text('Status'), findsOneWidget);
       expect(find.text('Time'), findsOneWidget);
     });
@@ -98,24 +98,15 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Secret'), findsWidgets);
-      expect(find.text('Policy'), findsWidgets);
+      expect(find.text('Secret'), findsOneWidget);
+      expect(find.text('Policy'), findsOneWidget);
     });
 
-    testWidgets('shows filter dropdowns', (tester) async {
+    testWidgets('shows entry count and pagination', (tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      // Operation and Resource show as hints; Success dropdown defaults to 'All'
-      expect(find.text('Operation'), findsWidgets);
-      expect(find.text('Resource'), findsWidgets);
-      expect(find.text('All'), findsWidgets);
-    });
-
-    testWidgets('shows pagination controls', (tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
+      expect(find.text('2 entries'), findsOneWidget);
       expect(find.text('Page 1 of 1'), findsOneWidget);
       expect(find.byIcon(Icons.chevron_left), findsOneWidget);
       expect(find.byIcon(Icons.chevron_right), findsOneWidget);
@@ -137,11 +128,12 @@ void main() {
       expect(find.text('No audit entries found.'), findsOneWidget);
     });
 
-    testWidgets('shows error state', (tester) async {
+    testWidgets('shows error state with retry', (tester) async {
       await tester.pumpWidget(createWidget(error: true));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Failed to load audit log'), findsOneWidget);
+      expect(find.text('Failed to load audit log'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
     });
   });
 }

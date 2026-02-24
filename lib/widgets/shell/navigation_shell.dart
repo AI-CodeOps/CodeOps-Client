@@ -252,6 +252,13 @@ class _Sidebar extends ConsumerWidget {
                   currentPath: currentPath,
                   collapsed: collapsed,
                 ),
+                _NavItem(
+                  icon: Icons.receipt_long_outlined,
+                  label: 'Audit',
+                  path: '/vault/audit',
+                  currentPath: currentPath,
+                  collapsed: collapsed,
+                ),
                 _SectionHeader('REGISTRY', collapsed),
                 _NavItem(
                   icon: Icons.app_registration_outlined,
@@ -717,6 +724,7 @@ class _TopBar extends StatelessWidget {
       '/vault/transit': 'Transit',
       '/vault/dynamic': 'Dynamic Secrets',
       '/vault/seal': 'Seal',
+      '/vault/audit': 'Audit Log',
       '/registry': 'Service Registry',
       '/registry/services/new': 'Register Service',
     };

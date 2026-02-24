@@ -326,7 +326,7 @@ final vaultActiveLeaseCountProvider = FutureProvider<int>((ref) {
 // Audit — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Fetches a paginated audit log with filters.
+/// Fetches a paginated audit log with all filters applied.
 final vaultAuditLogProvider =
     FutureProvider<PageResponse<AuditEntryResponse>>((ref) {
   final api = ref.watch(vaultApiProvider);
@@ -334,10 +334,20 @@ final vaultAuditLogProvider =
   final resourceType = ref.watch(vaultAuditResourceTypeFilterProvider);
   final successOnly = ref.watch(vaultAuditSuccessOnlyProvider);
   final page = ref.watch(vaultAuditPageProvider);
+  final userId = ref.watch(vaultAuditUserIdFilterProvider);
+  final path = ref.watch(vaultAuditPathFilterProvider);
+  final resourceId = ref.watch(vaultAuditResourceIdFilterProvider);
+  final startTime = ref.watch(vaultAuditStartTimeProvider);
+  final endTime = ref.watch(vaultAuditEndTimeProvider);
   return api.queryAuditLog(
     operation: operation.isEmpty ? null : operation,
     resourceType: resourceType.isEmpty ? null : resourceType,
     successOnly: successOnly,
+    userId: userId.isEmpty ? null : userId,
+    path: path.isEmpty ? null : path,
+    resourceId: resourceId.isEmpty ? null : resourceId,
+    startTime: startTime,
+    endTime: endTime,
     page: page,
   );
 });
@@ -373,6 +383,21 @@ final vaultAuditSuccessOnlyProvider = StateProvider<bool?>((ref) => null);
 
 /// Current page index for the audit log.
 final vaultAuditPageProvider = StateProvider<int>((ref) => 0);
+
+/// User ID text filter for audit log.
+final vaultAuditUserIdFilterProvider = StateProvider<String>((ref) => '');
+
+/// Path text filter for audit log.
+final vaultAuditPathFilterProvider = StateProvider<String>((ref) => '');
+
+/// Resource ID text filter for audit log.
+final vaultAuditResourceIdFilterProvider = StateProvider<String>((ref) => '');
+
+/// Start time filter for audit log (null = no lower bound).
+final vaultAuditStartTimeProvider = StateProvider<DateTime?>((ref) => null);
+
+/// End time filter for audit log (null = no upper bound).
+final vaultAuditEndTimeProvider = StateProvider<DateTime?>((ref) => null);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Navigation State
