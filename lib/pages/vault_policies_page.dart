@@ -10,6 +10,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../models/health_snapshot.dart';
 import '../models/vault_models.dart';
@@ -19,9 +20,9 @@ import '../widgets/shared/empty_state.dart';
 import '../widgets/shared/error_panel.dart';
 import '../widgets/shared/loading_overlay.dart';
 import '../widgets/vault/access_evaluator.dart';
-import '../widgets/vault/create_policy_dialog.dart';
 import '../widgets/vault/permission_badge.dart';
 import '../widgets/vault/policy_detail_panel.dart';
+import '../widgets/vault/vault_policy_dialog.dart';
 
 /// The Vault Policies page with Policies and Evaluate Access tabs.
 class VaultPoliciesPage extends ConsumerStatefulWidget {
@@ -216,6 +217,7 @@ class _PoliciesFilterBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeOnly = ref.watch(vaultPolicyActiveOnlyProvider);
+    final sortBy = ref.watch(vaultPolicySortByProvider);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -239,6 +241,24 @@ class _PoliciesFilterBar extends ConsumerWidget {
             padding: EdgeInsets.zero,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
+          const SizedBox(width: 12),
+          // Sort dropdown
+          const Text(
+            'Sort:',
+            style: TextStyle(fontSize: 11, color: CodeOpsColors.textTertiary),
+          ),
+          const SizedBox(width: 4),
+          _SortChip(
+            label: 'Name',
+            isSelected: sortBy == 'name',
+            onTap: () => _toggleSort(ref, 'name'),
+          ),
+          const SizedBox(width: 4),
+          _SortChip(
+            label: 'Created',
+            isSelected: sortBy == 'createdAt',
+            onTap: () => _toggleSort(ref, 'createdAt'),
+          ),
           const Spacer(),
           // New Policy button
           ElevatedButton.icon(
@@ -256,15 +276,70 @@ class _PoliciesFilterBar extends ConsumerWidget {
     );
   }
 
+  void _toggleSort(WidgetRef ref, String field) {
+    final currentSort = ref.read(vaultPolicySortByProvider);
+    final currentDir = ref.read(vaultPolicySortDirProvider);
+    if (currentSort == field) {
+      ref.read(vaultPolicySortDirProvider.notifier).state =
+          currentDir == 'asc' ? 'desc' : 'asc';
+    } else {
+      ref.read(vaultPolicySortByProvider.notifier).state = field;
+      ref.read(vaultPolicySortDirProvider.notifier).state = 'asc';
+    }
+  }
+
   Future<void> _showCreateDialog(BuildContext context, WidgetRef ref) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (_) => const CreatePolicyDialog(),
+      builder: (_) => const VaultPolicyDialog(),
     );
     if (result == true) {
       ref.invalidate(vaultPoliciesProvider);
       ref.invalidate(vaultPolicyStatsProvider);
     }
+  }
+}
+
+class _SortChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SortChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? CodeOpsColors.primary.withValues(alpha: 0.15)
+              : CodeOpsColors.surface,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: isSelected
+                ? CodeOpsColors.primary.withValues(alpha: 0.4)
+                : CodeOpsColors.border,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected
+                ? CodeOpsColors.primary
+                : CodeOpsColors.textSecondary,
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -359,6 +434,7 @@ class _PolicyListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onDoubleTap: () => context.go('/vault/policies/${policy.id}'),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         color: isSelected
@@ -454,6 +530,16 @@ class _PolicyListItem extends StatelessWidget {
             ),
             const SizedBox(width: 2),
             const Icon(Icons.link, size: 12, color: CodeOpsColors.textTertiary),
+            const SizedBox(width: 4),
+            // Open detail page
+            IconButton(
+              icon: const Icon(Icons.open_in_new, size: 14),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              color: CodeOpsColors.textTertiary,
+              tooltip: 'Open detail page',
+              onPressed: () => context.go('/vault/policies/${policy.id}'),
+            ),
           ],
         ),
       ),

@@ -44,6 +44,7 @@ import 'pages/registry/workstation_list_page.dart';
 import 'pages/vault_dashboard_page.dart';
 import 'pages/vault_dynamic_page.dart';
 import 'pages/vault_policies_page.dart';
+import 'pages/vault_policy_detail_page.dart';
 import 'pages/vault_transit_page.dart';
 import 'pages/vault_secret_detail_page.dart';
 import 'pages/vault_seal_page.dart';
@@ -343,6 +344,17 @@ final GoRouter router = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(
             child: VaultPoliciesPage(),
           ),
+        ),
+        // 28a. Vault Policy Detail
+        GoRoute(
+          path: '/vault/policies/:id',
+          name: 'vault-policy-detail',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return NoTransitionPage(
+              child: VaultPolicyDetailPage(policyId: id),
+            );
+          },
         ),
         // 29. Vault Transit
         GoRoute(

@@ -163,6 +163,40 @@ void main() {
       expect(find.text('Loading policies...'), findsOneWidget);
     });
 
+    testWidgets('shows sort chips for Name and Created', (tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sort:'), findsOneWidget);
+      expect(find.text('Name'), findsOneWidget);
+      expect(find.text('Created'), findsOneWidget);
+    });
+
+    testWidgets('shows open detail icon on policy list items',
+        (tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.open_in_new), findsNWidgets(2));
+    });
+
+    testWidgets('shows binding count in list items', (tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      // testPolicy has bindingCount 2, testDenyPolicy has 1
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+    });
+
+    testWidgets('shows active indicator dot', (tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      // Both test policies are active
+      expect(find.byIcon(Icons.circle), findsWidgets);
+    });
+
     testWidgets('Evaluate Access tab shows form', (tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();

@@ -158,13 +158,20 @@ final selectedVaultSecretIdProvider = StateProvider<String?>((ref) => null);
 // Policies — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Fetches a paginated policy list.
+/// Fetches a paginated policy list with filters and sorting.
 final vaultPoliciesProvider =
     FutureProvider<PageResponse<AccessPolicyResponse>>((ref) {
   final api = ref.watch(vaultApiProvider);
   final activeOnly = ref.watch(vaultPolicyActiveOnlyProvider);
   final page = ref.watch(vaultPolicyPageProvider);
-  return api.listPolicies(activeOnly: activeOnly, page: page);
+  final sortBy = ref.watch(vaultPolicySortByProvider);
+  final sortDir = ref.watch(vaultPolicySortDirProvider);
+  return api.listPolicies(
+    activeOnly: activeOnly,
+    page: page,
+    sortBy: sortBy,
+    sortDir: sortDir,
+  );
 });
 
 /// Fetches a single policy by ID.
@@ -197,6 +204,12 @@ final vaultPolicyActiveOnlyProvider = StateProvider<bool>((ref) => true);
 
 /// Current page index for the policies list.
 final vaultPolicyPageProvider = StateProvider<int>((ref) => 0);
+
+/// Sort field for the policies list.
+final vaultPolicySortByProvider = StateProvider<String>((ref) => 'createdAt');
+
+/// Sort direction for the policies list.
+final vaultPolicySortDirProvider = StateProvider<String>((ref) => 'desc');
 
 /// ID of the currently selected policy.
 final selectedVaultPolicyIdProvider = StateProvider<String?>((ref) => null);

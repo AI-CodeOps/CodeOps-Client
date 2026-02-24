@@ -265,6 +265,56 @@ void main() {
 
       expect(container.read(selectedVaultPolicyIdProvider), 'policy-456');
     });
+
+    test('vaultPolicySortByProvider defaults to createdAt', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(vaultPolicySortByProvider), 'createdAt');
+    });
+
+    test('vaultPolicySortDirProvider defaults to desc', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(vaultPolicySortDirProvider), 'desc');
+    });
+
+    test('vaultPolicySortByProvider can be updated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(vaultPolicySortByProvider.notifier).state = 'name';
+
+      expect(container.read(vaultPolicySortByProvider), 'name');
+    });
+
+    test('vaultPolicySortDirProvider can be toggled', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(vaultPolicySortDirProvider.notifier).state = 'asc';
+
+      expect(container.read(vaultPolicySortDirProvider), 'asc');
+    });
+
+    test('vaultPolicyActiveOnlyProvider can be updated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(vaultPolicyActiveOnlyProvider.notifier).state = false;
+
+      expect(container.read(vaultPolicyActiveOnlyProvider), false);
+    });
+
+    test('vaultPolicyPageProvider can be updated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(vaultPolicyPageProvider.notifier).state = 3;
+
+      expect(container.read(vaultPolicyPageProvider), 3);
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────

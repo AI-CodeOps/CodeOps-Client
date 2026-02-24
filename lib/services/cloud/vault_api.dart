@@ -294,14 +294,18 @@ class VaultApi {
     return AccessPolicyResponse.fromJson(response.data!);
   }
 
-  /// Lists policies with optional filters and pagination.
+  /// Lists policies with optional filters, sorting, and pagination.
   Future<PageResponse<AccessPolicyResponse>> listPolicies({
     bool? activeOnly,
     int page = 0,
     int size = 20,
+    String? sortBy,
+    String? sortDir,
   }) async {
     final params = <String, dynamic>{'page': page, 'size': size};
     if (activeOnly != null) params['activeOnly'] = activeOnly;
+    if (sortBy != null) params['sortBy'] = sortBy;
+    if (sortDir != null) params['sortDir'] = sortDir;
 
     final response = await _client.get<Map<String, dynamic>>(
       '/policies',
