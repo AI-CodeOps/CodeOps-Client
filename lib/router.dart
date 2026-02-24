@@ -45,6 +45,7 @@ import 'pages/vault_dashboard_page.dart';
 import 'pages/vault_dynamic_page.dart';
 import 'pages/vault_policies_page.dart';
 import 'pages/vault_policy_detail_page.dart';
+import 'pages/vault_rotation_page.dart';
 import 'pages/vault_transit_page.dart';
 import 'pages/vault_secret_detail_page.dart';
 import 'pages/vault_seal_page.dart';
@@ -370,6 +371,14 @@ final GoRouter router = GoRouter(
           name: 'vault-dynamic',
           pageBuilder: (context, state) => const NoTransitionPage(
             child: VaultDynamicPage(),
+          ),
+        ),
+        // 30a. Vault Rotation
+        GoRoute(
+          path: '/vault/rotation',
+          name: 'vault-rotation',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: VaultRotationPage(),
           ),
         ),
         // 31. Vault Seal

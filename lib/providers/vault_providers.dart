@@ -373,6 +373,20 @@ final vaultSecretVersionValueProvider = FutureProvider.family<
   return api.readSecretVersionValue(params.secretId, params.version);
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Rotation — UI State Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Selected secret ID in the rotation dashboard.
+final selectedRotationSecretIdProvider = StateProvider<String?>((ref) => null);
+
+/// Current page index for rotation history in the rotation dashboard.
+final vaultRotationHistoryPageProvider = StateProvider<int>((ref) => 0);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Navigation State
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Active vault tab index.
 ///
 /// 0=Secrets, 1=Policies, 2=Transit, 3=Dynamic, 4=Rotation, 5=Seal, 6=Audit.
