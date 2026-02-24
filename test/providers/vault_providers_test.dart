@@ -378,4 +378,42 @@ void main() {
       expect(container.read(vaultActiveTabProvider), 3);
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Secret Detail Page — Provider types (CVF-003)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  group('Secret detail providers (CVF-003)', () {
+    test('vaultSecretVersionValueProvider is a FutureProvider.family', () {
+      expect(
+        vaultSecretVersionValueProvider,
+        isA<
+            FutureProviderFamily<SecretValueResponse,
+                ({String secretId, int version})>>(),
+      );
+    });
+
+    test('vaultSecretDetailProvider is a FutureProvider.family', () {
+      expect(
+        vaultSecretDetailProvider,
+        isA<FutureProviderFamily<SecretResponse, String>>(),
+      );
+    });
+
+    test('vaultSecretVersionsProvider is a FutureProvider.family', () {
+      expect(
+        vaultSecretVersionsProvider,
+        isA<
+            FutureProviderFamily<PageResponse<SecretVersionResponse>,
+                String>>(),
+      );
+    });
+
+    test('vaultSecretMetadataProvider is a FutureProvider.family', () {
+      expect(
+        vaultSecretMetadataProvider,
+        isA<FutureProviderFamily<Map<String, String>, String>>(),
+      );
+    });
+  });
 }

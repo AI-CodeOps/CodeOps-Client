@@ -348,6 +348,18 @@ final vaultAuditPageProvider = StateProvider<int>((ref) => 0);
 // Navigation State
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Secret Detail Page — UI State Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Fetches the decrypted value for a specific secret version.
+final vaultSecretVersionValueProvider = FutureProvider.family<
+    SecretValueResponse,
+    ({String secretId, int version})>((ref, params) {
+  final api = ref.watch(vaultApiProvider);
+  return api.readSecretVersionValue(params.secretId, params.version);
+});
+
 /// Active vault tab index.
 ///
 /// 0=Secrets, 1=Policies, 2=Transit, 3=Dynamic, 4=Rotation, 5=Seal, 6=Audit.
