@@ -43,6 +43,19 @@ final sealStatusProvider = FutureProvider<SealStatusResponse>((ref) {
   return api.getSealStatus();
 });
 
+/// Polls the seal status every 10 seconds for live updates.
+final sealStatusPollingProvider = StreamProvider<SealStatusResponse>((ref) {
+  final api = ref.watch(vaultApiProvider);
+  return Stream.periodic(const Duration(seconds: 10), (_) => api.getSealStatus())
+      .asyncMap((future) => future);
+});
+
+/// Fetches seal configuration info (total shares, threshold, auto-unseal).
+final sealInfoProvider = FutureProvider<Map<String, dynamic>>((ref) {
+  final api = ref.watch(vaultApiProvider);
+  return api.getSealInfo();
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Secrets — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────
