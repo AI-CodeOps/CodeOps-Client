@@ -280,6 +280,10 @@ final vaultTransitPageProvider = StateProvider<int>((ref) => 0);
 final selectedVaultTransitKeyIdProvider =
     StateProvider<String?>((ref) => null);
 
+/// Active tab index in the transit operations panel (0=Encrypt, 1=Decrypt,
+/// 2=Rewrap, 3=DataKey).
+final transitOperationTabProvider = StateProvider<int>((ref) => 0);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Dynamic Secrets — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────
