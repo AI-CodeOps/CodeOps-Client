@@ -144,6 +144,14 @@ class ScribeEditor extends ConsumerStatefulWidget {
   /// Optional focus node for keyboard focus management.
   final FocusNode? focusNode;
 
+  /// Called when the cursor position changes (line and column, 0-based).
+  final void Function(int line, int column)? onCursorChanged;
+
+  /// Called when the selection changes (char count and line count).
+  ///
+  /// Reports 0 for both when the cursor is collapsed (no selection).
+  final void Function(int chars, int lines)? onSelectionChanged;
+
   /// Creates a [ScribeEditor].
   const ScribeEditor({
     super.key,
@@ -172,6 +180,8 @@ class ScribeEditor extends ConsumerStatefulWidget {
     this.placeholder,
     this.controller,
     this.focusNode,
+    this.onCursorChanged,
+    this.onSelectionChanged,
   })  : assert(fontSize >= 12.0 && fontSize <= 24.0),
         assert(tabSize == 2 || tabSize == 4 || tabSize == 8);
 
@@ -185,6 +195,9 @@ class _ScribeEditorState extends ConsumerState<ScribeEditor> {
   CodeHighlightTheme? _highlightTheme;
   String? _lastLanguage;
   FocusNode? _ownedFocusNode;
+  int _lastCursorLine = -1;
+  int _lastCursorColumn = -1;
+  int _lastSelChars = -1;
 
   FocusNode get _effectiveFocusNode =>
       widget.focusNode ?? (_ownedFocusNode ??= FocusNode());
@@ -195,6 +208,7 @@ class _ScribeEditorState extends ConsumerState<ScribeEditor> {
     _initController();
     _buildHighlightTheme();
     _bindFocusNode();
+    _internalController.addListener(_onSelectionChanged);
   }
 
   @override
@@ -203,9 +217,11 @@ class _ScribeEditorState extends ConsumerState<ScribeEditor> {
 
     // Controller changed.
     if (widget.controller != oldWidget.controller) {
+      _internalController.removeListener(_onSelectionChanged);
       _disposeOwnedController();
       _initController();
       _bindFocusNode();
+      _internalController.addListener(_onSelectionChanged);
     }
     // Content changed externally (only applies when no external controller).
     else if (widget.controller == null && widget.content != oldWidget.content) {
@@ -227,9 +243,46 @@ class _ScribeEditorState extends ConsumerState<ScribeEditor> {
 
   @override
   void dispose() {
+    _internalController.removeListener(_onSelectionChanged);
     _disposeOwnedController();
     _ownedFocusNode?.dispose();
     super.dispose();
+  }
+
+  void _onSelectionChanged() {
+    // Defer to avoid setState-during-build when the controller fires
+    // during CodeEditor.initState.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final sel = _internalController.selection;
+
+      // Report cursor position.
+      final line = sel.extentIndex;
+      final column = sel.extentOffset;
+      if (line != _lastCursorLine || column != _lastCursorColumn) {
+        _lastCursorLine = line;
+        _lastCursorColumn = column;
+        widget.onCursorChanged?.call(line, column);
+      }
+
+      // Report selection info.
+      if (sel.baseIndex == sel.extentIndex &&
+          sel.baseOffset == sel.extentOffset) {
+        if (_lastSelChars != 0) {
+          _lastSelChars = 0;
+          widget.onSelectionChanged?.call(0, 0);
+        }
+      } else {
+        final text = _internalController.selectedText;
+        final chars = text.length;
+        if (chars != _lastSelChars) {
+          _lastSelChars = chars;
+          final lines = '\n'.allMatches(text).length + 1;
+          widget.onSelectionChanged?.call(chars, lines);
+        }
+      }
+    });
   }
 
   void _initController() {

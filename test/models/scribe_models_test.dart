@@ -202,6 +202,102 @@ void main() {
       );
       expect(a, isNot(equals(b)));
     });
+
+    test('default encoding is utf-8', () {
+      final tab = ScribeTab.untitled(1);
+      expect(tab.encoding, 'utf-8');
+    });
+
+    test('default lineEnding is lf', () {
+      final tab = ScribeTab.untitled(1);
+      expect(tab.lineEnding, 'lf');
+    });
+
+    test('copyWith preserves encoding and lineEnding', () {
+      final now = DateTime.now();
+      final tab = ScribeTab(
+        id: 'test',
+        title: 'test.txt',
+        encoding: 'ascii',
+        lineEnding: 'crlf',
+        createdAt: now,
+        lastModifiedAt: now,
+      );
+      final copy = tab.copyWith(title: 'renamed.txt');
+      expect(copy.encoding, 'ascii');
+      expect(copy.lineEnding, 'crlf');
+    });
+
+    test('copyWith can override encoding', () {
+      final tab = ScribeTab.untitled(1);
+      final copy = tab.copyWith(encoding: 'iso-8859-1');
+      expect(copy.encoding, 'iso-8859-1');
+    });
+
+    test('copyWith can override lineEnding', () {
+      final tab = ScribeTab.untitled(1);
+      final copy = tab.copyWith(lineEnding: 'crlf');
+      expect(copy.lineEnding, 'crlf');
+    });
+
+    test('toJson includes encoding and lineEnding', () {
+      final tab = ScribeTab.untitled(1);
+      final json = tab.toJson();
+      expect(json['encoding'], 'utf-8');
+      expect(json['lineEnding'], 'lf');
+    });
+
+    test('fromJson parses encoding and lineEnding', () {
+      final json = {
+        'id': 'test',
+        'title': 'test.txt',
+        'encoding': 'ascii',
+        'lineEnding': 'crlf',
+        'createdAt': '2026-02-23T00:00:00.000',
+        'lastModifiedAt': '2026-02-23T00:00:00.000',
+      };
+      final tab = ScribeTab.fromJson(json);
+      expect(tab.encoding, 'ascii');
+      expect(tab.lineEnding, 'crlf');
+    });
+
+    test('fromJson defaults missing encoding to utf-8', () {
+      final json = {
+        'id': 'test',
+        'title': 'test.txt',
+        'createdAt': '2026-02-23T00:00:00.000',
+        'lastModifiedAt': '2026-02-23T00:00:00.000',
+      };
+      final tab = ScribeTab.fromJson(json);
+      expect(tab.encoding, 'utf-8');
+    });
+
+    test('fromJson defaults missing lineEnding to lf', () {
+      final json = {
+        'id': 'test',
+        'title': 'test.txt',
+        'createdAt': '2026-02-23T00:00:00.000',
+        'lastModifiedAt': '2026-02-23T00:00:00.000',
+      };
+      final tab = ScribeTab.fromJson(json);
+      expect(tab.lineEnding, 'lf');
+    });
+
+    test('fromFile auto-detects LF line endings', () {
+      final tab = ScribeTab.fromFile(
+        filePath: '/test/hello.dart',
+        content: 'line1\nline2\nline3',
+      );
+      expect(tab.lineEnding, 'lf');
+    });
+
+    test('fromFile auto-detects CRLF line endings', () {
+      final tab = ScribeTab.fromFile(
+        filePath: '/test/hello.dart',
+        content: 'line1\r\nline2\r\nline3',
+      );
+      expect(tab.lineEnding, 'crlf');
+    });
   });
 
   group('ScribeSettings', () {

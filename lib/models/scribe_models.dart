@@ -43,6 +43,12 @@ class ScribeTab {
   /// Scroll offset for restoring scroll position on tab switch.
   final double scrollOffset;
 
+  /// Text encoding for this tab (e.g., 'utf-8', 'ascii', 'iso-8859-1').
+  final String encoding;
+
+  /// Line ending style for this tab ('lf' or 'crlf').
+  final String lineEnding;
+
   /// Timestamp when this tab was created.
   final DateTime createdAt;
 
@@ -60,6 +66,8 @@ class ScribeTab {
     this.cursorLine = 0,
     this.cursorColumn = 0,
     this.scrollOffset = 0.0,
+    this.encoding = 'utf-8',
+    this.lineEnding = 'lf',
     required this.createdAt,
     required this.lastModifiedAt,
   });
@@ -90,12 +98,14 @@ class ScribeTab {
     final fileName =
         lastSlash >= 0 ? filePath.substring(lastSlash + 1) : filePath;
     final language = ScribeLanguage.fromFileName(filePath);
+    final lineEnding = content.contains('\r\n') ? 'crlf' : 'lf';
     return ScribeTab(
       id: const Uuid().v4(),
       title: fileName,
       filePath: filePath,
       content: content,
       language: language,
+      lineEnding: lineEnding,
       createdAt: now,
       lastModifiedAt: now,
     );
@@ -112,6 +122,8 @@ class ScribeTab {
     int? cursorLine,
     int? cursorColumn,
     double? scrollOffset,
+    String? encoding,
+    String? lineEnding,
     DateTime? createdAt,
     DateTime? lastModifiedAt,
   }) {
@@ -125,6 +137,8 @@ class ScribeTab {
       cursorLine: cursorLine ?? this.cursorLine,
       cursorColumn: cursorColumn ?? this.cursorColumn,
       scrollOffset: scrollOffset ?? this.scrollOffset,
+      encoding: encoding ?? this.encoding,
+      lineEnding: lineEnding ?? this.lineEnding,
       createdAt: createdAt ?? this.createdAt,
       lastModifiedAt: lastModifiedAt ?? this.lastModifiedAt,
     );
@@ -142,6 +156,8 @@ class ScribeTab {
       'cursorLine': cursorLine,
       'cursorColumn': cursorColumn,
       'scrollOffset': scrollOffset,
+      'encoding': encoding,
+      'lineEnding': lineEnding,
       'createdAt': createdAt.toIso8601String(),
       'lastModifiedAt': lastModifiedAt.toIso8601String(),
     };
@@ -159,6 +175,8 @@ class ScribeTab {
       cursorLine: json['cursorLine'] as int? ?? 0,
       cursorColumn: json['cursorColumn'] as int? ?? 0,
       scrollOffset: (json['scrollOffset'] as num?)?.toDouble() ?? 0.0,
+      encoding: json['encoding'] as String? ?? 'utf-8',
+      lineEnding: json['lineEnding'] as String? ?? 'lf',
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastModifiedAt: DateTime.parse(json['lastModifiedAt'] as String),
     );

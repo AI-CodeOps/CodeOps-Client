@@ -228,6 +228,60 @@ void main() {
       expect(container.read(scribeTabsProvider).first.language, 'python');
     });
 
+    test('updateEncoding changes encoding', () {
+      final container = createContainer();
+
+      container.read(scribeTabsProvider.notifier).openTab(title: 'Test');
+      final tabId = container.read(scribeTabsProvider).first.id;
+
+      expect(container.read(scribeTabsProvider).first.encoding, 'utf-8');
+
+      container
+          .read(scribeTabsProvider.notifier)
+          .updateEncoding(tabId, 'ascii');
+
+      expect(container.read(scribeTabsProvider).first.encoding, 'ascii');
+    });
+
+    test('updateLineEnding changes line ending', () {
+      final container = createContainer();
+
+      container.read(scribeTabsProvider.notifier).openTab(title: 'Test');
+      final tabId = container.read(scribeTabsProvider).first.id;
+
+      expect(container.read(scribeTabsProvider).first.lineEnding, 'lf');
+
+      container
+          .read(scribeTabsProvider.notifier)
+          .updateLineEnding(tabId, 'crlf');
+
+      expect(container.read(scribeTabsProvider).first.lineEnding, 'crlf');
+    });
+
+    test('updateEncoding is no-op for invalid tabId', () {
+      final container = createContainer();
+
+      container.read(scribeTabsProvider.notifier).openTab(title: 'Test');
+
+      container
+          .read(scribeTabsProvider.notifier)
+          .updateEncoding('nonexistent', 'ascii');
+
+      expect(container.read(scribeTabsProvider).first.encoding, 'utf-8');
+    });
+
+    test('updateLineEnding is no-op for invalid tabId', () {
+      final container = createContainer();
+
+      container.read(scribeTabsProvider.notifier).openTab(title: 'Test');
+
+      container
+          .read(scribeTabsProvider.notifier)
+          .updateLineEnding('nonexistent', 'crlf');
+
+      expect(container.read(scribeTabsProvider).first.lineEnding, 'lf');
+    });
+
     test('loadFromPersistence loads tabs from database', () async {
       final now = DateTime(2026, 2, 20);
       final testTabs = [

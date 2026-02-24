@@ -476,6 +476,26 @@ class ScribeTabsNotifier extends StateNotifier<List<ScribeTab>> {
     _persist();
   }
 
+  /// Changes the text encoding for the tab with [tabId].
+  void updateEncoding(String tabId, String encoding) {
+    final index = state.indexWhere((t) => t.id == tabId);
+    if (index < 0) return;
+
+    final updated = state[index].copyWith(encoding: encoding);
+    state = [...state]..[index] = updated;
+    _persist();
+  }
+
+  /// Changes the line ending style for the tab with [tabId].
+  void updateLineEnding(String tabId, String lineEnding) {
+    final index = state.indexWhere((t) => t.id == tabId);
+    if (index < 0) return;
+
+    final updated = state[index].copyWith(lineEnding: lineEnding);
+    state = [...state]..[index] = updated;
+    _persist();
+  }
+
   /// Updates the cursor position for a tab without marking it dirty.
   ///
   /// Triggers a debounced persist so cursor state is saved to the database

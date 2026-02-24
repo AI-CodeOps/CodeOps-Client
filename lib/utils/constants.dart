@@ -405,4 +405,14 @@ class AppConstants {
 
   /// Maximum number of results shown in the command palette.
   static const int scribeCommandPaletteMaxResults = 30;
+
+  // -------------------------------------------------------------------------
+  // Scribe constants (CS-010 — Status Bar)
+  // -------------------------------------------------------------------------
+
+  /// Width of the language picker popup in logical pixels.
+  static const double scribeLanguagePickerWidth = 260.0;
+
+  /// Height of the language picker popup in logical pixels.
+  static const double scribeLanguagePickerHeight = 360.0;
 }

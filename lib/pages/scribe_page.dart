@@ -63,6 +63,8 @@ class _ScribePageState extends ConsumerState<ScribePage>
 
   int _cursorLine = 0;
   int _cursorColumn = 0;
+  int _selectedChars = 0;
+  int _selectedLines = 0;
 
   Timer? _autoSaveTimer;
   bool _autoSaveEnabled = false;
@@ -324,6 +326,29 @@ class _ScribePageState extends ConsumerState<ScribePage>
                   language: activeTab.language,
                   onLanguageChanged: (lang) =>
                       _handleLanguageChanged(activeTab, lang),
+                  selectedChars: _selectedChars,
+                  selectedLines: _selectedLines,
+                  insertSpaces: settings.insertSpaces,
+                  tabSize: settings.tabSize,
+                  onInsertSpacesChanged: (useSpaces) {
+                    if (useSpaces != settings.insertSpaces) {
+                      ref
+                          .read(scribeSettingsProvider.notifier)
+                          .toggleInsertSpaces();
+                    }
+                  },
+                  onTabSizeChanged: (size) => ref
+                      .read(scribeSettingsProvider.notifier)
+                      .updateTabSize(size),
+                  encoding: activeTab.encoding,
+                  onEncodingChanged: (enc) => ref
+                      .read(scribeTabsProvider.notifier)
+                      .updateEncoding(activeTab.id, enc),
+                  lineEnding: activeTab.lineEnding,
+                  onLineEndingChanged: (le) => ref
+                      .read(scribeTabsProvider.notifier)
+                      .updateLineEnding(activeTab.id, le),
+                  content: activeTab.content,
                 ),
             ],
           ),
@@ -375,6 +400,8 @@ class _ScribePageState extends ConsumerState<ScribePage>
       setState(() {
         _cursorLine = tab.cursorLine;
         _cursorColumn = tab.cursorColumn;
+        _selectedChars = 0;
+        _selectedLines = 0;
       });
     }
   }
@@ -754,6 +781,7 @@ class _ScribePageState extends ConsumerState<ScribePage>
       settings: settings,
       onChanged: (value) => _handleContentChanged(tab, value),
       onCursorChanged: _handleCursorChanged,
+      onSelectionChanged: _handleSelectionChanged,
     );
 
     if (tab.language != 'markdown') {
@@ -1224,6 +1252,8 @@ class _ScribePageState extends ConsumerState<ScribePage>
     setState(() {
       _cursorLine = line;
       _cursorColumn = column;
+      _selectedChars = 0;
+      _selectedLines = 0;
     });
     // Persist cursor position (debounced via provider).
     final activeId = ref.read(activeScribeTabIdProvider);
@@ -1232,6 +1262,14 @@ class _ScribePageState extends ConsumerState<ScribePage>
           .read(scribeTabsProvider.notifier)
           .updateCursorPosition(activeId, line, column);
     }
+  }
+
+  /// Handles selection changes from the editor.
+  void _handleSelectionChanged(int chars, int lines) {
+    setState(() {
+      _selectedChars = chars;
+      _selectedLines = lines;
+    });
   }
 
   /// Handles language mode changes from the status bar.
@@ -1328,6 +1366,7 @@ class _EditorArea extends StatefulWidget {
   final ScribeSettings settings;
   final ValueChanged<String> onChanged;
   final void Function(int line, int column) onCursorChanged;
+  final void Function(int chars, int lines)? onSelectionChanged;
 
   const _EditorArea({
     super.key,
@@ -1335,6 +1374,7 @@ class _EditorArea extends StatefulWidget {
     required this.settings,
     required this.onChanged,
     required this.onCursorChanged,
+    this.onSelectionChanged,
   });
 
   @override
@@ -1361,6 +1401,8 @@ class _EditorAreaState extends State<_EditorArea> {
         showBracketMatching: widget.settings.bracketMatching,
         autoCloseBrackets: widget.settings.autoCloseBrackets,
         onChanged: widget.onChanged,
+        onCursorChanged: widget.onCursorChanged,
+        onSelectionChanged: widget.onSelectionChanged,
       ),
     );
   }
