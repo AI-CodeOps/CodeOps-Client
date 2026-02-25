@@ -56,6 +56,7 @@ import 'pages/project_detail_page.dart';
 import 'pages/task_list_page.dart';
 import 'pages/task_manager_page.dart';
 import 'pages/projects_page.dart';
+import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
 import 'pages/settings_page.dart';
 import 'services/auth/auth_service.dart';
@@ -548,6 +549,56 @@ final GoRouter router = GoRouter(
               child: ApiDocsPage(serviceId: id),
             );
           },
+        ),
+        // 49. Relay — Messaging shell
+        GoRoute(
+          path: '/relay',
+          name: 'relay',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: RelayPage(),
+          ),
+          routes: [
+            // 50. Relay — Channel selected
+            GoRoute(
+              path: 'channel/:channelId',
+              name: 'relay-channel',
+              pageBuilder: (context, state) {
+                final channelId = state.pathParameters['channelId']!;
+                return NoTransitionPage(
+                  child: RelayPage(initialChannelId: channelId),
+                );
+              },
+              routes: [
+                // 51. Relay — Thread open
+                GoRoute(
+                  path: 'thread/:messageId',
+                  name: 'relay-thread',
+                  pageBuilder: (context, state) {
+                    final channelId = state.pathParameters['channelId']!;
+                    final messageId = state.pathParameters['messageId']!;
+                    return NoTransitionPage(
+                      child: RelayPage(
+                        initialChannelId: channelId,
+                        initialThreadMessageId: messageId,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            // 52. Relay — DM selected
+            GoRoute(
+              path: 'dm/:conversationId',
+              name: 'relay-dm',
+              pageBuilder: (context, state) {
+                final conversationId =
+                    state.pathParameters['conversationId']!;
+                return NoTransitionPage(
+                  child: RelayPage(initialConversationId: conversationId),
+                );
+              },
+            ),
+          ],
         ),
       ],
     ),

@@ -409,4 +409,17 @@ class AppConstants {
 
   /// Height of the language picker popup in logical pixels.
   static const double scribeLanguagePickerHeight = 360.0;
+
+  // -------------------------------------------------------------------------
+  // Relay constants (RELC-001)
+  // -------------------------------------------------------------------------
+
+  /// WebSocket URL for real-time Relay messaging.
+  static const String relayWebSocketUrl = 'ws://localhost:8090/ws/relay';
+
+  /// Heartbeat interval in seconds for Relay WebSocket keep-alive.
+  static const int relayHeartbeatIntervalSeconds = 30;
+
+  /// Maximum reconnect delay in seconds for Relay WebSocket backoff.
+  static const int relayReconnectMaxDelaySeconds = 30;
 }

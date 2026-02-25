@@ -267,6 +267,14 @@ class _Sidebar extends ConsumerWidget {
                   currentPath: currentPath,
                   collapsed: collapsed,
                 ),
+                _SectionHeader('COMMUNICATE', collapsed),
+                _NavItem(
+                  icon: Icons.forum_outlined,
+                  label: 'Relay',
+                  path: '/relay',
+                  currentPath: currentPath,
+                  collapsed: collapsed,
+                ),
               ],
             ),
           ),
@@ -727,9 +735,11 @@ class _TopBar extends StatelessWidget {
       '/vault/audit': 'Audit Log',
       '/registry': 'Service Registry',
       '/registry/services/new': 'Register Service',
+      '/relay': 'Relay',
     };
     // Check exact match first, then prefix matches for parameterized routes
     if (routes.containsKey(path)) return routes[path]!;
+    if (path.startsWith('/relay/')) return 'Relay';
     if (path.startsWith('/registry/services/')) return 'Service Detail';
     if (path.startsWith('/vault/secrets/')) return 'Secret Detail';
     if (path.startsWith('/projects/')) return 'Project Detail';
