@@ -29,6 +29,12 @@ class RelayMessageBubble extends ConsumerWidget {
   /// Whether this message is from the current user.
   final bool isOwnMessage;
 
+  /// Whether to show the thread reply indicator.
+  ///
+  /// Set to `false` in thread panels where the indicator is redundant
+  /// (both the root message and replies should not show it).
+  final bool showThreadIndicator;
+
   /// Callback when the user taps the thread reply indicator.
   final VoidCallback? onThreadTap;
 
@@ -36,6 +42,7 @@ class RelayMessageBubble extends ConsumerWidget {
   const RelayMessageBubble({
     required this.message,
     this.isOwnMessage = false,
+    this.showThreadIndicator = true,
     this.onThreadTap,
     super.key,
   });
@@ -93,7 +100,7 @@ class RelayMessageBubble extends ConsumerWidget {
                       padding: const EdgeInsets.only(top: 4),
                       child: _buildAttachments(),
                     ),
-                  if ((message.replyCount ?? 0) > 0)
+                  if (showThreadIndicator && (message.replyCount ?? 0) > 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: _buildThreadIndicator(),

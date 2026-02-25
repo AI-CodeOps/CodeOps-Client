@@ -12,11 +12,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_providers.dart';
 import '../../providers/relay_providers.dart';
-import '../../widgets/relay/relay_detail_panel.dart';
 import '../../widgets/relay/relay_dm_panel.dart';
 import '../../widgets/relay/relay_empty_state.dart';
 import '../../widgets/relay/relay_message_feed.dart';
 import '../../widgets/relay/relay_sidebar.dart';
+import '../../widgets/relay/relay_thread_panel.dart';
 
 /// The main Relay messaging page with three-column layout.
 ///
@@ -96,6 +96,7 @@ class _RelayPageState extends ConsumerState<RelayPage> {
     final showThread = ref.watch(showThreadPanelProvider);
     final selectedChannel = ref.watch(selectedChannelIdProvider);
     final selectedConversation = ref.watch(selectedConversationIdProvider);
+    final threadRootMessageId = ref.watch(threadRootMessageIdProvider);
 
     return Scaffold(
       body: Row(
@@ -129,12 +130,16 @@ class _RelayPageState extends ConsumerState<RelayPage> {
             child: _buildCenterPanel(selectedChannel, selectedConversation),
           ),
 
-          // RIGHT: Thread/detail panel (conditional)
-          if (showThread) ...[
+          // RIGHT: Thread panel (conditional)
+          if (showThread &&
+              selectedChannel != null &&
+              threadRootMessageId != null) ...[
             const VerticalDivider(width: 1),
             SizedBox(
               width: 340,
-              child: RelayDetailPanel(
+              child: RelayThreadPanel(
+                channelId: selectedChannel,
+                rootMessageId: threadRootMessageId,
                 onClose: () {
                   ref.read(showThreadPanelProvider.notifier).state = false;
                   ref.read(threadRootMessageIdProvider.notifier).state = null;

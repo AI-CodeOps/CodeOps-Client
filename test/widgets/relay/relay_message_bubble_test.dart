@@ -1,10 +1,12 @@
 /// Tests for [RelayMessageBubble] — individual message rendering.
 ///
 /// Verifies text messages, system messages, platform events, file messages,
-/// reactions, thread indicators, edited/deleted states, and avatar rendering.
+/// reactions, thread indicators, edited/deleted states, avatar rendering,
+/// and the [showThreadIndicator] parameter.
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:codeops/models/relay_enums.dart';
@@ -14,15 +16,19 @@ import 'package:codeops/widgets/relay/relay_message_bubble.dart';
 Widget _createBubble(
   MessageResponse message, {
   bool isOwnMessage = false,
+  bool showThreadIndicator = true,
   VoidCallback? onThreadTap,
 }) {
-  return MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(
-        child: RelayMessageBubble(
-          message: message,
-          isOwnMessage: isOwnMessage,
-          onThreadTap: onThreadTap,
+  return ProviderScope(
+    child: MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: RelayMessageBubble(
+            message: message,
+            isOwnMessage: isOwnMessage,
+            showThreadIndicator: showThreadIndicator,
+            onThreadTap: onThreadTap,
+          ),
         ),
       ),
     ),
@@ -176,6 +182,23 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('1 reply'), findsOneWidget);
+    });
+
+    testWidgets('hides thread indicator when showThreadIndicator is false',
+        (tester) async {
+      const msg = MessageResponse(
+        id: 'msg-thread-hidden',
+        senderDisplayName: 'Jack',
+        content: 'Thread root hidden',
+        messageType: MessageType.text,
+        replyCount: 5,
+      );
+      await tester.pumpWidget(
+        _createBubble(msg, showThreadIndicator: false),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('5 replies'), findsNothing);
     });
 
     testWidgets('renders file attachments', (tester) async {

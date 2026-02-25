@@ -133,6 +133,15 @@ final threadRepliesProvider = FutureProvider.family<List<MessageResponse>,
   return api.getThreadReplies(params.channelId, params.parentId);
 });
 
+/// Fetches a single message by channel ID and message ID.
+///
+/// Used by [RelayThreadPanel] to load the root message of a thread.
+final messageByIdProvider = FutureProvider.family<MessageResponse,
+    ({String channelId, String messageId})>((ref, params) {
+  final api = ref.watch(relayApiProvider);
+  return api.getMessage(params.channelId, params.messageId);
+});
+
 /// Fetches active threads in a channel.
 final activeThreadsProvider =
     FutureProvider.family<List<MessageThreadResponse>, String>(
