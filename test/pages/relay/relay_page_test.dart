@@ -8,23 +8,75 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 
+import 'package:codeops/models/health_snapshot.dart';
+import 'package:codeops/models/relay_models.dart';
+import 'package:codeops/models/user.dart';
 import 'package:codeops/pages/relay/relay_page.dart';
 import 'package:codeops/providers/auth_providers.dart';
 import 'package:codeops/providers/relay_providers.dart';
-import 'package:codeops/widgets/relay/relay_detail_panel.dart';
+import 'package:codeops/services/cloud/relay_api.dart';
 import 'package:codeops/widgets/relay/relay_dm_panel.dart';
 import 'package:codeops/widgets/relay/relay_empty_state.dart';
 import 'package:codeops/widgets/relay/relay_message_feed.dart';
 import 'package:codeops/widgets/relay/relay_sidebar.dart';
-import 'package:codeops/services/auth/secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:codeops/widgets/relay/relay_thread_panel.dart';
+
+class MockRelayApiService extends Mock implements RelayApiService {}
+
+class MockSecureStorageService extends Mock implements SecureStorageService {
+  @override
+  Future<String?> getAuthToken() async => null;
+}
+
+/// Stub secure storage that provides a null token.
+class SecureStorageService {
+  Future<String?> getAuthToken() async => null;
+}
 
 Widget _createPage({
   String initialLocation = '/relay',
+  MockRelayApiService? mockApi,
   List<Override> overrides = const [],
 }) {
-  SharedPreferences.setMockInitialValues({});
+  final api = mockApi ?? MockRelayApiService();
+
+  // Default stubs for providers the real widgets depend on
+  when(() => api.getConversation(any()))
+      .thenAnswer((_) async => const DirectConversationResponse(
+            id: 'convo',
+            name: 'Test DM',
+          ));
+  when(() => api.getDirectMessages(any(),
+          page: any(named: 'page'), size: any(named: 'size')))
+      .thenAnswer((_) async => PageResponse<DirectMessageResponse>(
+            content: [],
+            page: 0,
+            size: 50,
+            totalElements: 0,
+            totalPages: 1,
+            isLast: true,
+          ));
+  when(() => api.markConversationRead(any())).thenAnswer((_) async => {});
+  when(() => api.getChannelMessages(any(), any(),
+          page: any(named: 'page'), size: any(named: 'size')))
+      .thenAnswer((_) async => PageResponse<MessageResponse>(
+            content: [],
+            page: 0,
+            size: 50,
+            totalElements: 0,
+            totalPages: 1,
+            isLast: true,
+          ));
+  when(() => api.getMessage(any(), any()))
+      .thenAnswer((_) async => const MessageResponse(
+            id: 'msg-1',
+            content: 'Root',
+          ));
+  when(() => api.getThreadReplies(any(), any()))
+      .thenAnswer((_) async => <MessageResponse>[]);
+
   final router = GoRouter(
     initialLocation: initialLocation,
     routes: [
@@ -55,7 +107,8 @@ Widget _createPage({
           GoRoute(
             path: 'dm/:conversationId',
             builder: (context, state) {
-              final conversationId = state.pathParameters['conversationId']!;
+              final conversationId =
+                  state.pathParameters['conversationId']!;
               return RelayPage(initialConversationId: conversationId);
             },
           ),
@@ -66,9 +119,12 @@ Widget _createPage({
 
   return ProviderScope(
     overrides: [
-      secureStorageProvider.overrideWith(
-        (ref) => SecureStorageService(
-          prefs: SharedPreferences.getInstance() as SharedPreferences?,
+      relayApiProvider.overrideWithValue(api),
+      currentUserProvider.overrideWith(
+        (ref) => const User(
+          id: 'user-1',
+          email: 'test@test.com',
+          displayName: 'Test User',
         ),
       ),
       ...overrides,
@@ -115,7 +171,8 @@ void main() {
       expect(find.byType(RelayEmptyState), findsNothing);
     });
 
-    testWidgets('processes initialConversationId route param', (tester) async {
+    testWidgets('processes initialConversationId route param',
+        (tester) async {
       await tester.binding.setSurfaceSize(const Size(1400, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -139,7 +196,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(RelayMessageFeed), findsOneWidget);
-      expect(find.byType(RelayDetailPanel), findsOneWidget);
+      expect(find.byType(RelayThreadPanel), findsOneWidget);
     });
 
     testWidgets('hides thread panel by default', (tester) async {
@@ -149,7 +206,7 @@ void main() {
       await tester.pumpWidget(_createPage());
       await tester.pumpAndSettle();
 
-      expect(find.byType(RelayDetailPanel), findsNothing);
+      expect(find.byType(RelayThreadPanel), findsNothing);
     });
 
     testWidgets('shows thread panel when showThreadPanelProvider is true',
@@ -161,11 +218,12 @@ void main() {
         overrides: [
           showThreadPanelProvider.overrideWith((ref) => true),
           selectedChannelIdProvider.overrideWith((ref) => 'ch-123'),
+          threadRootMessageIdProvider.overrideWith((ref) => 'msg-123'),
         ],
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byType(RelayDetailPanel), findsOneWidget);
+      expect(find.byType(RelayThreadPanel), findsOneWidget);
     });
 
     testWidgets('channel selection shows message panel', (tester) async {

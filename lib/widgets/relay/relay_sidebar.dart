@@ -19,6 +19,7 @@ import 'browse_channels_dialog.dart';
 import 'channel_list_tile.dart';
 import 'create_channel_dialog.dart';
 import 'dm_list_tile.dart';
+import 'new_dm_dialog.dart';
 
 /// Channel and conversation sidebar for the Relay messaging module.
 ///
@@ -170,9 +171,7 @@ class _RelaySidebarState extends ConsumerState<RelaySidebar> {
               icon: const Icon(Icons.edit_outlined, size: 16),
               color: CodeOpsColors.textTertiary,
               padding: EdgeInsets.zero,
-              onPressed: () {
-                // Placeholder for RLF-006 — new DM dialog
-              },
+              onPressed: () => _showNewDmDialog(context, teamId),
               tooltip: 'New message',
             ),
           ),
@@ -298,9 +297,7 @@ class _RelaySidebarState extends ConsumerState<RelaySidebar> {
           title: 'DIRECT MESSAGES',
           expanded: _dmsExpanded,
           onToggle: () => setState(() => _dmsExpanded = !_dmsExpanded),
-          onAdd: () {
-            // Placeholder for RLF-006 — new DM dialog
-          },
+          onAdd: () => _showNewDmDialog(context, teamId),
         ),
         if (_dmsExpanded) ...[
           conversationsAsync.when(
@@ -428,6 +425,18 @@ class _RelaySidebarState extends ConsumerState<RelaySidebar> {
       builder: (_) => BrowseChannelsDialog(teamId: teamId),
     ).then((_) {
       ref.invalidate(teamChannelsProvider(teamId));
+    });
+  }
+
+  /// Opens the new DM dialog and navigates to the created conversation.
+  void _showNewDmDialog(BuildContext context, String teamId) {
+    showDialog<String>(
+      context: context,
+      builder: (_) => NewDmDialog(teamId: teamId),
+    ).then((conversationId) {
+      if (conversationId != null) {
+        widget.onConversationSelected(conversationId);
+      }
     });
   }
 }

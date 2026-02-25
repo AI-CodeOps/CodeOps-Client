@@ -397,3 +397,97 @@ final accumulatedMessagesProvider = StateNotifierProvider.family<
   final api = ref.watch(relayApiProvider);
   return AccumulatedMessagesNotifier(api, params.channelId, params.teamId);
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Accumulated DM Messages — StateNotifier for Infinite Scroll
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Manages an accumulated list of [DirectMessageResponse] items for a
+/// direct conversation, supporting paginated loading (infinite scroll)
+/// and refresh.
+///
+/// Mirrors [AccumulatedMessagesNotifier] but operates on
+/// [DirectMessageResponse] via [RelayApiService.getDirectMessages].
+/// Pages are reversed from newest-first to oldest-first for
+/// bottom-anchored display.
+class AccumulatedDmMessagesNotifier
+    extends StateNotifier<AsyncValue<List<DirectMessageResponse>>> {
+  final RelayApiService _api;
+  final String _conversationId;
+  int _currentPage = 0;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
+  /// Whether there are more pages to load.
+  bool get hasMore => _hasMore;
+
+  /// Whether a page load is currently in progress.
+  bool get isLoadingMore => _isLoadingMore;
+
+  /// Creates an [AccumulatedDmMessagesNotifier] and loads the initial page.
+  AccumulatedDmMessagesNotifier(this._api, this._conversationId)
+      : super(const AsyncValue.loading()) {
+    _loadInitial();
+  }
+
+  /// Fetches page 0 (newest messages), reverses for oldest-first order.
+  Future<void> _loadInitial() async {
+    state = const AsyncValue.loading();
+    try {
+      final page = await _api.getDirectMessages(_conversationId);
+      _currentPage = 0;
+      _hasMore = !page.isLast;
+      state = AsyncValue.data(page.content.reversed.toList());
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Loads the next older page and prepends it to the accumulated list.
+  ///
+  /// No-op if already loading or no more pages remain.
+  Future<void> loadNextPage() async {
+    if (_isLoadingMore || !_hasMore) return;
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    _isLoadingMore = true;
+    try {
+      final page = await _api.getDirectMessages(
+        _conversationId,
+        page: _currentPage + 1,
+      );
+      _currentPage++;
+      _hasMore = !page.isLast;
+      state = AsyncValue.data([
+        ...page.content.reversed,
+        ...current,
+      ]);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+
+  /// Resets state and reloads from page 0.
+  Future<void> refresh() async {
+    _currentPage = 0;
+    _hasMore = true;
+    _isLoadingMore = false;
+    await _loadInitial();
+  }
+}
+
+/// Provides an [AccumulatedDmMessagesNotifier] for a direct conversation,
+/// keyed by conversation ID.
+///
+/// Automatically loads the first page on creation. Use [loadNextPage]
+/// for infinite scroll and [refresh] after sending messages.
+final accumulatedDmMessagesProvider = StateNotifierProvider.family<
+    AccumulatedDmMessagesNotifier,
+    AsyncValue<List<DirectMessageResponse>>,
+    String>((ref, conversationId) {
+  final api = ref.watch(relayApiProvider);
+  return AccumulatedDmMessagesNotifier(api, conversationId);
+});
