@@ -325,6 +325,40 @@ final undeliveredEventsProvider =
   return api.getUndeliveredEvents(teamId);
 });
 
+/// Fetches a single platform event by ID.
+final platformEventDetailProvider =
+    FutureProvider.family<PlatformEventResponse, String>((ref, eventId) {
+  final api = ref.watch(relayApiProvider);
+  return api.getEvent(eventId);
+});
+
+/// Fetches paginated platform events with optional type filter.
+///
+/// When [eventType] is non-null, only events of that type are returned.
+/// Otherwise returns all events for the team.
+final platformEventsFilteredProvider = FutureProvider.autoDispose.family<
+    PageResponse<PlatformEventResponse>,
+    ({String teamId, int page, PlatformEventType? eventType})>((ref, params) {
+  final api = ref.watch(relayApiProvider);
+  if (params.eventType != null) {
+    return api.getEventsForTeamByType(
+      params.teamId,
+      params.eventType!,
+      page: params.page,
+    );
+  }
+  return api.getEventsForTeam(params.teamId, page: params.page);
+});
+
+/// Count of undelivered platform events for badge display.
+///
+/// Derived from [undeliveredEventsProvider] by counting the list length.
+final undeliveredEventCountProvider =
+    Provider.family<int, String>((ref, teamId) {
+  final async = ref.watch(undeliveredEventsProvider(teamId));
+  return async.valueOrNull?.length ?? 0;
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Files — Data Providers
 // ─────────────────────────────────────────────────────────────────────────────

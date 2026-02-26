@@ -12,6 +12,7 @@ import '../../models/relay_enums.dart';
 import '../../providers/relay_providers.dart';
 import '../../theme/colors.dart';
 import 'channel_settings_dialog.dart';
+import 'relay_event_feed.dart';
 import 'relay_search_dialog.dart';
 
 /// Header bar displaying channel info and action buttons.
@@ -104,6 +105,7 @@ class RelayMessageFeedHeader extends ConsumerWidget {
               'Search',
               () => _openSearch(context),
             ),
+            _buildNotificationBell(context, ref),
             _buildHeaderAction(
               Icons.push_pin_outlined,
               'Pins',
@@ -145,6 +147,64 @@ class RelayMessageFeedHeader extends ConsumerWidget {
       tooltip: tooltip,
       padding: const EdgeInsets.all(6),
       constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+    );
+  }
+
+  /// Builds the notification bell icon with undelivered event badge.
+  Widget _buildNotificationBell(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(undeliveredEventCountProvider(teamId));
+
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: Stack(
+        children: [
+          Center(
+            child: IconButton(
+              icon: const Icon(Icons.notifications_outlined, size: 18),
+              color: CodeOpsColors.textTertiary,
+              onPressed: () => _openEventFeed(context),
+              tooltip: 'Events',
+              padding: const EdgeInsets.all(6),
+              constraints:
+                  const BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+          ),
+          if (count > 0)
+            Positioned(
+              right: 2,
+              top: 2,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                constraints: const BoxConstraints(
+                  minWidth: 14,
+                  minHeight: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: CodeOpsColors.error,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Text(
+                  count > 99 ? '99+' : '$count',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Opens the event feed dialog.
+  void _openEventFeed(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => const RelayEventFeed(),
     );
   }
 

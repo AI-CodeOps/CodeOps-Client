@@ -14,6 +14,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../models/relay_enums.dart';
@@ -22,6 +23,7 @@ import '../../providers/relay_providers.dart';
 import '../../theme/colors.dart';
 import '../../utils/date_utils.dart';
 import 'relay_emoji_picker.dart';
+import 'relay_event_style_helper.dart';
 import 'relay_file_icon.dart';
 
 /// Renders a single message in the Relay message feed.
@@ -62,7 +64,7 @@ class RelayMessageBubble extends ConsumerWidget {
 
     return switch (type) {
       MessageType.system => _buildSystemMessage(),
-      MessageType.platformEvent => _buildPlatformEventMessage(),
+      MessageType.platformEvent => _buildPlatformEventMessage(context, ref),
       MessageType.file => _buildFileMessage(context, ref),
       _ => _buildTextMessage(context, ref),
     };
@@ -290,9 +292,34 @@ class RelayMessageBubble extends ConsumerWidget {
     );
   }
 
-  /// Builds a platform event message with colored accent.
-  Widget _buildPlatformEventMessage() {
-    final color = _platformEventColor(message.content);
+  /// Builds a platform event message with typed icon, color, and label.
+  ///
+  /// If the message has a [MessageResponse.platformEventId], fetches the
+  /// [PlatformEventResponse] to determine the event type, icon, label,
+  /// and source entity link. Falls back to a generic style if the event
+  /// data is unavailable.
+  Widget _buildPlatformEventMessage(BuildContext context, WidgetRef ref) {
+    final eventId = message.platformEventId;
+    PlatformEventResponse? event;
+
+    if (eventId != null) {
+      final eventAsync = ref.watch(platformEventDetailProvider(eventId));
+      event = eventAsync.valueOrNull;
+    }
+
+    final eventType = event?.eventType;
+    final color = eventType != null
+        ? RelayEventStyleHelper.borderColor(eventType)
+        : CodeOpsColors.primary;
+    final iconData = eventType != null
+        ? RelayEventStyleHelper.icon(eventType)
+        : Icons.bolt;
+    final labelText = eventType != null
+        ? RelayEventStyleHelper.label(eventType)
+        : 'Platform Event';
+    final route = event != null
+        ? RelayEventStyleHelper.routeForEvent(event)
+        : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -305,44 +332,75 @@ class RelayMessageBubble extends ConsumerWidget {
           ),
         ),
         padding: const EdgeInsets.all(10),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.bolt, size: 16, color: color),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Platform Event',
+            Row(
+              children: [
+                Icon(iconData, size: 16, color: color),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    labelText,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: color,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    message.content ?? '',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: CodeOpsColors.textPrimary,
-                    ),
+                ),
+                Text(
+                  formatTimeAgo(message.createdAt),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: CodeOpsColors.textTertiary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+            const SizedBox(height: 4),
             Text(
-              formatTimeAgo(message.createdAt),
+              event?.title ?? message.content ?? '',
               style: const TextStyle(
-                fontSize: 11,
-                color: CodeOpsColors.textTertiary,
+                fontSize: 13,
+                color: CodeOpsColors.textPrimary,
               ),
             ),
+            if (event?.detail != null && event!.detail!.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                event.detail!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: CodeOpsColors.textSecondary,
+                ),
+              ),
+            ],
+            if (route != null) ...[
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () => _navigateToEvent(context, route),
+                child: Text(
+                  'View details \u2192',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: color,
+                    decoration: TextDecoration.underline,
+                    decorationColor: color,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
+  }
+
+  /// Navigates to the source entity for a platform event.
+  void _navigateToEvent(BuildContext context, String route) {
+    context.go(route);
   }
 
   /// Builds a file attachment message.
@@ -777,21 +835,4 @@ class RelayMessageBubble extends ConsumerWidget {
     );
   }
 
-  /// Returns a color based on platform event content keywords.
-  Color _platformEventColor(String? content) {
-    if (content == null) return CodeOpsColors.primary;
-    final lower = content.toLowerCase();
-    if (lower.contains('alert') || lower.contains('crash') ||
-        lower.contains('critical')) {
-      return CodeOpsColors.error;
-    }
-    if (lower.contains('audit') || lower.contains('build') ||
-        lower.contains('deploy') || lower.contains('merge')) {
-      return const Color(0xFF3B82F6); // blue
-    }
-    if (lower.contains('session')) return CodeOpsColors.success;
-    if (lower.contains('rotat')) return CodeOpsColors.warning;
-    if (lower.contains('register')) return const Color(0xFFA855F7); // purple
-    return CodeOpsColors.primary;
-  }
 }

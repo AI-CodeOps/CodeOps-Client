@@ -38,6 +38,8 @@ Widget _createHeader({
     overrides: [
       channelDetailProvider((channelId: channelId, teamId: teamId))
           .overrideWith((ref) async => ch),
+      undeliveredEventsProvider(teamId)
+          .overrideWith((ref) async => <PlatformEventResponse>[]),
       ...overrides,
     ],
     child: MaterialApp(
@@ -113,6 +115,8 @@ void main() {
             channelDetailProvider((channelId: 'ch-1', teamId: 'team-1'))
                 .overrideWith(
                     (ref) => Completer<ChannelResponse>().future),
+            undeliveredEventsProvider('team-1')
+                .overrideWith((ref) async => <PlatformEventResponse>[]),
           ],
           child: const MaterialApp(
             home: Scaffold(
@@ -135,6 +139,8 @@ void main() {
             channelDetailProvider((channelId: 'ch-1', teamId: 'team-1'))
                 .overrideWith(
                     (ref) async => throw Exception('channel not found')),
+            undeliveredEventsProvider('team-1')
+                .overrideWith((ref) async => <PlatformEventResponse>[]),
           ],
           child: const MaterialApp(
             home: Scaffold(
@@ -154,6 +160,30 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.search), findsOneWidget);
+    });
+
+    testWidgets('renders notification bell icon', (tester) async {
+      await tester.pumpWidget(_createHeader());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
+    });
+
+    testWidgets('notification bell shows badge when undelivered events exist',
+        (tester) async {
+      await tester.pumpWidget(_createHeader(
+        overrides: [
+          undeliveredEventsProvider('team-1').overrideWith(
+            (ref) async => const [
+              PlatformEventResponse(id: 'evt-1', isDelivered: false),
+              PlatformEventResponse(id: 'evt-2', isDelivered: false),
+            ],
+          ),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('2'), findsOneWidget);
     });
 
     testWidgets('does not show topic when null', (tester) async {
