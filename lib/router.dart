@@ -59,6 +59,8 @@ import 'pages/projects_page.dart';
 import 'pages/fleet/container_detail_page.dart';
 import 'pages/fleet/container_list_page.dart';
 import 'pages/fleet/fleet_dashboard_page.dart';
+import 'pages/fleet/service_profile_detail_page.dart';
+import 'pages/fleet/service_profile_list_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
 import 'pages/settings_page.dart';
@@ -584,7 +586,7 @@ final GoRouter router = GoRouter(
           path: '/fleet/service-profiles',
           name: 'fleet-service-profiles',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Service Profiles'),
+            child: ServiceProfileListPage(),
           ),
         ),
         // 53. Fleet — Service Profile Detail
@@ -592,8 +594,8 @@ final GoRouter router = GoRouter(
           path: '/fleet/service-profiles/:id',
           name: 'fleet-service-profile-detail',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: PlaceholderPage(
-              title: 'Service Profile ${state.pathParameters['id']!}',
+            child: ServiceProfileDetailPage(
+              profileId: state.pathParameters['id']!,
             ),
           ),
         ),
