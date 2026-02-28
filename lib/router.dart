@@ -57,11 +57,14 @@ import 'pages/task_list_page.dart';
 import 'pages/task_manager_page.dart';
 import 'pages/projects_page.dart';
 import 'pages/fleet/container_detail_page.dart';
+import 'pages/fleet/image_list_page.dart';
 import 'pages/fleet/container_list_page.dart';
 import 'pages/fleet/fleet_dashboard_page.dart';
+import 'pages/fleet/network_list_page.dart';
 import 'pages/fleet/service_profile_detail_page.dart';
 import 'pages/fleet/service_profile_list_page.dart';
 import 'pages/fleet/solution_profile_detail_page.dart';
+import 'pages/fleet/volume_list_page.dart';
 import 'pages/fleet/solution_profile_list_page.dart';
 import 'pages/fleet/workstation_profile_detail_page.dart';
 import 'pages/fleet/workstation_profile_list_page.dart';
@@ -644,7 +647,7 @@ final GoRouter router = GoRouter(
           path: '/fleet/images',
           name: 'fleet-images',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Docker Images'),
+            child: ImageListPage(),
           ),
         ),
         // 59. Fleet — Docker Volumes
@@ -652,7 +655,7 @@ final GoRouter router = GoRouter(
           path: '/fleet/volumes',
           name: 'fleet-volumes',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Docker Volumes'),
+            child: VolumeListPage(),
           ),
         ),
         // 60. Fleet — Docker Networks
@@ -660,7 +663,7 @@ final GoRouter router = GoRouter(
           path: '/fleet/networks',
           name: 'fleet-networks',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Docker Networks'),
+            child: NetworkListPage(),
           ),
         ),
         // 61. Relay — Messaging shell
