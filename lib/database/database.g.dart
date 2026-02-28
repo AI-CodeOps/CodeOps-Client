@@ -12651,6 +12651,1693 @@ class ScribeSettingsCompanion extends UpdateCompanion<ScribeSetting> {
   }
 }
 
+class $DatalensConnectionsTable extends DatalensConnections
+    with TableInfo<$DatalensConnectionsTable, DatalensConnection> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DatalensConnectionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _driverMeta = const VerificationMeta('driver');
+  @override
+  late final GeneratedColumn<String> driver = GeneratedColumn<String>(
+      'driver', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('POSTGRESQL'));
+  static const VerificationMeta _hostMeta = const VerificationMeta('host');
+  @override
+  late final GeneratedColumn<String> host = GeneratedColumn<String>(
+      'host', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _portMeta = const VerificationMeta('port');
+  @override
+  late final GeneratedColumn<int> port = GeneratedColumn<int>(
+      'port', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(5432));
+  static const VerificationMeta _databaseMeta =
+      const VerificationMeta('database');
+  @override
+  late final GeneratedColumn<String> database = GeneratedColumn<String>(
+      'database', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _schemaMeta = const VerificationMeta('schema');
+  @override
+  late final GeneratedColumn<String> schema = GeneratedColumn<String>(
+      'schema', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _usernameMeta =
+      const VerificationMeta('username');
+  @override
+  late final GeneratedColumn<String> username = GeneratedColumn<String>(
+      'username', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _passwordMeta =
+      const VerificationMeta('password');
+  @override
+  late final GeneratedColumn<String> password = GeneratedColumn<String>(
+      'password', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _useSslMeta = const VerificationMeta('useSsl');
+  @override
+  late final GeneratedColumn<bool> useSsl = GeneratedColumn<bool>(
+      'use_ssl', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("use_ssl" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _sslModeMeta =
+      const VerificationMeta('sslMode');
+  @override
+  late final GeneratedColumn<String> sslMode = GeneratedColumn<String>(
+      'ssl_mode', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<String> color = GeneratedColumn<String>(
+      'color', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _connectionTimeoutMeta =
+      const VerificationMeta('connectionTimeout');
+  @override
+  late final GeneratedColumn<int> connectionTimeout = GeneratedColumn<int>(
+      'connection_timeout', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(10));
+  static const VerificationMeta _lastConnectedAtMeta =
+      const VerificationMeta('lastConnectedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastConnectedAt =
+      GeneratedColumn<DateTime>('last_connected_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        driver,
+        host,
+        port,
+        database,
+        schema,
+        username,
+        password,
+        useSsl,
+        sslMode,
+        color,
+        connectionTimeout,
+        lastConnectedAt,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'datalens_connections';
+  @override
+  VerificationContext validateIntegrity(Insertable<DatalensConnection> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('driver')) {
+      context.handle(_driverMeta,
+          driver.isAcceptableOrUnknown(data['driver']!, _driverMeta));
+    }
+    if (data.containsKey('host')) {
+      context.handle(
+          _hostMeta, host.isAcceptableOrUnknown(data['host']!, _hostMeta));
+    } else if (isInserting) {
+      context.missing(_hostMeta);
+    }
+    if (data.containsKey('port')) {
+      context.handle(
+          _portMeta, port.isAcceptableOrUnknown(data['port']!, _portMeta));
+    }
+    if (data.containsKey('database')) {
+      context.handle(_databaseMeta,
+          database.isAcceptableOrUnknown(data['database']!, _databaseMeta));
+    } else if (isInserting) {
+      context.missing(_databaseMeta);
+    }
+    if (data.containsKey('schema')) {
+      context.handle(_schemaMeta,
+          schema.isAcceptableOrUnknown(data['schema']!, _schemaMeta));
+    }
+    if (data.containsKey('username')) {
+      context.handle(_usernameMeta,
+          username.isAcceptableOrUnknown(data['username']!, _usernameMeta));
+    } else if (isInserting) {
+      context.missing(_usernameMeta);
+    }
+    if (data.containsKey('password')) {
+      context.handle(_passwordMeta,
+          password.isAcceptableOrUnknown(data['password']!, _passwordMeta));
+    }
+    if (data.containsKey('use_ssl')) {
+      context.handle(_useSslMeta,
+          useSsl.isAcceptableOrUnknown(data['use_ssl']!, _useSslMeta));
+    }
+    if (data.containsKey('ssl_mode')) {
+      context.handle(_sslModeMeta,
+          sslMode.isAcceptableOrUnknown(data['ssl_mode']!, _sslModeMeta));
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+          _colorMeta, color.isAcceptableOrUnknown(data['color']!, _colorMeta));
+    }
+    if (data.containsKey('connection_timeout')) {
+      context.handle(
+          _connectionTimeoutMeta,
+          connectionTimeout.isAcceptableOrUnknown(
+              data['connection_timeout']!, _connectionTimeoutMeta));
+    }
+    if (data.containsKey('last_connected_at')) {
+      context.handle(
+          _lastConnectedAtMeta,
+          lastConnectedAt.isAcceptableOrUnknown(
+              data['last_connected_at']!, _lastConnectedAtMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DatalensConnection map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DatalensConnection(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      driver: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}driver'])!,
+      host: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}host'])!,
+      port: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}port'])!,
+      database: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}database'])!,
+      schema: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}schema']),
+      username: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}username'])!,
+      password: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}password']),
+      useSsl: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}use_ssl'])!,
+      sslMode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}ssl_mode']),
+      color: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}color']),
+      connectionTimeout: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}connection_timeout'])!,
+      lastConnectedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_connected_at']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+    );
+  }
+
+  @override
+  $DatalensConnectionsTable createAlias(String alias) {
+    return $DatalensConnectionsTable(attachedDatabase, alias);
+  }
+}
+
+class DatalensConnection extends DataClass
+    implements Insertable<DatalensConnection> {
+  /// UUID primary key.
+  final String id;
+
+  /// Display name (e.g., "CodeOps Dev").
+  final String name;
+
+  /// Database driver type (SCREAMING_SNAKE_CASE).
+  final String driver;
+
+  /// Database host address.
+  final String host;
+
+  /// Database port number.
+  final int port;
+
+  /// Database name.
+  final String database;
+
+  /// Default schema (e.g., "public").
+  final String? schema;
+
+  /// Database username.
+  final String username;
+
+  /// Database password (stored locally).
+  final String? password;
+
+  /// Whether to use SSL for the connection.
+  final bool useSsl;
+
+  /// SSL mode (disable, require, verify-ca, verify-full).
+  final String? sslMode;
+
+  /// Hex color for visual identification.
+  final String? color;
+
+  /// Connection timeout in seconds.
+  final int connectionTimeout;
+
+  /// Timestamp of last successful connection.
+  final DateTime? lastConnectedAt;
+
+  /// Creation timestamp.
+  final DateTime createdAt;
+
+  /// Last update timestamp.
+  final DateTime? updatedAt;
+  const DatalensConnection(
+      {required this.id,
+      required this.name,
+      required this.driver,
+      required this.host,
+      required this.port,
+      required this.database,
+      this.schema,
+      required this.username,
+      this.password,
+      required this.useSsl,
+      this.sslMode,
+      this.color,
+      required this.connectionTimeout,
+      this.lastConnectedAt,
+      required this.createdAt,
+      this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['driver'] = Variable<String>(driver);
+    map['host'] = Variable<String>(host);
+    map['port'] = Variable<int>(port);
+    map['database'] = Variable<String>(database);
+    if (!nullToAbsent || schema != null) {
+      map['schema'] = Variable<String>(schema);
+    }
+    map['username'] = Variable<String>(username);
+    if (!nullToAbsent || password != null) {
+      map['password'] = Variable<String>(password);
+    }
+    map['use_ssl'] = Variable<bool>(useSsl);
+    if (!nullToAbsent || sslMode != null) {
+      map['ssl_mode'] = Variable<String>(sslMode);
+    }
+    if (!nullToAbsent || color != null) {
+      map['color'] = Variable<String>(color);
+    }
+    map['connection_timeout'] = Variable<int>(connectionTimeout);
+    if (!nullToAbsent || lastConnectedAt != null) {
+      map['last_connected_at'] = Variable<DateTime>(lastConnectedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  DatalensConnectionsCompanion toCompanion(bool nullToAbsent) {
+    return DatalensConnectionsCompanion(
+      id: Value(id),
+      name: Value(name),
+      driver: Value(driver),
+      host: Value(host),
+      port: Value(port),
+      database: Value(database),
+      schema:
+          schema == null && nullToAbsent ? const Value.absent() : Value(schema),
+      username: Value(username),
+      password: password == null && nullToAbsent
+          ? const Value.absent()
+          : Value(password),
+      useSsl: Value(useSsl),
+      sslMode: sslMode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sslMode),
+      color:
+          color == null && nullToAbsent ? const Value.absent() : Value(color),
+      connectionTimeout: Value(connectionTimeout),
+      lastConnectedAt: lastConnectedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastConnectedAt),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory DatalensConnection.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DatalensConnection(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      driver: serializer.fromJson<String>(json['driver']),
+      host: serializer.fromJson<String>(json['host']),
+      port: serializer.fromJson<int>(json['port']),
+      database: serializer.fromJson<String>(json['database']),
+      schema: serializer.fromJson<String?>(json['schema']),
+      username: serializer.fromJson<String>(json['username']),
+      password: serializer.fromJson<String?>(json['password']),
+      useSsl: serializer.fromJson<bool>(json['useSsl']),
+      sslMode: serializer.fromJson<String?>(json['sslMode']),
+      color: serializer.fromJson<String?>(json['color']),
+      connectionTimeout: serializer.fromJson<int>(json['connectionTimeout']),
+      lastConnectedAt: serializer.fromJson<DateTime?>(json['lastConnectedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'driver': serializer.toJson<String>(driver),
+      'host': serializer.toJson<String>(host),
+      'port': serializer.toJson<int>(port),
+      'database': serializer.toJson<String>(database),
+      'schema': serializer.toJson<String?>(schema),
+      'username': serializer.toJson<String>(username),
+      'password': serializer.toJson<String?>(password),
+      'useSsl': serializer.toJson<bool>(useSsl),
+      'sslMode': serializer.toJson<String?>(sslMode),
+      'color': serializer.toJson<String?>(color),
+      'connectionTimeout': serializer.toJson<int>(connectionTimeout),
+      'lastConnectedAt': serializer.toJson<DateTime?>(lastConnectedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  DatalensConnection copyWith(
+          {String? id,
+          String? name,
+          String? driver,
+          String? host,
+          int? port,
+          String? database,
+          Value<String?> schema = const Value.absent(),
+          String? username,
+          Value<String?> password = const Value.absent(),
+          bool? useSsl,
+          Value<String?> sslMode = const Value.absent(),
+          Value<String?> color = const Value.absent(),
+          int? connectionTimeout,
+          Value<DateTime?> lastConnectedAt = const Value.absent(),
+          DateTime? createdAt,
+          Value<DateTime?> updatedAt = const Value.absent()}) =>
+      DatalensConnection(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        driver: driver ?? this.driver,
+        host: host ?? this.host,
+        port: port ?? this.port,
+        database: database ?? this.database,
+        schema: schema.present ? schema.value : this.schema,
+        username: username ?? this.username,
+        password: password.present ? password.value : this.password,
+        useSsl: useSsl ?? this.useSsl,
+        sslMode: sslMode.present ? sslMode.value : this.sslMode,
+        color: color.present ? color.value : this.color,
+        connectionTimeout: connectionTimeout ?? this.connectionTimeout,
+        lastConnectedAt: lastConnectedAt.present
+            ? lastConnectedAt.value
+            : this.lastConnectedAt,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+      );
+  DatalensConnection copyWithCompanion(DatalensConnectionsCompanion data) {
+    return DatalensConnection(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      driver: data.driver.present ? data.driver.value : this.driver,
+      host: data.host.present ? data.host.value : this.host,
+      port: data.port.present ? data.port.value : this.port,
+      database: data.database.present ? data.database.value : this.database,
+      schema: data.schema.present ? data.schema.value : this.schema,
+      username: data.username.present ? data.username.value : this.username,
+      password: data.password.present ? data.password.value : this.password,
+      useSsl: data.useSsl.present ? data.useSsl.value : this.useSsl,
+      sslMode: data.sslMode.present ? data.sslMode.value : this.sslMode,
+      color: data.color.present ? data.color.value : this.color,
+      connectionTimeout: data.connectionTimeout.present
+          ? data.connectionTimeout.value
+          : this.connectionTimeout,
+      lastConnectedAt: data.lastConnectedAt.present
+          ? data.lastConnectedAt.value
+          : this.lastConnectedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DatalensConnection(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('driver: $driver, ')
+          ..write('host: $host, ')
+          ..write('port: $port, ')
+          ..write('database: $database, ')
+          ..write('schema: $schema, ')
+          ..write('username: $username, ')
+          ..write('password: $password, ')
+          ..write('useSsl: $useSsl, ')
+          ..write('sslMode: $sslMode, ')
+          ..write('color: $color, ')
+          ..write('connectionTimeout: $connectionTimeout, ')
+          ..write('lastConnectedAt: $lastConnectedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      name,
+      driver,
+      host,
+      port,
+      database,
+      schema,
+      username,
+      password,
+      useSsl,
+      sslMode,
+      color,
+      connectionTimeout,
+      lastConnectedAt,
+      createdAt,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DatalensConnection &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.driver == this.driver &&
+          other.host == this.host &&
+          other.port == this.port &&
+          other.database == this.database &&
+          other.schema == this.schema &&
+          other.username == this.username &&
+          other.password == this.password &&
+          other.useSsl == this.useSsl &&
+          other.sslMode == this.sslMode &&
+          other.color == this.color &&
+          other.connectionTimeout == this.connectionTimeout &&
+          other.lastConnectedAt == this.lastConnectedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> driver;
+  final Value<String> host;
+  final Value<int> port;
+  final Value<String> database;
+  final Value<String?> schema;
+  final Value<String> username;
+  final Value<String?> password;
+  final Value<bool> useSsl;
+  final Value<String?> sslMode;
+  final Value<String?> color;
+  final Value<int> connectionTimeout;
+  final Value<DateTime?> lastConnectedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const DatalensConnectionsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.driver = const Value.absent(),
+    this.host = const Value.absent(),
+    this.port = const Value.absent(),
+    this.database = const Value.absent(),
+    this.schema = const Value.absent(),
+    this.username = const Value.absent(),
+    this.password = const Value.absent(),
+    this.useSsl = const Value.absent(),
+    this.sslMode = const Value.absent(),
+    this.color = const Value.absent(),
+    this.connectionTimeout = const Value.absent(),
+    this.lastConnectedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DatalensConnectionsCompanion.insert({
+    required String id,
+    required String name,
+    this.driver = const Value.absent(),
+    required String host,
+    this.port = const Value.absent(),
+    required String database,
+    this.schema = const Value.absent(),
+    required String username,
+    this.password = const Value.absent(),
+    this.useSsl = const Value.absent(),
+    this.sslMode = const Value.absent(),
+    this.color = const Value.absent(),
+    this.connectionTimeout = const Value.absent(),
+    this.lastConnectedAt = const Value.absent(),
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        name = Value(name),
+        host = Value(host),
+        database = Value(database),
+        username = Value(username),
+        createdAt = Value(createdAt);
+  static Insertable<DatalensConnection> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? driver,
+    Expression<String>? host,
+    Expression<int>? port,
+    Expression<String>? database,
+    Expression<String>? schema,
+    Expression<String>? username,
+    Expression<String>? password,
+    Expression<bool>? useSsl,
+    Expression<String>? sslMode,
+    Expression<String>? color,
+    Expression<int>? connectionTimeout,
+    Expression<DateTime>? lastConnectedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (driver != null) 'driver': driver,
+      if (host != null) 'host': host,
+      if (port != null) 'port': port,
+      if (database != null) 'database': database,
+      if (schema != null) 'schema': schema,
+      if (username != null) 'username': username,
+      if (password != null) 'password': password,
+      if (useSsl != null) 'use_ssl': useSsl,
+      if (sslMode != null) 'ssl_mode': sslMode,
+      if (color != null) 'color': color,
+      if (connectionTimeout != null) 'connection_timeout': connectionTimeout,
+      if (lastConnectedAt != null) 'last_connected_at': lastConnectedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DatalensConnectionsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? name,
+      Value<String>? driver,
+      Value<String>? host,
+      Value<int>? port,
+      Value<String>? database,
+      Value<String?>? schema,
+      Value<String>? username,
+      Value<String?>? password,
+      Value<bool>? useSsl,
+      Value<String?>? sslMode,
+      Value<String?>? color,
+      Value<int>? connectionTimeout,
+      Value<DateTime?>? lastConnectedAt,
+      Value<DateTime>? createdAt,
+      Value<DateTime?>? updatedAt,
+      Value<int>? rowid}) {
+    return DatalensConnectionsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      driver: driver ?? this.driver,
+      host: host ?? this.host,
+      port: port ?? this.port,
+      database: database ?? this.database,
+      schema: schema ?? this.schema,
+      username: username ?? this.username,
+      password: password ?? this.password,
+      useSsl: useSsl ?? this.useSsl,
+      sslMode: sslMode ?? this.sslMode,
+      color: color ?? this.color,
+      connectionTimeout: connectionTimeout ?? this.connectionTimeout,
+      lastConnectedAt: lastConnectedAt ?? this.lastConnectedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (driver.present) {
+      map['driver'] = Variable<String>(driver.value);
+    }
+    if (host.present) {
+      map['host'] = Variable<String>(host.value);
+    }
+    if (port.present) {
+      map['port'] = Variable<int>(port.value);
+    }
+    if (database.present) {
+      map['database'] = Variable<String>(database.value);
+    }
+    if (schema.present) {
+      map['schema'] = Variable<String>(schema.value);
+    }
+    if (username.present) {
+      map['username'] = Variable<String>(username.value);
+    }
+    if (password.present) {
+      map['password'] = Variable<String>(password.value);
+    }
+    if (useSsl.present) {
+      map['use_ssl'] = Variable<bool>(useSsl.value);
+    }
+    if (sslMode.present) {
+      map['ssl_mode'] = Variable<String>(sslMode.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<String>(color.value);
+    }
+    if (connectionTimeout.present) {
+      map['connection_timeout'] = Variable<int>(connectionTimeout.value);
+    }
+    if (lastConnectedAt.present) {
+      map['last_connected_at'] = Variable<DateTime>(lastConnectedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DatalensConnectionsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('driver: $driver, ')
+          ..write('host: $host, ')
+          ..write('port: $port, ')
+          ..write('database: $database, ')
+          ..write('schema: $schema, ')
+          ..write('username: $username, ')
+          ..write('password: $password, ')
+          ..write('useSsl: $useSsl, ')
+          ..write('sslMode: $sslMode, ')
+          ..write('color: $color, ')
+          ..write('connectionTimeout: $connectionTimeout, ')
+          ..write('lastConnectedAt: $lastConnectedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DatalensQueryHistoryTable extends DatalensQueryHistory
+    with TableInfo<$DatalensQueryHistoryTable, DatalensQueryHistoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DatalensQueryHistoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _connectionIdMeta =
+      const VerificationMeta('connectionId');
+  @override
+  late final GeneratedColumn<String> connectionId = GeneratedColumn<String>(
+      'connection_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sqlMeta = const VerificationMeta('sql');
+  @override
+  late final GeneratedColumn<String> sql = GeneratedColumn<String>(
+      'sql', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _rowCountMeta =
+      const VerificationMeta('rowCount');
+  @override
+  late final GeneratedColumn<int> rowCount = GeneratedColumn<int>(
+      'row_count', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _executionTimeMsMeta =
+      const VerificationMeta('executionTimeMs');
+  @override
+  late final GeneratedColumn<int> executionTimeMs = GeneratedColumn<int>(
+      'execution_time_ms', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _errorMeta = const VerificationMeta('error');
+  @override
+  late final GeneratedColumn<String> error = GeneratedColumn<String>(
+      'error', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _executedAtMeta =
+      const VerificationMeta('executedAt');
+  @override
+  late final GeneratedColumn<DateTime> executedAt = GeneratedColumn<DateTime>(
+      'executed_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        connectionId,
+        sql,
+        status,
+        rowCount,
+        executionTimeMs,
+        error,
+        executedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'datalens_query_history';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<DatalensQueryHistoryData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('connection_id')) {
+      context.handle(
+          _connectionIdMeta,
+          connectionId.isAcceptableOrUnknown(
+              data['connection_id']!, _connectionIdMeta));
+    } else if (isInserting) {
+      context.missing(_connectionIdMeta);
+    }
+    if (data.containsKey('sql')) {
+      context.handle(
+          _sqlMeta, sql.isAcceptableOrUnknown(data['sql']!, _sqlMeta));
+    } else if (isInserting) {
+      context.missing(_sqlMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('row_count')) {
+      context.handle(_rowCountMeta,
+          rowCount.isAcceptableOrUnknown(data['row_count']!, _rowCountMeta));
+    }
+    if (data.containsKey('execution_time_ms')) {
+      context.handle(
+          _executionTimeMsMeta,
+          executionTimeMs.isAcceptableOrUnknown(
+              data['execution_time_ms']!, _executionTimeMsMeta));
+    } else if (isInserting) {
+      context.missing(_executionTimeMsMeta);
+    }
+    if (data.containsKey('error')) {
+      context.handle(
+          _errorMeta, error.isAcceptableOrUnknown(data['error']!, _errorMeta));
+    }
+    if (data.containsKey('executed_at')) {
+      context.handle(
+          _executedAtMeta,
+          executedAt.isAcceptableOrUnknown(
+              data['executed_at']!, _executedAtMeta));
+    } else if (isInserting) {
+      context.missing(_executedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DatalensQueryHistoryData map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DatalensQueryHistoryData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      connectionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}connection_id'])!,
+      sql: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sql'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      rowCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}row_count']),
+      executionTimeMs: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}execution_time_ms'])!,
+      error: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}error']),
+      executedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}executed_at'])!,
+    );
+  }
+
+  @override
+  $DatalensQueryHistoryTable createAlias(String alias) {
+    return $DatalensQueryHistoryTable(attachedDatabase, alias);
+  }
+}
+
+class DatalensQueryHistoryData extends DataClass
+    implements Insertable<DatalensQueryHistoryData> {
+  /// UUID primary key.
+  final String id;
+
+  /// Connection UUID this query was run against.
+  final String connectionId;
+
+  /// SQL that was executed.
+  final String sql;
+
+  /// Query execution status (SCREAMING_SNAKE_CASE).
+  final String status;
+
+  /// Number of rows returned.
+  final int? rowCount;
+
+  /// Execution time in milliseconds.
+  final int executionTimeMs;
+
+  /// Error message if the query failed.
+  final String? error;
+
+  /// Timestamp when the query was executed.
+  final DateTime executedAt;
+  const DatalensQueryHistoryData(
+      {required this.id,
+      required this.connectionId,
+      required this.sql,
+      required this.status,
+      this.rowCount,
+      required this.executionTimeMs,
+      this.error,
+      required this.executedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['connection_id'] = Variable<String>(connectionId);
+    map['sql'] = Variable<String>(sql);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || rowCount != null) {
+      map['row_count'] = Variable<int>(rowCount);
+    }
+    map['execution_time_ms'] = Variable<int>(executionTimeMs);
+    if (!nullToAbsent || error != null) {
+      map['error'] = Variable<String>(error);
+    }
+    map['executed_at'] = Variable<DateTime>(executedAt);
+    return map;
+  }
+
+  DatalensQueryHistoryCompanion toCompanion(bool nullToAbsent) {
+    return DatalensQueryHistoryCompanion(
+      id: Value(id),
+      connectionId: Value(connectionId),
+      sql: Value(sql),
+      status: Value(status),
+      rowCount: rowCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rowCount),
+      executionTimeMs: Value(executionTimeMs),
+      error:
+          error == null && nullToAbsent ? const Value.absent() : Value(error),
+      executedAt: Value(executedAt),
+    );
+  }
+
+  factory DatalensQueryHistoryData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DatalensQueryHistoryData(
+      id: serializer.fromJson<String>(json['id']),
+      connectionId: serializer.fromJson<String>(json['connectionId']),
+      sql: serializer.fromJson<String>(json['sql']),
+      status: serializer.fromJson<String>(json['status']),
+      rowCount: serializer.fromJson<int?>(json['rowCount']),
+      executionTimeMs: serializer.fromJson<int>(json['executionTimeMs']),
+      error: serializer.fromJson<String?>(json['error']),
+      executedAt: serializer.fromJson<DateTime>(json['executedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'connectionId': serializer.toJson<String>(connectionId),
+      'sql': serializer.toJson<String>(sql),
+      'status': serializer.toJson<String>(status),
+      'rowCount': serializer.toJson<int?>(rowCount),
+      'executionTimeMs': serializer.toJson<int>(executionTimeMs),
+      'error': serializer.toJson<String?>(error),
+      'executedAt': serializer.toJson<DateTime>(executedAt),
+    };
+  }
+
+  DatalensQueryHistoryData copyWith(
+          {String? id,
+          String? connectionId,
+          String? sql,
+          String? status,
+          Value<int?> rowCount = const Value.absent(),
+          int? executionTimeMs,
+          Value<String?> error = const Value.absent(),
+          DateTime? executedAt}) =>
+      DatalensQueryHistoryData(
+        id: id ?? this.id,
+        connectionId: connectionId ?? this.connectionId,
+        sql: sql ?? this.sql,
+        status: status ?? this.status,
+        rowCount: rowCount.present ? rowCount.value : this.rowCount,
+        executionTimeMs: executionTimeMs ?? this.executionTimeMs,
+        error: error.present ? error.value : this.error,
+        executedAt: executedAt ?? this.executedAt,
+      );
+  DatalensQueryHistoryData copyWithCompanion(
+      DatalensQueryHistoryCompanion data) {
+    return DatalensQueryHistoryData(
+      id: data.id.present ? data.id.value : this.id,
+      connectionId: data.connectionId.present
+          ? data.connectionId.value
+          : this.connectionId,
+      sql: data.sql.present ? data.sql.value : this.sql,
+      status: data.status.present ? data.status.value : this.status,
+      rowCount: data.rowCount.present ? data.rowCount.value : this.rowCount,
+      executionTimeMs: data.executionTimeMs.present
+          ? data.executionTimeMs.value
+          : this.executionTimeMs,
+      error: data.error.present ? data.error.value : this.error,
+      executedAt:
+          data.executedAt.present ? data.executedAt.value : this.executedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DatalensQueryHistoryData(')
+          ..write('id: $id, ')
+          ..write('connectionId: $connectionId, ')
+          ..write('sql: $sql, ')
+          ..write('status: $status, ')
+          ..write('rowCount: $rowCount, ')
+          ..write('executionTimeMs: $executionTimeMs, ')
+          ..write('error: $error, ')
+          ..write('executedAt: $executedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, connectionId, sql, status, rowCount,
+      executionTimeMs, error, executedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DatalensQueryHistoryData &&
+          other.id == this.id &&
+          other.connectionId == this.connectionId &&
+          other.sql == this.sql &&
+          other.status == this.status &&
+          other.rowCount == this.rowCount &&
+          other.executionTimeMs == this.executionTimeMs &&
+          other.error == this.error &&
+          other.executedAt == this.executedAt);
+}
+
+class DatalensQueryHistoryCompanion
+    extends UpdateCompanion<DatalensQueryHistoryData> {
+  final Value<String> id;
+  final Value<String> connectionId;
+  final Value<String> sql;
+  final Value<String> status;
+  final Value<int?> rowCount;
+  final Value<int> executionTimeMs;
+  final Value<String?> error;
+  final Value<DateTime> executedAt;
+  final Value<int> rowid;
+  const DatalensQueryHistoryCompanion({
+    this.id = const Value.absent(),
+    this.connectionId = const Value.absent(),
+    this.sql = const Value.absent(),
+    this.status = const Value.absent(),
+    this.rowCount = const Value.absent(),
+    this.executionTimeMs = const Value.absent(),
+    this.error = const Value.absent(),
+    this.executedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DatalensQueryHistoryCompanion.insert({
+    required String id,
+    required String connectionId,
+    required String sql,
+    required String status,
+    this.rowCount = const Value.absent(),
+    required int executionTimeMs,
+    this.error = const Value.absent(),
+    required DateTime executedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        connectionId = Value(connectionId),
+        sql = Value(sql),
+        status = Value(status),
+        executionTimeMs = Value(executionTimeMs),
+        executedAt = Value(executedAt);
+  static Insertable<DatalensQueryHistoryData> custom({
+    Expression<String>? id,
+    Expression<String>? connectionId,
+    Expression<String>? sql,
+    Expression<String>? status,
+    Expression<int>? rowCount,
+    Expression<int>? executionTimeMs,
+    Expression<String>? error,
+    Expression<DateTime>? executedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (connectionId != null) 'connection_id': connectionId,
+      if (sql != null) 'sql': sql,
+      if (status != null) 'status': status,
+      if (rowCount != null) 'row_count': rowCount,
+      if (executionTimeMs != null) 'execution_time_ms': executionTimeMs,
+      if (error != null) 'error': error,
+      if (executedAt != null) 'executed_at': executedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DatalensQueryHistoryCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? connectionId,
+      Value<String>? sql,
+      Value<String>? status,
+      Value<int?>? rowCount,
+      Value<int>? executionTimeMs,
+      Value<String?>? error,
+      Value<DateTime>? executedAt,
+      Value<int>? rowid}) {
+    return DatalensQueryHistoryCompanion(
+      id: id ?? this.id,
+      connectionId: connectionId ?? this.connectionId,
+      sql: sql ?? this.sql,
+      status: status ?? this.status,
+      rowCount: rowCount ?? this.rowCount,
+      executionTimeMs: executionTimeMs ?? this.executionTimeMs,
+      error: error ?? this.error,
+      executedAt: executedAt ?? this.executedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (connectionId.present) {
+      map['connection_id'] = Variable<String>(connectionId.value);
+    }
+    if (sql.present) {
+      map['sql'] = Variable<String>(sql.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (rowCount.present) {
+      map['row_count'] = Variable<int>(rowCount.value);
+    }
+    if (executionTimeMs.present) {
+      map['execution_time_ms'] = Variable<int>(executionTimeMs.value);
+    }
+    if (error.present) {
+      map['error'] = Variable<String>(error.value);
+    }
+    if (executedAt.present) {
+      map['executed_at'] = Variable<DateTime>(executedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DatalensQueryHistoryCompanion(')
+          ..write('id: $id, ')
+          ..write('connectionId: $connectionId, ')
+          ..write('sql: $sql, ')
+          ..write('status: $status, ')
+          ..write('rowCount: $rowCount, ')
+          ..write('executionTimeMs: $executionTimeMs, ')
+          ..write('error: $error, ')
+          ..write('executedAt: $executedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DatalensSavedQueriesTable extends DatalensSavedQueries
+    with TableInfo<$DatalensSavedQueriesTable, DatalensSavedQuery> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DatalensSavedQueriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _connectionIdMeta =
+      const VerificationMeta('connectionId');
+  @override
+  late final GeneratedColumn<String> connectionId = GeneratedColumn<String>(
+      'connection_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _sqlMeta = const VerificationMeta('sql');
+  @override
+  late final GeneratedColumn<String> sql = GeneratedColumn<String>(
+      'sql', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _folderMeta = const VerificationMeta('folder');
+  @override
+  late final GeneratedColumn<String> folder = GeneratedColumn<String>(
+      'folder', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, connectionId, name, description, sql, folder, createdAt, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'datalens_saved_queries';
+  @override
+  VerificationContext validateIntegrity(Insertable<DatalensSavedQuery> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('connection_id')) {
+      context.handle(
+          _connectionIdMeta,
+          connectionId.isAcceptableOrUnknown(
+              data['connection_id']!, _connectionIdMeta));
+    } else if (isInserting) {
+      context.missing(_connectionIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('sql')) {
+      context.handle(
+          _sqlMeta, sql.isAcceptableOrUnknown(data['sql']!, _sqlMeta));
+    } else if (isInserting) {
+      context.missing(_sqlMeta);
+    }
+    if (data.containsKey('folder')) {
+      context.handle(_folderMeta,
+          folder.isAcceptableOrUnknown(data['folder']!, _folderMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DatalensSavedQuery map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DatalensSavedQuery(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      connectionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}connection_id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      sql: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sql'])!,
+      folder: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}folder']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+    );
+  }
+
+  @override
+  $DatalensSavedQueriesTable createAlias(String alias) {
+    return $DatalensSavedQueriesTable(attachedDatabase, alias);
+  }
+}
+
+class DatalensSavedQuery extends DataClass
+    implements Insertable<DatalensSavedQuery> {
+  /// UUID primary key.
+  final String id;
+
+  /// Connection UUID this query is associated with.
+  final String connectionId;
+
+  /// Display name for the saved query.
+  final String name;
+
+  /// Optional description.
+  final String? description;
+
+  /// SQL content.
+  final String sql;
+
+  /// Optional grouping folder.
+  final String? folder;
+
+  /// Creation timestamp.
+  final DateTime createdAt;
+
+  /// Last update timestamp.
+  final DateTime? updatedAt;
+  const DatalensSavedQuery(
+      {required this.id,
+      required this.connectionId,
+      required this.name,
+      this.description,
+      required this.sql,
+      this.folder,
+      required this.createdAt,
+      this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['connection_id'] = Variable<String>(connectionId);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['sql'] = Variable<String>(sql);
+    if (!nullToAbsent || folder != null) {
+      map['folder'] = Variable<String>(folder);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  DatalensSavedQueriesCompanion toCompanion(bool nullToAbsent) {
+    return DatalensSavedQueriesCompanion(
+      id: Value(id),
+      connectionId: Value(connectionId),
+      name: Value(name),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      sql: Value(sql),
+      folder:
+          folder == null && nullToAbsent ? const Value.absent() : Value(folder),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory DatalensSavedQuery.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DatalensSavedQuery(
+      id: serializer.fromJson<String>(json['id']),
+      connectionId: serializer.fromJson<String>(json['connectionId']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String?>(json['description']),
+      sql: serializer.fromJson<String>(json['sql']),
+      folder: serializer.fromJson<String?>(json['folder']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'connectionId': serializer.toJson<String>(connectionId),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String?>(description),
+      'sql': serializer.toJson<String>(sql),
+      'folder': serializer.toJson<String?>(folder),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  DatalensSavedQuery copyWith(
+          {String? id,
+          String? connectionId,
+          String? name,
+          Value<String?> description = const Value.absent(),
+          String? sql,
+          Value<String?> folder = const Value.absent(),
+          DateTime? createdAt,
+          Value<DateTime?> updatedAt = const Value.absent()}) =>
+      DatalensSavedQuery(
+        id: id ?? this.id,
+        connectionId: connectionId ?? this.connectionId,
+        name: name ?? this.name,
+        description: description.present ? description.value : this.description,
+        sql: sql ?? this.sql,
+        folder: folder.present ? folder.value : this.folder,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+      );
+  DatalensSavedQuery copyWithCompanion(DatalensSavedQueriesCompanion data) {
+    return DatalensSavedQuery(
+      id: data.id.present ? data.id.value : this.id,
+      connectionId: data.connectionId.present
+          ? data.connectionId.value
+          : this.connectionId,
+      name: data.name.present ? data.name.value : this.name,
+      description:
+          data.description.present ? data.description.value : this.description,
+      sql: data.sql.present ? data.sql.value : this.sql,
+      folder: data.folder.present ? data.folder.value : this.folder,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DatalensSavedQuery(')
+          ..write('id: $id, ')
+          ..write('connectionId: $connectionId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('sql: $sql, ')
+          ..write('folder: $folder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id, connectionId, name, description, sql, folder, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DatalensSavedQuery &&
+          other.id == this.id &&
+          other.connectionId == this.connectionId &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.sql == this.sql &&
+          other.folder == this.folder &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DatalensSavedQueriesCompanion
+    extends UpdateCompanion<DatalensSavedQuery> {
+  final Value<String> id;
+  final Value<String> connectionId;
+  final Value<String> name;
+  final Value<String?> description;
+  final Value<String> sql;
+  final Value<String?> folder;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const DatalensSavedQueriesCompanion({
+    this.id = const Value.absent(),
+    this.connectionId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.sql = const Value.absent(),
+    this.folder = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DatalensSavedQueriesCompanion.insert({
+    required String id,
+    required String connectionId,
+    required String name,
+    this.description = const Value.absent(),
+    required String sql,
+    this.folder = const Value.absent(),
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        connectionId = Value(connectionId),
+        name = Value(name),
+        sql = Value(sql),
+        createdAt = Value(createdAt);
+  static Insertable<DatalensSavedQuery> custom({
+    Expression<String>? id,
+    Expression<String>? connectionId,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<String>? sql,
+    Expression<String>? folder,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (connectionId != null) 'connection_id': connectionId,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (sql != null) 'sql': sql,
+      if (folder != null) 'folder': folder,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DatalensSavedQueriesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? connectionId,
+      Value<String>? name,
+      Value<String?>? description,
+      Value<String>? sql,
+      Value<String?>? folder,
+      Value<DateTime>? createdAt,
+      Value<DateTime?>? updatedAt,
+      Value<int>? rowid}) {
+    return DatalensSavedQueriesCompanion(
+      id: id ?? this.id,
+      connectionId: connectionId ?? this.connectionId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      sql: sql ?? this.sql,
+      folder: folder ?? this.folder,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (connectionId.present) {
+      map['connection_id'] = Variable<String>(connectionId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (sql.present) {
+      map['sql'] = Variable<String>(sql.value);
+    }
+    if (folder.present) {
+      map['folder'] = Variable<String>(folder.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DatalensSavedQueriesCompanion(')
+          ..write('id: $id, ')
+          ..write('connectionId: $connectionId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('sql: $sql, ')
+          ..write('folder: $folder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$CodeOpsDatabase extends GeneratedDatabase {
   _$CodeOpsDatabase(QueryExecutor e) : super(e);
   $CodeOpsDatabaseManager get managers => $CodeOpsDatabaseManager(this);
@@ -12685,6 +14372,12 @@ abstract class _$CodeOpsDatabase extends GeneratedDatabase {
       $ProjectLocalConfigTable(this);
   late final $ScribeTabsTable scribeTabs = $ScribeTabsTable(this);
   late final $ScribeSettingsTable scribeSettings = $ScribeSettingsTable(this);
+  late final $DatalensConnectionsTable datalensConnections =
+      $DatalensConnectionsTable(this);
+  late final $DatalensQueryHistoryTable datalensQueryHistory =
+      $DatalensQueryHistoryTable(this);
+  late final $DatalensSavedQueriesTable datalensSavedQueries =
+      $DatalensSavedQueriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -12712,7 +14405,10 @@ abstract class _$CodeOpsDatabase extends GeneratedDatabase {
         agentFiles,
         projectLocalConfig,
         scribeTabs,
-        scribeSettings
+        scribeSettings,
+        datalensConnections,
+        datalensQueryHistory,
+        datalensSavedQueries
       ];
 }
 
@@ -18452,6 +20148,805 @@ typedef $$ScribeSettingsTableProcessedTableManager = ProcessedTableManager<
     ),
     ScribeSetting,
     PrefetchHooks Function()>;
+typedef $$DatalensConnectionsTableCreateCompanionBuilder
+    = DatalensConnectionsCompanion Function({
+  required String id,
+  required String name,
+  Value<String> driver,
+  required String host,
+  Value<int> port,
+  required String database,
+  Value<String?> schema,
+  required String username,
+  Value<String?> password,
+  Value<bool> useSsl,
+  Value<String?> sslMode,
+  Value<String?> color,
+  Value<int> connectionTimeout,
+  Value<DateTime?> lastConnectedAt,
+  required DateTime createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int> rowid,
+});
+typedef $$DatalensConnectionsTableUpdateCompanionBuilder
+    = DatalensConnectionsCompanion Function({
+  Value<String> id,
+  Value<String> name,
+  Value<String> driver,
+  Value<String> host,
+  Value<int> port,
+  Value<String> database,
+  Value<String?> schema,
+  Value<String> username,
+  Value<String?> password,
+  Value<bool> useSsl,
+  Value<String?> sslMode,
+  Value<String?> color,
+  Value<int> connectionTimeout,
+  Value<DateTime?> lastConnectedAt,
+  Value<DateTime> createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int> rowid,
+});
+
+class $$DatalensConnectionsTableFilterComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensConnectionsTable> {
+  $$DatalensConnectionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get driver => $composableBuilder(
+      column: $table.driver, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get host => $composableBuilder(
+      column: $table.host, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get port => $composableBuilder(
+      column: $table.port, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get database => $composableBuilder(
+      column: $table.database, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get schema => $composableBuilder(
+      column: $table.schema, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get username => $composableBuilder(
+      column: $table.username, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get password => $composableBuilder(
+      column: $table.password, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get useSsl => $composableBuilder(
+      column: $table.useSsl, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sslMode => $composableBuilder(
+      column: $table.sslMode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get color => $composableBuilder(
+      column: $table.color, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get connectionTimeout => $composableBuilder(
+      column: $table.connectionTimeout,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastConnectedAt => $composableBuilder(
+      column: $table.lastConnectedAt,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$DatalensConnectionsTableOrderingComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensConnectionsTable> {
+  $$DatalensConnectionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get driver => $composableBuilder(
+      column: $table.driver, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get host => $composableBuilder(
+      column: $table.host, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get port => $composableBuilder(
+      column: $table.port, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get database => $composableBuilder(
+      column: $table.database, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get schema => $composableBuilder(
+      column: $table.schema, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get username => $composableBuilder(
+      column: $table.username, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get password => $composableBuilder(
+      column: $table.password, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get useSsl => $composableBuilder(
+      column: $table.useSsl, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sslMode => $composableBuilder(
+      column: $table.sslMode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get color => $composableBuilder(
+      column: $table.color, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get connectionTimeout => $composableBuilder(
+      column: $table.connectionTimeout,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastConnectedAt => $composableBuilder(
+      column: $table.lastConnectedAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$DatalensConnectionsTableAnnotationComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensConnectionsTable> {
+  $$DatalensConnectionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get driver =>
+      $composableBuilder(column: $table.driver, builder: (column) => column);
+
+  GeneratedColumn<String> get host =>
+      $composableBuilder(column: $table.host, builder: (column) => column);
+
+  GeneratedColumn<int> get port =>
+      $composableBuilder(column: $table.port, builder: (column) => column);
+
+  GeneratedColumn<String> get database =>
+      $composableBuilder(column: $table.database, builder: (column) => column);
+
+  GeneratedColumn<String> get schema =>
+      $composableBuilder(column: $table.schema, builder: (column) => column);
+
+  GeneratedColumn<String> get username =>
+      $composableBuilder(column: $table.username, builder: (column) => column);
+
+  GeneratedColumn<String> get password =>
+      $composableBuilder(column: $table.password, builder: (column) => column);
+
+  GeneratedColumn<bool> get useSsl =>
+      $composableBuilder(column: $table.useSsl, builder: (column) => column);
+
+  GeneratedColumn<String> get sslMode =>
+      $composableBuilder(column: $table.sslMode, builder: (column) => column);
+
+  GeneratedColumn<String> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<int> get connectionTimeout => $composableBuilder(
+      column: $table.connectionTimeout, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastConnectedAt => $composableBuilder(
+      column: $table.lastConnectedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$DatalensConnectionsTableTableManager extends RootTableManager<
+    _$CodeOpsDatabase,
+    $DatalensConnectionsTable,
+    DatalensConnection,
+    $$DatalensConnectionsTableFilterComposer,
+    $$DatalensConnectionsTableOrderingComposer,
+    $$DatalensConnectionsTableAnnotationComposer,
+    $$DatalensConnectionsTableCreateCompanionBuilder,
+    $$DatalensConnectionsTableUpdateCompanionBuilder,
+    (
+      DatalensConnection,
+      BaseReferences<_$CodeOpsDatabase, $DatalensConnectionsTable,
+          DatalensConnection>
+    ),
+    DatalensConnection,
+    PrefetchHooks Function()> {
+  $$DatalensConnectionsTableTableManager(
+      _$CodeOpsDatabase db, $DatalensConnectionsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DatalensConnectionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DatalensConnectionsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DatalensConnectionsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String> driver = const Value.absent(),
+            Value<String> host = const Value.absent(),
+            Value<int> port = const Value.absent(),
+            Value<String> database = const Value.absent(),
+            Value<String?> schema = const Value.absent(),
+            Value<String> username = const Value.absent(),
+            Value<String?> password = const Value.absent(),
+            Value<bool> useSsl = const Value.absent(),
+            Value<String?> sslMode = const Value.absent(),
+            Value<String?> color = const Value.absent(),
+            Value<int> connectionTimeout = const Value.absent(),
+            Value<DateTime?> lastConnectedAt = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DatalensConnectionsCompanion(
+            id: id,
+            name: name,
+            driver: driver,
+            host: host,
+            port: port,
+            database: database,
+            schema: schema,
+            username: username,
+            password: password,
+            useSsl: useSsl,
+            sslMode: sslMode,
+            color: color,
+            connectionTimeout: connectionTimeout,
+            lastConnectedAt: lastConnectedAt,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String name,
+            Value<String> driver = const Value.absent(),
+            required String host,
+            Value<int> port = const Value.absent(),
+            required String database,
+            Value<String?> schema = const Value.absent(),
+            required String username,
+            Value<String?> password = const Value.absent(),
+            Value<bool> useSsl = const Value.absent(),
+            Value<String?> sslMode = const Value.absent(),
+            Value<String?> color = const Value.absent(),
+            Value<int> connectionTimeout = const Value.absent(),
+            Value<DateTime?> lastConnectedAt = const Value.absent(),
+            required DateTime createdAt,
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DatalensConnectionsCompanion.insert(
+            id: id,
+            name: name,
+            driver: driver,
+            host: host,
+            port: port,
+            database: database,
+            schema: schema,
+            username: username,
+            password: password,
+            useSsl: useSsl,
+            sslMode: sslMode,
+            color: color,
+            connectionTimeout: connectionTimeout,
+            lastConnectedAt: lastConnectedAt,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DatalensConnectionsTableProcessedTableManager = ProcessedTableManager<
+    _$CodeOpsDatabase,
+    $DatalensConnectionsTable,
+    DatalensConnection,
+    $$DatalensConnectionsTableFilterComposer,
+    $$DatalensConnectionsTableOrderingComposer,
+    $$DatalensConnectionsTableAnnotationComposer,
+    $$DatalensConnectionsTableCreateCompanionBuilder,
+    $$DatalensConnectionsTableUpdateCompanionBuilder,
+    (
+      DatalensConnection,
+      BaseReferences<_$CodeOpsDatabase, $DatalensConnectionsTable,
+          DatalensConnection>
+    ),
+    DatalensConnection,
+    PrefetchHooks Function()>;
+typedef $$DatalensQueryHistoryTableCreateCompanionBuilder
+    = DatalensQueryHistoryCompanion Function({
+  required String id,
+  required String connectionId,
+  required String sql,
+  required String status,
+  Value<int?> rowCount,
+  required int executionTimeMs,
+  Value<String?> error,
+  required DateTime executedAt,
+  Value<int> rowid,
+});
+typedef $$DatalensQueryHistoryTableUpdateCompanionBuilder
+    = DatalensQueryHistoryCompanion Function({
+  Value<String> id,
+  Value<String> connectionId,
+  Value<String> sql,
+  Value<String> status,
+  Value<int?> rowCount,
+  Value<int> executionTimeMs,
+  Value<String?> error,
+  Value<DateTime> executedAt,
+  Value<int> rowid,
+});
+
+class $$DatalensQueryHistoryTableFilterComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensQueryHistoryTable> {
+  $$DatalensQueryHistoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get connectionId => $composableBuilder(
+      column: $table.connectionId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sql => $composableBuilder(
+      column: $table.sql, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get rowCount => $composableBuilder(
+      column: $table.rowCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get executionTimeMs => $composableBuilder(
+      column: $table.executionTimeMs,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get error => $composableBuilder(
+      column: $table.error, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get executedAt => $composableBuilder(
+      column: $table.executedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$DatalensQueryHistoryTableOrderingComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensQueryHistoryTable> {
+  $$DatalensQueryHistoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get connectionId => $composableBuilder(
+      column: $table.connectionId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sql => $composableBuilder(
+      column: $table.sql, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get rowCount => $composableBuilder(
+      column: $table.rowCount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get executionTimeMs => $composableBuilder(
+      column: $table.executionTimeMs,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get error => $composableBuilder(
+      column: $table.error, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get executedAt => $composableBuilder(
+      column: $table.executedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$DatalensQueryHistoryTableAnnotationComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensQueryHistoryTable> {
+  $$DatalensQueryHistoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get connectionId => $composableBuilder(
+      column: $table.connectionId, builder: (column) => column);
+
+  GeneratedColumn<String> get sql =>
+      $composableBuilder(column: $table.sql, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get rowCount =>
+      $composableBuilder(column: $table.rowCount, builder: (column) => column);
+
+  GeneratedColumn<int> get executionTimeMs => $composableBuilder(
+      column: $table.executionTimeMs, builder: (column) => column);
+
+  GeneratedColumn<String> get error =>
+      $composableBuilder(column: $table.error, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get executedAt => $composableBuilder(
+      column: $table.executedAt, builder: (column) => column);
+}
+
+class $$DatalensQueryHistoryTableTableManager extends RootTableManager<
+    _$CodeOpsDatabase,
+    $DatalensQueryHistoryTable,
+    DatalensQueryHistoryData,
+    $$DatalensQueryHistoryTableFilterComposer,
+    $$DatalensQueryHistoryTableOrderingComposer,
+    $$DatalensQueryHistoryTableAnnotationComposer,
+    $$DatalensQueryHistoryTableCreateCompanionBuilder,
+    $$DatalensQueryHistoryTableUpdateCompanionBuilder,
+    (
+      DatalensQueryHistoryData,
+      BaseReferences<_$CodeOpsDatabase, $DatalensQueryHistoryTable,
+          DatalensQueryHistoryData>
+    ),
+    DatalensQueryHistoryData,
+    PrefetchHooks Function()> {
+  $$DatalensQueryHistoryTableTableManager(
+      _$CodeOpsDatabase db, $DatalensQueryHistoryTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DatalensQueryHistoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DatalensQueryHistoryTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DatalensQueryHistoryTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> connectionId = const Value.absent(),
+            Value<String> sql = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<int?> rowCount = const Value.absent(),
+            Value<int> executionTimeMs = const Value.absent(),
+            Value<String?> error = const Value.absent(),
+            Value<DateTime> executedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DatalensQueryHistoryCompanion(
+            id: id,
+            connectionId: connectionId,
+            sql: sql,
+            status: status,
+            rowCount: rowCount,
+            executionTimeMs: executionTimeMs,
+            error: error,
+            executedAt: executedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String connectionId,
+            required String sql,
+            required String status,
+            Value<int?> rowCount = const Value.absent(),
+            required int executionTimeMs,
+            Value<String?> error = const Value.absent(),
+            required DateTime executedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DatalensQueryHistoryCompanion.insert(
+            id: id,
+            connectionId: connectionId,
+            sql: sql,
+            status: status,
+            rowCount: rowCount,
+            executionTimeMs: executionTimeMs,
+            error: error,
+            executedAt: executedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DatalensQueryHistoryTableProcessedTableManager
+    = ProcessedTableManager<
+        _$CodeOpsDatabase,
+        $DatalensQueryHistoryTable,
+        DatalensQueryHistoryData,
+        $$DatalensQueryHistoryTableFilterComposer,
+        $$DatalensQueryHistoryTableOrderingComposer,
+        $$DatalensQueryHistoryTableAnnotationComposer,
+        $$DatalensQueryHistoryTableCreateCompanionBuilder,
+        $$DatalensQueryHistoryTableUpdateCompanionBuilder,
+        (
+          DatalensQueryHistoryData,
+          BaseReferences<_$CodeOpsDatabase, $DatalensQueryHistoryTable,
+              DatalensQueryHistoryData>
+        ),
+        DatalensQueryHistoryData,
+        PrefetchHooks Function()>;
+typedef $$DatalensSavedQueriesTableCreateCompanionBuilder
+    = DatalensSavedQueriesCompanion Function({
+  required String id,
+  required String connectionId,
+  required String name,
+  Value<String?> description,
+  required String sql,
+  Value<String?> folder,
+  required DateTime createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int> rowid,
+});
+typedef $$DatalensSavedQueriesTableUpdateCompanionBuilder
+    = DatalensSavedQueriesCompanion Function({
+  Value<String> id,
+  Value<String> connectionId,
+  Value<String> name,
+  Value<String?> description,
+  Value<String> sql,
+  Value<String?> folder,
+  Value<DateTime> createdAt,
+  Value<DateTime?> updatedAt,
+  Value<int> rowid,
+});
+
+class $$DatalensSavedQueriesTableFilterComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensSavedQueriesTable> {
+  $$DatalensSavedQueriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get connectionId => $composableBuilder(
+      column: $table.connectionId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sql => $composableBuilder(
+      column: $table.sql, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get folder => $composableBuilder(
+      column: $table.folder, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$DatalensSavedQueriesTableOrderingComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensSavedQueriesTable> {
+  $$DatalensSavedQueriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get connectionId => $composableBuilder(
+      column: $table.connectionId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sql => $composableBuilder(
+      column: $table.sql, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get folder => $composableBuilder(
+      column: $table.folder, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$DatalensSavedQueriesTableAnnotationComposer
+    extends Composer<_$CodeOpsDatabase, $DatalensSavedQueriesTable> {
+  $$DatalensSavedQueriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get connectionId => $composableBuilder(
+      column: $table.connectionId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<String> get sql =>
+      $composableBuilder(column: $table.sql, builder: (column) => column);
+
+  GeneratedColumn<String> get folder =>
+      $composableBuilder(column: $table.folder, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$DatalensSavedQueriesTableTableManager extends RootTableManager<
+    _$CodeOpsDatabase,
+    $DatalensSavedQueriesTable,
+    DatalensSavedQuery,
+    $$DatalensSavedQueriesTableFilterComposer,
+    $$DatalensSavedQueriesTableOrderingComposer,
+    $$DatalensSavedQueriesTableAnnotationComposer,
+    $$DatalensSavedQueriesTableCreateCompanionBuilder,
+    $$DatalensSavedQueriesTableUpdateCompanionBuilder,
+    (
+      DatalensSavedQuery,
+      BaseReferences<_$CodeOpsDatabase, $DatalensSavedQueriesTable,
+          DatalensSavedQuery>
+    ),
+    DatalensSavedQuery,
+    PrefetchHooks Function()> {
+  $$DatalensSavedQueriesTableTableManager(
+      _$CodeOpsDatabase db, $DatalensSavedQueriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DatalensSavedQueriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DatalensSavedQueriesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DatalensSavedQueriesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> connectionId = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<String> sql = const Value.absent(),
+            Value<String?> folder = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DatalensSavedQueriesCompanion(
+            id: id,
+            connectionId: connectionId,
+            name: name,
+            description: description,
+            sql: sql,
+            folder: folder,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String connectionId,
+            required String name,
+            Value<String?> description = const Value.absent(),
+            required String sql,
+            Value<String?> folder = const Value.absent(),
+            required DateTime createdAt,
+            Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              DatalensSavedQueriesCompanion.insert(
+            id: id,
+            connectionId: connectionId,
+            name: name,
+            description: description,
+            sql: sql,
+            folder: folder,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$DatalensSavedQueriesTableProcessedTableManager
+    = ProcessedTableManager<
+        _$CodeOpsDatabase,
+        $DatalensSavedQueriesTable,
+        DatalensSavedQuery,
+        $$DatalensSavedQueriesTableFilterComposer,
+        $$DatalensSavedQueriesTableOrderingComposer,
+        $$DatalensSavedQueriesTableAnnotationComposer,
+        $$DatalensSavedQueriesTableCreateCompanionBuilder,
+        $$DatalensSavedQueriesTableUpdateCompanionBuilder,
+        (
+          DatalensSavedQuery,
+          BaseReferences<_$CodeOpsDatabase, $DatalensSavedQueriesTable,
+              DatalensSavedQuery>
+        ),
+        DatalensSavedQuery,
+        PrefetchHooks Function()>;
 
 class $CodeOpsDatabaseManager {
   final _$CodeOpsDatabase _db;
@@ -18503,4 +20998,10 @@ class $CodeOpsDatabaseManager {
       $$ScribeTabsTableTableManager(_db, _db.scribeTabs);
   $$ScribeSettingsTableTableManager get scribeSettings =>
       $$ScribeSettingsTableTableManager(_db, _db.scribeSettings);
+  $$DatalensConnectionsTableTableManager get datalensConnections =>
+      $$DatalensConnectionsTableTableManager(_db, _db.datalensConnections);
+  $$DatalensQueryHistoryTableTableManager get datalensQueryHistory =>
+      $$DatalensQueryHistoryTableTableManager(_db, _db.datalensQueryHistory);
+  $$DatalensSavedQueriesTableTableManager get datalensSavedQueries =>
+      $$DatalensSavedQueriesTableTableManager(_db, _db.datalensSavedQueries);
 }

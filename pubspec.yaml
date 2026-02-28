@@ -22,6 +22,9 @@ dependencies:
   drift: ^2.22.1
   sqlite3_flutter_libs: ^0.5.28
 
+  # PostgreSQL (DataLens direct database connections)
+  postgres: ^3.5.9
+
   # HTTP
   dio: ^5.7.0
 

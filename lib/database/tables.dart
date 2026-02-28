@@ -818,6 +818,127 @@ class ScribeSettings extends Table {
   String get tableName => 'scribe_settings';
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DataLens Tables
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Saved database connections for DataLens.
+class DatalensConnections extends Table {
+  /// UUID primary key.
+  TextColumn get id => text()();
+
+  /// Display name (e.g., "CodeOps Dev").
+  TextColumn get name => text()();
+
+  /// Database driver type (SCREAMING_SNAKE_CASE).
+  TextColumn get driver =>
+      text().withDefault(const Constant('POSTGRESQL'))();
+
+  /// Database host address.
+  TextColumn get host => text()();
+
+  /// Database port number.
+  IntColumn get port => integer().withDefault(const Constant(5432))();
+
+  /// Database name.
+  TextColumn get database => text()();
+
+  /// Default schema (e.g., "public").
+  TextColumn get schema => text().nullable()();
+
+  /// Database username.
+  TextColumn get username => text()();
+
+  /// Database password (stored locally).
+  TextColumn get password => text().nullable()();
+
+  /// Whether to use SSL for the connection.
+  BoolColumn get useSsl =>
+      boolean().withDefault(const Constant(false))();
+
+  /// SSL mode (disable, require, verify-ca, verify-full).
+  TextColumn get sslMode => text().nullable()();
+
+  /// Hex color for visual identification.
+  TextColumn get color => text().nullable()();
+
+  /// Connection timeout in seconds.
+  IntColumn get connectionTimeout =>
+      integer().withDefault(const Constant(10))();
+
+  /// Timestamp of last successful connection.
+  DateTimeColumn get lastConnectedAt => dateTime().nullable()();
+
+  /// Creation timestamp.
+  DateTimeColumn get createdAt => dateTime()();
+
+  /// Last update timestamp.
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Query execution history for DataLens.
+class DatalensQueryHistory extends Table {
+  /// UUID primary key.
+  TextColumn get id => text()();
+
+  /// Connection UUID this query was run against.
+  TextColumn get connectionId => text()();
+
+  /// SQL that was executed.
+  TextColumn get sql => text()();
+
+  /// Query execution status (SCREAMING_SNAKE_CASE).
+  TextColumn get status => text()();
+
+  /// Number of rows returned.
+  IntColumn get rowCount => integer().nullable()();
+
+  /// Execution time in milliseconds.
+  IntColumn get executionTimeMs => integer()();
+
+  /// Error message if the query failed.
+  TextColumn get error => text().nullable()();
+
+  /// Timestamp when the query was executed.
+  DateTimeColumn get executedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// User-saved queries for DataLens.
+class DatalensSavedQueries extends Table {
+  /// UUID primary key.
+  TextColumn get id => text()();
+
+  /// Connection UUID this query is associated with.
+  TextColumn get connectionId => text()();
+
+  /// Display name for the saved query.
+  TextColumn get name => text()();
+
+  /// Optional description.
+  TextColumn get description => text().nullable()();
+
+  /// SQL content.
+  TextColumn get sql => text()();
+
+  /// Optional grouping folder.
+  TextColumn get folder => text().nullable()();
+
+  /// Creation timestamp.
+  DateTimeColumn get createdAt => dateTime()();
+
+  /// Last update timestamp.
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Files attached to an agent definition (personas, prompts, etc.).
 class AgentFiles extends Table {
   /// UUID primary key.

@@ -41,6 +41,9 @@ part 'database.g.dart';
   ProjectLocalConfig,
   ScribeTabs,
   ScribeSettings,
+  DatalensConnections,
+  DatalensQueryHistory,
+  DatalensSavedQueries,
 ])
 class CodeOpsDatabase extends _$CodeOpsDatabase {
   /// Creates a [CodeOpsDatabase] with the given [QueryExecutor].
@@ -52,7 +55,7 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
   }
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -81,6 +84,11 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
           if (from < 7) {
             await m.createTable(scribeTabs);
             await m.createTable(scribeSettings);
+          }
+          if (from < 8) {
+            await m.createTable(datalensConnections);
+            await m.createTable(datalensQueryHistory);
+            await m.createTable(datalensSavedQueries);
           }
         },
       );
