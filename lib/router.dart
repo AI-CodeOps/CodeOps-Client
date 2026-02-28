@@ -56,6 +56,7 @@ import 'pages/project_detail_page.dart';
 import 'pages/task_list_page.dart';
 import 'pages/task_manager_page.dart';
 import 'pages/projects_page.dart';
+import 'pages/fleet/container_detail_page.dart';
 import 'pages/fleet/container_list_page.dart';
 import 'pages/fleet/fleet_dashboard_page.dart';
 import 'pages/relay/relay_page.dart';
@@ -573,8 +574,8 @@ final GoRouter router = GoRouter(
           path: '/fleet/containers/:id',
           name: 'fleet-container-detail',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: PlaceholderPage(
-              title: 'Container ${state.pathParameters['id']!}',
+            child: ContainerDetailPage(
+              containerId: state.pathParameters['id']!,
             ),
           ),
         ),
