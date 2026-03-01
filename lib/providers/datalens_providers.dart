@@ -124,6 +124,15 @@ final datalensTablesProvider = FutureProvider<List<TableInfo>>((ref) {
   return service.getTables(connectionId, schema);
 });
 
+/// Sequences for the selected schema.
+final datalensSequencesProvider = FutureProvider<List<SequenceInfo>>((ref) {
+  final connectionId = ref.watch(selectedConnectionIdProvider);
+  final schema = ref.watch(selectedSchemaProvider);
+  if (connectionId == null || schema == null) return [];
+  final service = ref.watch(datalensSchemaServiceProvider);
+  return service.getSequences(connectionId, schema);
+});
+
 /// Columns for the selected table.
 final datalensColumnsProvider = FutureProvider<List<ColumnInfo>>((ref) {
   final connectionId = ref.watch(selectedConnectionIdProvider);

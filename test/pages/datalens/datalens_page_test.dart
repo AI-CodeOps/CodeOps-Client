@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:codeops/models/datalens_enums.dart';
 import 'package:codeops/models/datalens_models.dart';
 import 'package:codeops/pages/datalens/datalens_page.dart';
 import 'package:codeops/pages/datalens/datalens_status_bar.dart';
@@ -17,6 +18,7 @@ Widget _createWidget({
   List<DatabaseConnection> connections = const [],
   List<SchemaInfo> schemas = const [],
   List<TableInfo> tables = const [],
+  List<SequenceInfo> sequences = const [],
   List<Override> overrides = const [],
 }) {
   return ProviderScope(
@@ -30,6 +32,9 @@ Widget _createWidget({
       ),
       datalensTablesProvider.overrideWith(
         (ref) => Future.value(tables),
+      ),
+      datalensSequencesProvider.overrideWith(
+        (ref) => Future.value(sequences),
       ),
       ...overrides,
     ],
@@ -91,8 +96,16 @@ void main() {
         selectedConnectionId: 'conn-1',
         schemas: const [SchemaInfo(name: 'public', tableCount: 2)],
         tables: const [
-          TableInfo(tableName: 'users', schemaName: 'public'),
-          TableInfo(tableName: 'orders', schemaName: 'public'),
+          TableInfo(
+            tableName: 'users',
+            schemaName: 'public',
+            objectType: ObjectType.table,
+          ),
+          TableInfo(
+            tableName: 'orders',
+            schemaName: 'public',
+            objectType: ObjectType.table,
+          ),
         ],
         overrides: [
           selectedSchemaProvider.overrideWith((ref) => 'public'),
@@ -113,7 +126,11 @@ void main() {
         selectedConnectionId: 'conn-1',
         schemas: const [SchemaInfo(name: 'public')],
         tables: const [
-          TableInfo(tableName: 'users', schemaName: 'public'),
+          TableInfo(
+            tableName: 'users',
+            schemaName: 'public',
+            objectType: ObjectType.table,
+          ),
         ],
         overrides: [
           selectedSchemaProvider.overrideWith((ref) => 'public'),
