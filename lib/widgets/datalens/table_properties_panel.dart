@@ -13,6 +13,7 @@ import '../../providers/datalens_providers.dart';
 import '../../theme/colors.dart';
 import '../../widgets/shared/empty_state.dart';
 import 'columns_tab.dart';
+import 'data_browser_tab.dart';
 import 'constraints_tab.dart';
 import 'ddl_tab.dart';
 import 'dependencies_tab.dart';
@@ -58,11 +59,7 @@ class TablePropertiesPanel extends ConsumerWidget {
           Expanded(
             child: switch (selectedTab) {
               0 => _buildPropertiesTab(tableInfo, ref),
-              1 => const EmptyState(
-                  icon: Icons.table_rows_outlined,
-                  title: 'Data Browser',
-                  subtitle: 'Coming in DL-010.',
-                ),
+              1 => const DataBrowserTab(),
               2 => const EmptyState(
                   icon: Icons.schema_outlined,
                   title: 'ER Diagram',

@@ -79,7 +79,7 @@ void main() {
       expect(find.text('Foreign Keys'), findsOneWidget);
     });
 
-    testWidgets('shows Data placeholder when Data tab is tapped',
+    testWidgets('shows data browser when Data tab is tapped',
         (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -88,9 +88,10 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Data'));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
-      expect(find.text('Data Browser'), findsOneWidget);
+      // DataBrowserTab shows "No table selected" when no table is selected.
+      expect(find.text('No table selected'), findsOneWidget);
     });
   });
 }
