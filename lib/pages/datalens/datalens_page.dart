@@ -14,6 +14,7 @@ import 'package:split_view/split_view.dart';
 import '../../providers/datalens_providers.dart';
 import '../../theme/colors.dart';
 import '../../widgets/datalens/database_navigator_tree.dart';
+import '../../widgets/datalens/table_properties_panel.dart';
 import '../../widgets/shared/empty_state.dart';
 import 'datalens_status_bar.dart';
 import 'datalens_toolbar.dart';
@@ -98,38 +99,6 @@ class _ContentPanel extends ConsumerWidget {
       );
     }
 
-    // Placeholder content — table detail tabs will be added in a later task.
-    return Container(
-      color: CodeOpsColors.background,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.table_chart_outlined,
-              size: 48,
-              color: CodeOpsColors.textTertiary,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '$selectedSchema.$selectedTable',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: CodeOpsColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Table detail view coming soon.',
-              style: TextStyle(
-                fontSize: 12,
-                color: CodeOpsColors.textTertiary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const TablePropertiesPanel();
   }
 }

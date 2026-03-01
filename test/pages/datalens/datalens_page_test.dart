@@ -117,7 +117,7 @@ void main() {
       expect(find.text('orders'), findsOneWidget);
     });
 
-    testWidgets('shows content placeholder when table is selected',
+    testWidgets('shows properties panel when table is selected',
         (tester) async {
       await tester.binding.setSurfaceSize(const Size(1400, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -135,11 +135,17 @@ void main() {
         overrides: [
           selectedSchemaProvider.overrideWith((ref) => 'public'),
           selectedTableProvider.overrideWith((ref) => 'users'),
+          datalensColumnsProvider.overrideWith(
+            (ref) => Future.value(<ColumnInfo>[]),
+          ),
         ],
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('public.users'), findsOneWidget);
+      // Tab bar should be visible.
+      expect(find.text('Properties'), findsOneWidget);
+      expect(find.text('Data'), findsOneWidget);
+      expect(find.text('Diagram'), findsOneWidget);
     });
   });
 }
