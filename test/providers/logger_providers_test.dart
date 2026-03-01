@@ -738,4 +738,33 @@ void main() {
       expect(container.read(loggerTracePageProvider), 7);
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Dashboard UI state defaults and updates
+  // ─────────────────────────────────────────────────────────────────────────
+
+  group('Dashboard time range UI state', () {
+    test('loggerDashboardTimeRangeProvider defaults to 1', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(loggerDashboardTimeRangeProvider), 1);
+    });
+
+    test('loggerDashboardTimeRangeProvider can be updated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(loggerDashboardTimeRangeProvider.notifier).state = 24;
+
+      expect(container.read(loggerDashboardTimeRangeProvider), 24);
+    });
+
+    test('loggerDashboardTimeRangeProvider is a StateProvider', () {
+      expect(
+        loggerDashboardTimeRangeProvider,
+        isA<StateProvider<int>>(),
+      );
+    });
+  });
 }

@@ -332,6 +332,14 @@ class _Sidebar extends ConsumerWidget {
                   currentPath: currentPath,
                   collapsed: collapsed,
                 ),
+                _SectionHeader('LOGGER', collapsed),
+                _NavItem(
+                  icon: Icons.terminal_outlined,
+                  label: 'Logger',
+                  path: '/logger',
+                  currentPath: currentPath,
+                  collapsed: collapsed,
+                ),
                 _SectionHeader('COMMUNICATE', collapsed),
                 _NavItem(
                   icon: Icons.forum_outlined,
@@ -810,9 +818,22 @@ class _TopBar extends StatelessWidget {
       '/fleet/networks': 'Docker Networks',
       '/relay': 'Relay',
       '/datalens': 'DataLens',
+      '/logger': 'Logger',
+      '/logger/viewer': 'Log Viewer',
+      '/logger/search': 'Log Search',
+      '/logger/traps': 'Log Traps',
+      '/logger/alerts': 'Alerts',
+      '/logger/alerts/channels': 'Alert Channels',
+      '/logger/dashboards': 'Log Dashboards',
+      '/logger/metrics': 'Metrics Explorer',
+      '/logger/traces': 'Trace Viewer',
+      '/logger/retention': 'Retention & Admin',
     };
     // Check exact match first, then prefix matches for parameterized routes
     if (routes.containsKey(path)) return routes[path]!;
+    if (path.startsWith('/logger/traces/')) return 'Trace Detail';
+    if (path.startsWith('/logger/dashboards/')) return 'Dashboard Detail';
+    if (path.startsWith('/logger/traps/')) return 'Trap Editor';
     if (path.startsWith('/relay/')) return 'Relay';
     if (path.startsWith('/fleet/containers/')) return 'Container Detail';
     if (path.startsWith('/fleet/service-profiles/')) return 'Service Profile';

@@ -582,3 +582,13 @@ final loggerAnomalyReportProvider =
   final api = ref.watch(loggerApiProvider);
   return api.getAnomalyReport(teamId);
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dashboard — UI State Providers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Time range for the Logger dashboard in hours.
+///
+/// Controls the window used for dashboard stat cards and recent activity.
+/// Default is 1 hour.
+final loggerDashboardTimeRangeProvider = StateProvider<int>((ref) => 1);

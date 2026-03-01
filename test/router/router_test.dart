@@ -6,7 +6,7 @@ import 'package:codeops/services/auth/auth_service.dart';
 
 void main() {
   group('Router', () {
-    test('has 51 routes', () {
+    test('has 82 routes', () {
       int countRoutes(List<RouteBase> routes) {
         var count = 0;
         for (final route in routes) {
@@ -20,7 +20,7 @@ void main() {
         return count;
       }
 
-      expect(countRoutes(router.configuration.routes), 69);
+      expect(countRoutes(router.configuration.routes), 82);
     });
 
     test('initial location is /login', () {
@@ -80,6 +80,19 @@ void main() {
         '/registry/workstations/:profileId',
         '/registry/api-docs',
         '/registry/api-docs/:serviceId',
+        '/logger',
+        '/logger/viewer',
+        '/logger/search',
+        '/logger/traps',
+        '/logger/traps/:id/edit',
+        '/logger/alerts',
+        '/logger/alerts/channels',
+        '/logger/dashboards',
+        '/logger/dashboards/:id',
+        '/logger/metrics',
+        '/logger/traces',
+        '/logger/traces/:correlationId',
+        '/logger/retention',
       ];
 
       final registeredPaths = <String>[];

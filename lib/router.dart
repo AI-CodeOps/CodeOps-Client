@@ -69,6 +69,7 @@ import 'pages/fleet/solution_profile_list_page.dart';
 import 'pages/fleet/workstation_profile_detail_page.dart';
 import 'pages/fleet/workstation_profile_list_page.dart';
 import 'pages/datalens/datalens_page.dart';
+import 'pages/logger/logger_dashboard_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
 import 'pages/settings_page.dart';
@@ -675,7 +676,117 @@ final GoRouter router = GoRouter(
             child: DatalensPage(),
           ),
         ),
-        // 62. Relay — Messaging shell
+        // 62. Logger — Dashboard
+        GoRoute(
+          path: '/logger',
+          name: 'logger',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: LoggerDashboardPage(),
+          ),
+        ),
+        // 63. Logger — Log Viewer
+        GoRoute(
+          path: '/logger/viewer',
+          name: 'logger-viewer',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Log Viewer'),
+          ),
+        ),
+        // 64. Logger — Search
+        GoRoute(
+          path: '/logger/search',
+          name: 'logger-search',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Log Search'),
+          ),
+        ),
+        // 65. Logger — Traps
+        GoRoute(
+          path: '/logger/traps',
+          name: 'logger-traps',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Log Traps'),
+          ),
+        ),
+        // 66. Logger — Trap Editor
+        GoRoute(
+          path: '/logger/traps/:id/edit',
+          name: 'logger-trap-edit',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Trap Editor — ${state.pathParameters['id']}',
+            ),
+          ),
+        ),
+        // 67. Logger — Alerts
+        GoRoute(
+          path: '/logger/alerts',
+          name: 'logger-alerts',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Alerts'),
+          ),
+        ),
+        // 68. Logger — Alert Channels
+        GoRoute(
+          path: '/logger/alerts/channels',
+          name: 'logger-alert-channels',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Alert Channels'),
+          ),
+        ),
+        // 69. Logger — Custom Dashboards
+        GoRoute(
+          path: '/logger/dashboards',
+          name: 'logger-dashboards',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Log Dashboards'),
+          ),
+        ),
+        // 70. Logger — Dashboard Detail
+        GoRoute(
+          path: '/logger/dashboards/:id',
+          name: 'logger-dashboard-detail',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Dashboard — ${state.pathParameters['id']}',
+            ),
+          ),
+        ),
+        // 71. Logger — Metrics Explorer
+        GoRoute(
+          path: '/logger/metrics',
+          name: 'logger-metrics',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Metrics Explorer'),
+          ),
+        ),
+        // 72. Logger — Trace Viewer
+        GoRoute(
+          path: '/logger/traces',
+          name: 'logger-traces',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Trace Viewer'),
+          ),
+        ),
+        // 73. Logger — Trace Detail
+        GoRoute(
+          path: '/logger/traces/:correlationId',
+          name: 'logger-trace-detail',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Trace — ${state.pathParameters['correlationId']}',
+            ),
+          ),
+        ),
+        // 74. Logger — Retention Admin
+        GoRoute(
+          path: '/logger/retention',
+          name: 'logger-retention',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Retention & Admin'),
+          ),
+        ),
+        // 75. Relay — Messaging shell
         GoRoute(
           path: '/relay',
           name: 'relay',
