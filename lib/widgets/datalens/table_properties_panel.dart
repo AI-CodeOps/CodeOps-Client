@@ -13,7 +13,14 @@ import '../../providers/datalens_providers.dart';
 import '../../theme/colors.dart';
 import '../../widgets/shared/empty_state.dart';
 import 'columns_tab.dart';
+import 'constraints_tab.dart';
+import 'ddl_tab.dart';
+import 'dependencies_tab.dart';
+import 'foreign_keys_tab.dart';
+import 'indexes_tab.dart';
 import 'properties_sidebar.dart';
+import 'references_tab.dart';
+import 'statistics_tab.dart';
 import 'table_header.dart';
 
 /// The table detail panel with Properties / Data / Diagram tabs.
@@ -147,23 +154,14 @@ class TablePropertiesPanel extends ConsumerWidget {
   Widget _buildSubTabContent(int index) {
     return switch (index) {
       0 => const ColumnsTab(),
-      1 => _placeholder('Constraints'),
-      2 => _placeholder('Foreign Keys'),
-      3 => _placeholder('Indexes'),
-      4 => _placeholder('Dependencies'),
-      5 => _placeholder('References'),
-      6 => _placeholder('Statistics'),
-      7 => _placeholder('DDL'),
+      1 => const ConstraintsTab(),
+      2 => const ForeignKeysTab(),
+      3 => const IndexesTab(),
+      4 => const DependenciesTab(),
+      5 => const ReferencesTab(),
+      6 => const StatisticsTab(),
+      7 => const DdlTab(),
       _ => const SizedBox.shrink(),
     };
-  }
-
-  /// Placeholder for sub-tabs not yet implemented.
-  Widget _placeholder(String name) {
-    return EmptyState(
-      icon: Icons.construction_outlined,
-      title: name,
-      subtitle: 'Coming in DL-009.',
-    );
   }
 }
