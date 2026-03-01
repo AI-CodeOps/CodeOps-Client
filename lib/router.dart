@@ -70,8 +70,10 @@ import 'pages/fleet/workstation_profile_detail_page.dart';
 import 'pages/fleet/workstation_profile_list_page.dart';
 import 'pages/datalens/datalens_page.dart';
 import 'pages/logger/log_search_page.dart';
+import 'pages/logger/log_traps_page.dart';
 import 'pages/logger/log_viewer_page.dart';
 import 'pages/logger/logger_dashboard_page.dart';
+import 'pages/logger/trap_editor_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
 import 'pages/settings_page.dart';
@@ -707,7 +709,7 @@ final GoRouter router = GoRouter(
           path: '/logger/traps',
           name: 'logger-traps',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Log Traps'),
+            child: LogTrapsPage(),
           ),
         ),
         // 66. Logger — Trap Editor
@@ -715,8 +717,8 @@ final GoRouter router = GoRouter(
           path: '/logger/traps/:id/edit',
           name: 'logger-trap-edit',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: PlaceholderPage(
-              title: 'Trap Editor — ${state.pathParameters['id']}',
+            child: TrapEditorPage(
+              trapId: state.pathParameters['id']!,
             ),
           ),
         ),
