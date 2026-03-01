@@ -324,6 +324,14 @@ class _Sidebar extends ConsumerWidget {
                   currentPath: currentPath,
                   collapsed: collapsed,
                 ),
+                _SectionHeader('DATALENS', collapsed),
+                _NavItem(
+                  icon: Icons.grid_view_outlined,
+                  label: 'DataLens',
+                  path: '/datalens',
+                  currentPath: currentPath,
+                  collapsed: collapsed,
+                ),
                 _SectionHeader('COMMUNICATE', collapsed),
                 _NavItem(
                   icon: Icons.forum_outlined,
@@ -801,6 +809,7 @@ class _TopBar extends StatelessWidget {
       '/fleet/volumes': 'Docker Volumes',
       '/fleet/networks': 'Docker Networks',
       '/relay': 'Relay',
+      '/datalens': 'DataLens',
     };
     // Check exact match first, then prefix matches for parameterized routes
     if (routes.containsKey(path)) return routes[path]!;

@@ -68,6 +68,7 @@ import 'pages/fleet/volume_list_page.dart';
 import 'pages/fleet/solution_profile_list_page.dart';
 import 'pages/fleet/workstation_profile_detail_page.dart';
 import 'pages/fleet/workstation_profile_list_page.dart';
+import 'pages/datalens/datalens_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
 import 'pages/settings_page.dart';
@@ -666,7 +667,15 @@ final GoRouter router = GoRouter(
             child: NetworkListPage(),
           ),
         ),
-        // 61. Relay — Messaging shell
+        // 61. DataLens — Database browser
+        GoRoute(
+          path: '/datalens',
+          name: 'datalens',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: DatalensPage(),
+          ),
+        ),
+        // 62. Relay — Messaging shell
         GoRoute(
           path: '/relay',
           name: 'relay',
