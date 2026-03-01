@@ -14,6 +14,7 @@ import 'package:split_view/split_view.dart';
 import '../../providers/datalens_providers.dart';
 import '../../theme/colors.dart';
 import '../../widgets/datalens/database_navigator_tree.dart';
+import '../../widgets/datalens/navigator_bottom_panel.dart';
 import '../../widgets/datalens/table_properties_panel.dart';
 import '../../widgets/shared/empty_state.dart';
 import 'datalens_status_bar.dart';
@@ -55,8 +56,18 @@ class _DatalensPageState extends ConsumerState<DatalensPage> {
                   gripSize: 4,
                   controller: SplitViewController(weights: [0.25, 0.75]),
                   children: [
-                    // Left panel — Navigator tree
-                    const DatabaseNavigatorTree(),
+                    // Left panel — Navigator tree + bottom panel
+                    SplitView(
+                      viewMode: SplitViewMode.Vertical,
+                      gripColor: CodeOpsColors.border,
+                      gripSize: 4,
+                      controller:
+                          SplitViewController(weights: [0.6, 0.4]),
+                      children: [
+                        const DatabaseNavigatorTree(),
+                        const NavigatorBottomPanel(),
+                      ],
+                    ),
                     // Right panel — Content area
                     const _ContentPanel(),
                   ],

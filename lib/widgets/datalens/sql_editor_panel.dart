@@ -13,6 +13,7 @@ import '../../models/datalens_enums.dart';
 import '../../models/datalens_models.dart';
 import '../../providers/datalens_providers.dart';
 import '../../theme/colors.dart';
+import 'save_query_dialog.dart';
 import 'sql_editor_widget.dart';
 import 'sql_results_panel.dart';
 
@@ -331,14 +332,17 @@ class _SqlEditorPanelState extends ConsumerState<SqlEditorPanel> {
     }
   }
 
-  /// Saves the current query (placeholder — opens a snackbar).
+  /// Opens the save query dialog to persist the current SQL.
   void _saveQuery() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Save query: coming soon'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    final sql = _activeTab.content.trim();
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => SaveQueryDialog(initialSql: sql),
+    ).then((saved) {
+      if (saved == true) {
+        ref.invalidate(datalensSavedQueriesProvider);
+      }
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────────────

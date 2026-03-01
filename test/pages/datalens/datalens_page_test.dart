@@ -36,6 +36,12 @@ Widget _createWidget({
       datalensSequencesProvider.overrideWith(
         (ref) => Future.value(sequences),
       ),
+      datalensQueryHistoryProvider.overrideWith(
+        (ref) => Future.value([]),
+      ),
+      datalensSavedQueriesProvider.overrideWith(
+        (ref) => Future.value([]),
+      ),
       ...overrides,
     ],
     child: const MaterialApp(home: Scaffold(body: DatalensPage())),
