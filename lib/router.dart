@@ -69,6 +69,7 @@ import 'pages/fleet/solution_profile_list_page.dart';
 import 'pages/fleet/workstation_profile_detail_page.dart';
 import 'pages/fleet/workstation_profile_list_page.dart';
 import 'pages/datalens/datalens_page.dart';
+import 'pages/logger/log_search_page.dart';
 import 'pages/logger/log_viewer_page.dart';
 import 'pages/logger/logger_dashboard_page.dart';
 import 'pages/relay/relay_page.dart';
@@ -698,7 +699,7 @@ final GoRouter router = GoRouter(
           path: '/logger/search',
           name: 'logger-search',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Log Search'),
+            child: LogSearchPage(),
           ),
         ),
         // 65. Logger — Traps
