@@ -71,6 +71,8 @@ import 'pages/fleet/workstation_profile_list_page.dart';
 import 'pages/datalens/datalens_page.dart';
 import 'pages/logger/alert_channels_page.dart';
 import 'pages/logger/alerts_page.dart';
+import 'pages/logger/dashboard_detail_page.dart';
+import 'pages/logger/log_dashboards_page.dart';
 import 'pages/logger/log_search_page.dart';
 import 'pages/logger/log_traps_page.dart';
 import 'pages/logger/log_viewer_page.dart';
@@ -745,7 +747,7 @@ final GoRouter router = GoRouter(
           path: '/logger/dashboards',
           name: 'logger-dashboards',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Log Dashboards'),
+            child: LogDashboardsPage(),
           ),
         ),
         // 70. Logger — Dashboard Detail
@@ -753,8 +755,8 @@ final GoRouter router = GoRouter(
           path: '/logger/dashboards/:id',
           name: 'logger-dashboard-detail',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: PlaceholderPage(
-              title: 'Dashboard — ${state.pathParameters['id']}',
+            child: DashboardDetailPage(
+              dashboardId: state.pathParameters['id']!,
             ),
           ),
         ),
