@@ -41,7 +41,7 @@ void main() {
         ),
       ));
 
-      expect(find.textContaining('2 of 12'), findsOneWidget);
+      expect(find.textContaining('2 of 16'), findsOneWidget);
     });
 
     testWidgets('shows All and None quick-select chips', (tester) async {
@@ -78,7 +78,7 @@ void main() {
       expect(find.text('Recommended'), findsOneWidget);
     });
 
-    testWidgets('shows all 12 agent names', (tester) async {
+    testWidgets('shows all 16 agent names', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1400, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 

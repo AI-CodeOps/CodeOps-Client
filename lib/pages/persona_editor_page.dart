@@ -370,6 +370,7 @@ class _PersonaEditorPageState extends ConsumerState<PersonaEditorPage> {
                   flex: 2,
                   child: DropdownButtonFormField<AgentType?>(
                     initialValue: _agentType,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Agent Type',
                       isDense: true,

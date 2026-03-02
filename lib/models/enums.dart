@@ -122,7 +122,14 @@ class AgentStatusConverter extends JsonConverter<AgentStatus, String> {
 // ---------------------------------------------------------------------------
 
 /// The kind of QA agent that can be executed.
+///
+/// Agents are organized into three tiers:
+/// - **Tier 1 — Core:** Always run on every audit.
+/// - **Tier 2 — Conditional:** Spawned based on project type and configuration.
+/// - **Tier 3 — Adversarial:** Prove resilience beyond correctness.
 enum AgentType {
+  // Tier 1: Core Workers (always run)
+
   /// Scans for security vulnerabilities.
   security,
 
@@ -134,6 +141,8 @@ enum AgentType {
 
   /// Verifies feature completeness against specs.
   completeness,
+
+  // Tier 2: Conditional Workers (based on project type)
 
   /// Validates API contracts.
   apiContract,
@@ -157,7 +166,21 @@ enum AgentType {
   dependency,
 
   /// Reviews architectural patterns.
-  architecture;
+  architecture,
+
+  // Tier 3: Adversarial Workers (prove resilience)
+
+  /// Mutation testing — injects faults to prove test suite resilience.
+  chaosMonkey,
+
+  /// Simulates hostile user behavior against APIs and UIs.
+  hostileUser,
+
+  /// Audits code against regulatory and compliance standards.
+  complianceAuditor,
+
+  /// Adversarial load testing to find performance breaking points.
+  loadSaboteur;
 
   /// Serializes to the server's SCREAMING_SNAKE_CASE representation.
   String toJson() => switch (this) {
@@ -173,6 +196,10 @@ enum AgentType {
         AgentType.performance => 'PERFORMANCE',
         AgentType.dependency => 'DEPENDENCY',
         AgentType.architecture => 'ARCHITECTURE',
+        AgentType.chaosMonkey => 'CHAOS_MONKEY',
+        AgentType.hostileUser => 'HOSTILE_USER',
+        AgentType.complianceAuditor => 'COMPLIANCE_AUDITOR',
+        AgentType.loadSaboteur => 'LOAD_SABOTEUR',
       };
 
   /// Deserializes from the server's SCREAMING_SNAKE_CASE representation.
@@ -189,6 +216,10 @@ enum AgentType {
         'PERFORMANCE' => AgentType.performance,
         'DEPENDENCY' => AgentType.dependency,
         'ARCHITECTURE' => AgentType.architecture,
+        'CHAOS_MONKEY' => AgentType.chaosMonkey,
+        'HOSTILE_USER' => AgentType.hostileUser,
+        'COMPLIANCE_AUDITOR' => AgentType.complianceAuditor,
+        'LOAD_SABOTEUR' => AgentType.loadSaboteur,
         _ => throw ArgumentError('Unknown AgentType: $json'),
       };
 
@@ -206,6 +237,10 @@ enum AgentType {
         AgentType.performance => 'Performance',
         AgentType.dependency => 'Dependency',
         AgentType.architecture => 'Architecture',
+        AgentType.chaosMonkey => 'Chaos Monkey',
+        AgentType.hostileUser => 'Hostile User',
+        AgentType.complianceAuditor => 'Compliance Auditor',
+        AgentType.loadSaboteur => 'Load Saboteur',
       };
 }
 
@@ -219,6 +254,47 @@ class AgentTypeConverter extends JsonConverter<AgentType, String> {
 
   @override
   String toJson(AgentType object) => object.toJson();
+}
+
+/// Tier classification for [AgentType].
+extension AgentTypeTier on AgentType {
+  /// Whether this is a Tier 1 core agent (always runs).
+  bool get isCore => switch (this) {
+        AgentType.security ||
+        AgentType.codeQuality ||
+        AgentType.buildHealth ||
+        AgentType.completeness =>
+          true,
+        _ => false,
+      };
+
+  /// Whether this is a Tier 2 conditional agent (project-type dependent).
+  bool get isConditional => switch (this) {
+        AgentType.apiContract ||
+        AgentType.testCoverage ||
+        AgentType.uiUx ||
+        AgentType.documentation ||
+        AgentType.database ||
+        AgentType.performance ||
+        AgentType.dependency ||
+        AgentType.architecture =>
+          true,
+        _ => false,
+      };
+
+  /// Whether this is a Tier 3 adversarial agent (proves resilience).
+  bool get isAdversarial => switch (this) {
+        AgentType.chaosMonkey ||
+        AgentType.hostileUser ||
+        AgentType.complianceAuditor ||
+        AgentType.loadSaboteur =>
+          true,
+        _ => false,
+      };
+
+  /// Human-readable tier name.
+  String get tierName =>
+      isCore ? 'Core' : isConditional ? 'Conditional' : 'Adversarial';
 }
 
 // ---------------------------------------------------------------------------
@@ -1432,6 +1508,10 @@ const Map<AgentType, String> agentTypeLabels = {
   AgentType.performance: 'Performance',
   AgentType.dependency: 'Dependency',
   AgentType.architecture: 'Architecture',
+  AgentType.chaosMonkey: 'Chaos Monkey',
+  AgentType.hostileUser: 'Hostile User',
+  AgentType.complianceAuditor: 'Compliance Auditor',
+  AgentType.loadSaboteur: 'Load Saboteur',
 };
 
 /// Human-friendly labels for each [Severity].

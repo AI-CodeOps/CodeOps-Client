@@ -81,7 +81,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Agents'), findsOneWidget);
-      expect(find.text('2 of 12'), findsOneWidget);
+      expect(find.text('2 of 16'), findsOneWidget);
     });
 
     testWidgets('shows configuration card', (tester) async {

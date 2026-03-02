@@ -77,10 +77,14 @@ void main() {
         'PERFORMANCE',
         'DEPENDENCY',
         'ARCHITECTURE',
+        'CHAOS_MONKEY',
+        'HOSTILE_USER',
+        'COMPLIANCE_AUDITOR',
+        'LOAD_SABOTEUR',
       ];
 
       test('has expected value count', () {
-        expect(values, hasLength(12));
+        expect(values, hasLength(16));
       });
 
       test('round-trips through toJson/fromJson', () {

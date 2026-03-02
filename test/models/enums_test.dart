@@ -70,6 +70,10 @@ void main() {
       expect(AgentType.performance.toJson(), 'PERFORMANCE');
       expect(AgentType.dependency.toJson(), 'DEPENDENCY');
       expect(AgentType.architecture.toJson(), 'ARCHITECTURE');
+      expect(AgentType.chaosMonkey.toJson(), 'CHAOS_MONKEY');
+      expect(AgentType.hostileUser.toJson(), 'HOSTILE_USER');
+      expect(AgentType.complianceAuditor.toJson(), 'COMPLIANCE_AUDITOR');
+      expect(AgentType.loadSaboteur.toJson(), 'LOAD_SABOTEUR');
     });
 
     test('fromJson round-trips all values', () {
@@ -88,8 +92,37 @@ void main() {
       expect(() => AgentType.fromJson('INVALID'), throwsArgumentError);
     });
 
-    test('has all 12 values', () {
-      expect(AgentType.values.length, 12);
+    test('has all 16 values', () {
+      expect(AgentType.values.length, 16);
+    });
+
+    test('adversarial types have correct displayNames', () {
+      expect(AgentType.chaosMonkey.displayName, 'Chaos Monkey');
+      expect(AgentType.hostileUser.displayName, 'Hostile User');
+      expect(AgentType.complianceAuditor.displayName, 'Compliance Auditor');
+      expect(AgentType.loadSaboteur.displayName, 'Load Saboteur');
+    });
+
+    test('tier classification counts', () {
+      final core = AgentType.values.where((t) => t.isCore).toList();
+      final conditional =
+          AgentType.values.where((t) => t.isConditional).toList();
+      final adversarial =
+          AgentType.values.where((t) => t.isAdversarial).toList();
+      expect(core.length, 4);
+      expect(conditional.length, 8);
+      expect(adversarial.length, 4);
+      expect(core.length + conditional.length + adversarial.length, 16);
+    });
+
+    test('old v1.0 values do not exist', () {
+      final names = AgentType.values.map((v) => v.toJson()).toSet();
+      expect(names.contains('BEST_PRACTICES'), isFalse);
+      expect(names.contains('ERROR_HANDLING'), isFalse);
+      expect(names.contains('TESTING'), isFalse);
+      expect(names.contains('ACCESSIBILITY'), isFalse);
+      expect(names.contains('TYPE_SAFETY'), isFalse);
+      expect(names.contains('MAINTAINABILITY'), isFalse);
     });
   });
 
@@ -585,8 +618,8 @@ void main() {
   });
 
   group('Label maps', () {
-    test('agentTypeLabels has all 12 entries', () {
-      expect(agentTypeLabels.length, 12);
+    test('agentTypeLabels has all 16 entries', () {
+      expect(agentTypeLabels.length, 16);
       for (final v in AgentType.values) {
         expect(agentTypeLabels.containsKey(v), isTrue);
       }

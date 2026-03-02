@@ -273,6 +273,10 @@ class PersonaManager {
         AgentType.performance => 'performance',
         AgentType.dependency => 'dependency',
         AgentType.architecture => 'architecture',
+        AgentType.chaosMonkey => 'chaos-monkey',
+        AgentType.hostileUser => 'hostile-user',
+        AgentType.complianceAuditor => 'compliance-auditor',
+        AgentType.loadSaboteur => 'load-saboteur',
       };
 
   /// Standardized report format instructions appended to every assembled

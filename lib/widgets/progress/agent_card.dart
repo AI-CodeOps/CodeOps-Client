@@ -93,6 +93,26 @@ class AgentTypeMetadata {
       displayName: 'Architecture',
       description: 'Patterns, coupling, layering, modularity',
     ),
+    AgentType.chaosMonkey: AgentTypeMetadata(
+      icon: Icons.bug_report,
+      displayName: 'Chaos Monkey',
+      description: 'Mutation testing, fault injection, surviving mutations',
+    ),
+    AgentType.hostileUser: AgentTypeMetadata(
+      icon: Icons.person_off,
+      displayName: 'Hostile User',
+      description: 'API abuse, parameter tampering, privilege escalation',
+    ),
+    AgentType.complianceAuditor: AgentTypeMetadata(
+      icon: Icons.gavel,
+      displayName: 'Compliance Auditor',
+      description: 'GDPR, HIPAA, PCI-DSS, PII exposure, audit trails',
+    ),
+    AgentType.loadSaboteur: AgentTypeMetadata(
+      icon: Icons.trending_up,
+      displayName: 'Load Saboteur',
+      description: 'Connection pool stress, cascading timeouts, N+1 exploits',
+    ),
   };
 }
 

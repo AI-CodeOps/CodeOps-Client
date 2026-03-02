@@ -121,6 +121,10 @@ class CodeOpsColors {
     AgentType.performance: Color(0xFF06B6D4),
     AgentType.dependency: Color(0xFF78716C),
     AgentType.architecture: Color(0xFFD946EF),
+    AgentType.chaosMonkey: Color(0xFFFF5722),
+    AgentType.hostileUser: Color(0xFFD32F2F),
+    AgentType.complianceAuditor: Color(0xFF1565C0),
+    AgentType.loadSaboteur: Color(0xFFAD1457),
   };
 
   /// Maps each [TaskStatus] to its corresponding color.
