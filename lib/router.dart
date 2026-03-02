@@ -78,6 +78,8 @@ import 'pages/logger/log_traps_page.dart';
 import 'pages/logger/log_viewer_page.dart';
 import 'pages/logger/logger_dashboard_page.dart';
 import 'pages/logger/metrics_explorer_page.dart';
+import 'pages/logger/trace_detail_page.dart';
+import 'pages/logger/trace_viewer_page.dart';
 import 'pages/logger/trap_editor_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
@@ -774,7 +776,7 @@ final GoRouter router = GoRouter(
           path: '/logger/traces',
           name: 'logger-traces',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Trace Viewer'),
+            child: TraceViewerPage(),
           ),
         ),
         // 73. Logger — Trace Detail
@@ -782,8 +784,8 @@ final GoRouter router = GoRouter(
           path: '/logger/traces/:correlationId',
           name: 'logger-trace-detail',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: PlaceholderPage(
-              title: 'Trace — ${state.pathParameters['correlationId']}',
+            child: TraceDetailPage(
+              correlationId: state.pathParameters['correlationId']!,
             ),
           ),
         ),
