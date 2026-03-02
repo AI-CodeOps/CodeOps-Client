@@ -78,6 +78,7 @@ import 'pages/logger/log_traps_page.dart';
 import 'pages/logger/log_viewer_page.dart';
 import 'pages/logger/logger_dashboard_page.dart';
 import 'pages/logger/metrics_explorer_page.dart';
+import 'pages/logger/retention_admin_page.dart';
 import 'pages/logger/trace_detail_page.dart';
 import 'pages/logger/trace_viewer_page.dart';
 import 'pages/logger/trap_editor_page.dart';
@@ -794,7 +795,7 @@ final GoRouter router = GoRouter(
           path: '/logger/retention',
           name: 'logger-retention',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Retention & Admin'),
+            child: RetentionAdminPage(),
           ),
         ),
         // 75. Relay — Messaging shell
