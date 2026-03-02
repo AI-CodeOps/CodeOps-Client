@@ -15,6 +15,7 @@ import '../services/datalens/database_connection_service.dart';
 import '../services/datalens/query_execution_service.dart';
 import '../services/datalens/query_history_service.dart';
 import '../services/datalens/schema_introspection_service.dart';
+import '../services/datalens/data_editor_service.dart';
 import '../services/datalens/sql_autocomplete_service.dart';
 import 'auth_providers.dart';
 
@@ -54,6 +55,13 @@ final datalensAutocompleteServiceProvider =
     Provider<SqlAutocompleteService>((ref) {
   final schemaService = ref.watch(datalensSchemaServiceProvider);
   return SqlAutocompleteService(schemaService);
+});
+
+/// Data editor service — manages pending inline edits, inserts, and deletes.
+final datalensDataEditorServiceProvider = Provider<DataEditorService>((ref) {
+  final queryService = ref.watch(datalensQueryServiceProvider);
+  final schemaService = ref.watch(datalensSchemaServiceProvider);
+  return DataEditorService(queryService, schemaService);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -96,6 +104,20 @@ final autoCommitProvider = StateProvider<bool>((ref) => true);
 
 /// Whether a transaction is currently active on the selected connection.
 final transactionActiveProvider = StateProvider<bool>((ref) => false);
+
+/// Pending changes count for the selected table (triggers UI updates).
+final pendingChangesCountProvider = StateProvider<int>((ref) => 0);
+
+/// Foreign key relationships for the selected table.
+final datalensFkRelationshipsProvider =
+    FutureProvider<List<ForeignKeyInfo>>((ref) {
+  final connectionId = ref.watch(selectedConnectionIdProvider);
+  final schema = ref.watch(selectedSchemaProvider);
+  final table = ref.watch(selectedTableProvider);
+  if (connectionId == null || schema == null || table == null) return [];
+  final service = ref.watch(datalensSchemaServiceProvider);
+  return service.getForeignKeys(connectionId, schema, table);
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data Providers — Connections

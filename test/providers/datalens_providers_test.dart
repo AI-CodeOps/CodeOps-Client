@@ -11,6 +11,7 @@ import 'package:codeops/services/datalens/database_connection_service.dart';
 import 'package:codeops/services/datalens/query_execution_service.dart';
 import 'package:codeops/services/datalens/query_history_service.dart';
 import 'package:codeops/services/datalens/schema_introspection_service.dart';
+import 'package:codeops/services/datalens/data_editor_service.dart';
 import 'package:codeops/services/datalens/sql_autocomplete_service.dart';
 
 void main() {
@@ -61,6 +62,15 @@ void main() {
       final service = container.read(datalensAutocompleteServiceProvider);
 
       expect(service, isA<SqlAutocompleteService>());
+    });
+
+    test('dataEditorServiceProvider returns DataEditorService', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final service = container.read(datalensDataEditorServiceProvider);
+
+      expect(service, isA<DataEditorService>());
     });
   });
 
@@ -151,6 +161,13 @@ void main() {
 
       expect(container.read(transactionActiveProvider), false);
     });
+
+    test('pendingChangesCountProvider defaults to 0', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(pendingChangesCountProvider), 0);
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -240,6 +257,15 @@ void main() {
       container.read(transactionActiveProvider.notifier).state = true;
 
       expect(container.read(transactionActiveProvider), true);
+    });
+
+    test('pendingChangesCountProvider can be updated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(pendingChangesCountProvider.notifier).state = 5;
+
+      expect(container.read(pendingChangesCountProvider), 5);
     });
   });
 }
