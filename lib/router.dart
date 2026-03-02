@@ -77,6 +77,7 @@ import 'pages/logger/log_search_page.dart';
 import 'pages/logger/log_traps_page.dart';
 import 'pages/logger/log_viewer_page.dart';
 import 'pages/logger/logger_dashboard_page.dart';
+import 'pages/logger/metrics_explorer_page.dart';
 import 'pages/logger/trap_editor_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
@@ -765,7 +766,7 @@ final GoRouter router = GoRouter(
           path: '/logger/metrics',
           name: 'logger-metrics',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Metrics Explorer'),
+            child: MetricsExplorerPage(),
           ),
         ),
         // 72. Logger — Trace Viewer
