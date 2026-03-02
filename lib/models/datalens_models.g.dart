@@ -22,6 +22,7 @@ DatabaseConnection _$DatabaseConnectionFromJson(Map<String, dynamic> json) =>
       sslMode: json['sslMode'] as String?,
       color: json['color'] as String?,
       connectionTimeout: (json['connectionTimeout'] as num?)?.toInt(),
+      filePath: json['filePath'] as String?,
       lastConnectedAt: json['lastConnectedAt'] == null
           ? null
           : DateTime.parse(json['lastConnectedAt'] as String),
@@ -49,6 +50,7 @@ Map<String, dynamic> _$DatabaseConnectionToJson(DatabaseConnection instance) =>
       'sslMode': instance.sslMode,
       'color': instance.color,
       'connectionTimeout': instance.connectionTimeout,
+      'filePath': instance.filePath,
       'lastConnectedAt': instance.lastConnectedAt?.toIso8601String(),
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),

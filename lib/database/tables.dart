@@ -866,6 +866,9 @@ class DatalensConnections extends Table {
   IntColumn get connectionTimeout =>
       integer().withDefault(const Constant(10))();
 
+  /// File path for SQLite connections (null for network-based drivers).
+  TextColumn get filePath => text().nullable()();
+
   /// Timestamp of last successful connection.
   DateTimeColumn get lastConnectedAt => dateTime().nullable()();
 

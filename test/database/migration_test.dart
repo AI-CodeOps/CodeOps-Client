@@ -20,8 +20,8 @@ void main() {
       await db.close();
     });
 
-    test('schema version is 8', () {
-      expect(db.schemaVersion, 8);
+    test('schema version is 9', () {
+      expect(db.schemaVersion, 9);
     });
 
     test('qaJobs table has configJson column', () async {

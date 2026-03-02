@@ -70,22 +70,71 @@ class ConnectionStatusConverter
 /// Supported database drivers.
 enum DatabaseDriver {
   /// PostgreSQL database.
-  postgresql;
+  postgresql,
+
+  /// MySQL database.
+  mysql,
+
+  /// MariaDB database.
+  mariadb,
+
+  /// SQLite database (file-based).
+  sqlite,
+
+  /// Microsoft SQL Server database.
+  sqlServer;
 
   /// Serializes to SCREAMING_SNAKE_CASE representation.
   String toJson() => switch (this) {
         DatabaseDriver.postgresql => 'POSTGRESQL',
+        DatabaseDriver.mysql => 'MYSQL',
+        DatabaseDriver.mariadb => 'MARIADB',
+        DatabaseDriver.sqlite => 'SQLITE',
+        DatabaseDriver.sqlServer => 'SQL_SERVER',
       };
 
   /// Deserializes from SCREAMING_SNAKE_CASE representation.
   static DatabaseDriver fromJson(String json) => switch (json) {
         'POSTGRESQL' => DatabaseDriver.postgresql,
+        'MYSQL' => DatabaseDriver.mysql,
+        'MARIADB' => DatabaseDriver.mariadb,
+        'SQLITE' => DatabaseDriver.sqlite,
+        'SQL_SERVER' => DatabaseDriver.sqlServer,
         _ => throw ArgumentError('Unknown DatabaseDriver: $json'),
       };
 
   /// Human-readable display label.
   String get displayName => switch (this) {
         DatabaseDriver.postgresql => 'PostgreSQL',
+        DatabaseDriver.mysql => 'MySQL',
+        DatabaseDriver.mariadb => 'MariaDB',
+        DatabaseDriver.sqlite => 'SQLite',
+        DatabaseDriver.sqlServer => 'SQL Server',
+      };
+
+  /// Default port number for this database engine.
+  ///
+  /// Returns `null` for SQLite since it is file-based.
+  int? get defaultPort => switch (this) {
+        DatabaseDriver.postgresql => 5432,
+        DatabaseDriver.mysql => 3306,
+        DatabaseDriver.mariadb => 3306,
+        DatabaseDriver.sqlite => null,
+        DatabaseDriver.sqlServer => 1433,
+      };
+
+  /// Whether this driver uses a network host/port connection.
+  ///
+  /// Returns `false` for SQLite (file-based).
+  bool get isNetworkBased => this != DatabaseDriver.sqlite;
+
+  /// Default schema name for this database engine.
+  String? get defaultSchema => switch (this) {
+        DatabaseDriver.postgresql => 'public',
+        DatabaseDriver.mysql => null,
+        DatabaseDriver.mariadb => null,
+        DatabaseDriver.sqlite => 'main',
+        DatabaseDriver.sqlServer => 'dbo',
       };
 }
 
@@ -167,25 +216,40 @@ class ConstraintTypeConverter extends JsonConverter<ConstraintType, String> {
 // IndexType
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// PostgreSQL index access method.
+/// Database index access method.
 enum IndexType {
-  /// B-tree index (default).
+  /// B-tree index (default for most databases).
   btree,
 
   /// Hash index.
   hash,
 
-  /// Generalized Inverted Index (full-text, arrays, JSONB).
+  /// Generalized Inverted Index (PostgreSQL: full-text, arrays, JSONB).
   gin,
 
-  /// Generalized Search Tree (geometric, range types).
+  /// Generalized Search Tree (PostgreSQL: geometric, range types).
   gist,
 
-  /// Space-partitioned GiST.
+  /// Space-partitioned GiST (PostgreSQL).
   spgist,
 
-  /// Block Range Index (large sequential tables).
-  brin;
+  /// Block Range Index (PostgreSQL: large sequential tables).
+  brin,
+
+  /// Full-text index (MySQL/MariaDB).
+  fulltext,
+
+  /// R-tree spatial index (MySQL/MariaDB).
+  rtree,
+
+  /// Clustered index (SQL Server).
+  clustered,
+
+  /// Non-clustered index (SQL Server).
+  nonclustered,
+
+  /// Other / unknown index type.
+  other;
 
   /// Serializes to SCREAMING_SNAKE_CASE representation.
   String toJson() => switch (this) {
@@ -195,6 +259,11 @@ enum IndexType {
         IndexType.gist => 'GIST',
         IndexType.spgist => 'SPGIST',
         IndexType.brin => 'BRIN',
+        IndexType.fulltext => 'FULLTEXT',
+        IndexType.rtree => 'RTREE',
+        IndexType.clustered => 'CLUSTERED',
+        IndexType.nonclustered => 'NONCLUSTERED',
+        IndexType.other => 'OTHER',
       };
 
   /// Deserializes from SCREAMING_SNAKE_CASE representation.
@@ -205,6 +274,11 @@ enum IndexType {
         'GIST' => IndexType.gist,
         'SPGIST' => IndexType.spgist,
         'BRIN' => IndexType.brin,
+        'FULLTEXT' => IndexType.fulltext,
+        'RTREE' => IndexType.rtree,
+        'CLUSTERED' => IndexType.clustered,
+        'NONCLUSTERED' => IndexType.nonclustered,
+        'OTHER' => IndexType.other,
         _ => throw ArgumentError('Unknown IndexType: $json'),
       };
 
@@ -216,6 +290,11 @@ enum IndexType {
         IndexType.gist => 'GiST',
         IndexType.spgist => 'SP-GiST',
         IndexType.brin => 'BRIN',
+        IndexType.fulltext => 'Full-Text',
+        IndexType.rtree => 'R-Tree',
+        IndexType.clustered => 'Clustered',
+        IndexType.nonclustered => 'Non-Clustered',
+        IndexType.other => 'Other',
       };
 }
 

@@ -322,7 +322,9 @@ class _ConnectionList extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  '${conn.host ?? 'localhost'}:${conn.port ?? 5432}/${conn.database ?? ''}',
+                                  conn.driver == DatabaseDriver.sqlite
+                                      ? conn.filePath ?? 'No file path'
+                                      : '${conn.host ?? 'localhost'}:${conn.port ?? 5432}/${conn.database ?? ''}',
                                   style: const TextStyle(
                                     fontSize: 11,
                                     color: CodeOpsColors.textTertiary,
@@ -386,6 +388,8 @@ class _ConnectionFormState extends ConsumerState<_ConnectionForm> {
   late TextEditingController _usernameController;
   late TextEditingController _passwordController;
   late TextEditingController _timeoutController;
+  late TextEditingController _filePathController;
+  DatabaseDriver _selectedDriver = DatabaseDriver.postgresql;
   bool _useSsl = false;
   Color _selectedColor = _connectionColors.first;
   bool _isTesting = false;
@@ -404,6 +408,7 @@ class _ConnectionFormState extends ConsumerState<_ConnectionForm> {
     _usernameController = TextEditingController();
     _passwordController = TextEditingController();
     _timeoutController = TextEditingController(text: '10');
+    _filePathController = TextEditingController();
 
     if (widget.connectionId != null) {
       _loadConnection();
@@ -416,14 +421,18 @@ class _ConnectionFormState extends ConsumerState<_ConnectionForm> {
     final conn = await service.getConnectionById(widget.connectionId!);
     if (conn != null && mounted) {
       setState(() {
+        _selectedDriver = conn.driver ?? DatabaseDriver.postgresql;
         _nameController.text = conn.name ?? '';
         _hostController.text = conn.host ?? 'localhost';
-        _portController.text = (conn.port ?? 5432).toString();
+        _portController.text =
+            (conn.port ?? _selectedDriver.defaultPort ?? 5432).toString();
         _databaseController.text = conn.database ?? '';
-        _schemaController.text = conn.schema ?? 'public';
+        _schemaController.text =
+            conn.schema ?? _selectedDriver.defaultSchema ?? '';
         _usernameController.text = conn.username ?? '';
         _passwordController.text = conn.password ?? '';
         _timeoutController.text = (conn.connectionTimeout ?? 10).toString();
+        _filePathController.text = conn.filePath ?? '';
         _useSsl = conn.useSsl ?? false;
         if (conn.color != null) {
           try {
@@ -447,6 +456,7 @@ class _ConnectionFormState extends ConsumerState<_ConnectionForm> {
     _usernameController.dispose();
     _passwordController.dispose();
     _timeoutController.dispose();
+    _filePathController.dispose();
     super.dispose();
   }
 
@@ -460,20 +470,31 @@ class _ConnectionFormState extends ConsumerState<_ConnectionForm> {
     return DatabaseConnection(
       id: widget.connectionId ?? _uuid.v4(),
       name: _nameController.text.trim(),
-      driver: DatabaseDriver.postgresql,
-      host: _hostController.text.trim(),
-      port: int.tryParse(_portController.text.trim()) ?? 5432,
+      driver: _selectedDriver,
+      host: _selectedDriver.isNetworkBased
+          ? _hostController.text.trim()
+          : null,
+      port: _selectedDriver.isNetworkBased
+          ? (int.tryParse(_portController.text.trim()) ??
+              _selectedDriver.defaultPort ??
+              5432)
+          : null,
       database: _databaseController.text.trim(),
       schema: _schemaController.text.trim().isEmpty
           ? null
           : _schemaController.text.trim(),
-      username: _usernameController.text.trim(),
-      password: _passwordController.text.isEmpty
-          ? null
-          : _passwordController.text,
-      useSsl: _useSsl,
+      username: _selectedDriver.isNetworkBased
+          ? _usernameController.text.trim()
+          : null,
+      password: _selectedDriver.isNetworkBased && _passwordController.text.isNotEmpty
+          ? _passwordController.text
+          : null,
+      useSsl: _selectedDriver.isNetworkBased ? _useSsl : false,
       color: colorHex,
       connectionTimeout: int.tryParse(_timeoutController.text.trim()) ?? 10,
+      filePath: _selectedDriver == DatabaseDriver.sqlite
+          ? _filePathController.text.trim()
+          : null,
     );
   }
 
@@ -593,7 +614,57 @@ class _ConnectionFormState extends ConsumerState<_ConnectionForm> {
           ),
           const SizedBox(height: 12),
 
-          // Host + Port row
+          // Database Type selector
+          _FormField(
+            label: 'Database Type',
+            child: DropdownButtonFormField<DatabaseDriver>(
+              value: _selectedDriver,
+              onChanged: (driver) {
+                if (driver == null) return;
+                setState(() {
+                  _selectedDriver = driver;
+                  // Update defaults when driver changes.
+                  if (driver.defaultPort != null) {
+                    _portController.text = driver.defaultPort.toString();
+                  }
+                  if (driver.defaultSchema != null) {
+                    _schemaController.text = driver.defaultSchema!;
+                  } else {
+                    _schemaController.text = '';
+                  }
+                });
+              },
+              decoration: _inputDecoration('Select database type'),
+              dropdownColor: CodeOpsColors.surface,
+              style: _fieldTextStyle,
+              items: DatabaseDriver.values.map((driver) {
+                return DropdownMenuItem(
+                  value: driver,
+                  child: Text(driver.displayName),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // SQLite file path (only shown for SQLite)
+          if (_selectedDriver == DatabaseDriver.sqlite) ...[
+            _FormField(
+              label: 'Database File Path',
+              child: TextFormField(
+                controller: _filePathController,
+                decoration: _inputDecoration('/path/to/database.db'),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'File path is required'
+                    : null,
+                style: _fieldTextStyle,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Host + Port row (hidden for SQLite)
+          if (_selectedDriver.isNetworkBased)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -638,99 +709,123 @@ class _ConnectionFormState extends ConsumerState<_ConnectionForm> {
           ),
           const SizedBox(height: 12),
 
-          // Database
-          _FormField(
-            label: 'Database',
-            child: TextFormField(
-              controller: _databaseController,
-              decoration: _inputDecoration('database name'),
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? 'Database is required'
-                  : null,
-              style: _fieldTextStyle,
+          // Database (hidden for SQLite — uses file path instead)
+          if (_selectedDriver != DatabaseDriver.sqlite) ...[
+            _FormField(
+              label: 'Database',
+              child: TextFormField(
+                controller: _databaseController,
+                decoration: _inputDecoration('database name'),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Database is required'
+                    : null,
+                style: _fieldTextStyle,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
+          ],
 
-          // Default Schema
-          _FormField(
-            label: 'Default Schema',
-            child: TextFormField(
-              controller: _schemaController,
-              decoration: _inputDecoration('public'),
-              style: _fieldTextStyle,
+          // Default Schema (hidden for SQLite — single schema only)
+          if (_selectedDriver != DatabaseDriver.sqlite) ...[
+            _FormField(
+              label: 'Default Schema',
+              child: TextFormField(
+                controller: _schemaController,
+                decoration: _inputDecoration(
+                  _selectedDriver.defaultSchema ?? 'public',
+                ),
+                style: _fieldTextStyle,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
+          ],
 
-          // Username + Password row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _FormField(
-                  label: 'Username',
-                  child: TextFormField(
-                    controller: _usernameController,
-                    decoration: _inputDecoration('username'),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Username is required'
-                        : null,
-                    style: _fieldTextStyle,
+          // Username + Password row (hidden for SQLite)
+          if (_selectedDriver.isNetworkBased) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _FormField(
+                    label: 'Username',
+                    child: TextFormField(
+                      controller: _usernameController,
+                      decoration: _inputDecoration('username'),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Username is required'
+                          : null,
+                      style: _fieldTextStyle,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _FormField(
-                  label: 'Password',
-                  child: TextFormField(
-                    controller: _passwordController,
-                    decoration: _inputDecoration('password'),
-                    obscureText: true,
-                    style: _fieldTextStyle,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _FormField(
+                    label: 'Password',
+                    child: TextFormField(
+                      controller: _passwordController,
+                      decoration: _inputDecoration('password'),
+                      obscureText: true,
+                      style: _fieldTextStyle,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
 
           // SSL + Timeout row
           Row(
             children: [
-              // SSL toggle
-              Expanded(
-                child: _FormField(
-                  label: 'SSL',
-                  child: SwitchListTile(
-                    value: _useSsl,
-                    onChanged: (v) => setState(() => _useSsl = v),
-                    title: Text(
-                      _useSsl ? 'Enabled' : 'Disabled',
+              // SSL toggle (hidden for SQLite)
+              if (_selectedDriver.isNetworkBased) ...[
+                Expanded(
+                  child: _FormField(
+                    label: 'SSL',
+                    child: SwitchListTile(
+                      value: _useSsl,
+                      onChanged: (v) => setState(() => _useSsl = v),
+                      title: Text(
+                        _useSsl ? 'Enabled' : 'Disabled',
+                        style: _fieldTextStyle,
+                      ),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      activeThumbColor: CodeOpsColors.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Timeout (fixed width when SSL is visible)
+                SizedBox(
+                  width: 120,
+                  child: _FormField(
+                    label: 'Timeout (s)',
+                    child: TextFormField(
+                      controller: _timeoutController,
+                      decoration: _inputDecoration('10'),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       style: _fieldTextStyle,
                     ),
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    activeThumbColor: CodeOpsColors.primary,
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Timeout
-              SizedBox(
-                width: 120,
-                child: _FormField(
-                  label: 'Timeout (s)',
-                  child: TextFormField(
-                    controller: _timeoutController,
-                    decoration: _inputDecoration('10'),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    style: _fieldTextStyle,
+              ],
+              // Timeout (full width when SSL is hidden — SQLite)
+              if (!_selectedDriver.isNetworkBased)
+                Expanded(
+                  child: _FormField(
+                    label: 'Timeout (s)',
+                    child: TextFormField(
+                      controller: _timeoutController,
+                      decoration: _inputDecoration('10'),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      style: _fieldTextStyle,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 16),

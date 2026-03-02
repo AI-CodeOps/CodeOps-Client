@@ -1,29 +1,31 @@
-/// Service for executing SQL queries against PostgreSQL in DataLens.
+/// Service for executing SQL queries against databases in DataLens.
 ///
 /// Handles SELECT, DML, and DDL queries, builds [QueryResult] objects with
 /// column metadata and row data, supports pagination, table browsing,
 /// EXPLAIN plans, and query cancellation. Every execution is recorded
 /// in [QueryHistoryService].
+///
+/// Uses [DatabaseDriverAdapter] for database-agnostic query execution,
+/// supporting PostgreSQL, MySQL, MariaDB, SQLite, and SQL Server.
 library;
-
-import 'package:postgres/postgres.dart' as pg;
 
 import '../../models/datalens_enums.dart';
 import '../../models/datalens_models.dart';
 import '../logging/log_service.dart';
 import 'database_connection_service.dart';
+import 'drivers/database_driver.dart';
 import 'query_history_service.dart';
 
 /// Executes SQL queries and records results in history.
 ///
-/// Obtains live [pg.Connection] instances from [DatabaseConnectionService]
-/// and delegates history persistence to [QueryHistoryService]. Supports
-/// transaction control: auto-commit mode (default) or manual
-/// BEGIN/COMMIT/ROLLBACK.
+/// Obtains active [DatabaseDriverAdapter] instances from
+/// [DatabaseConnectionService] and delegates history persistence to
+/// [QueryHistoryService]. Supports transaction control: auto-commit
+/// mode (default) or manual BEGIN/COMMIT/ROLLBACK.
 class QueryExecutionService {
   static const String _tag = 'QueryExecutionService';
 
-  /// The connection service used to obtain active [pg.Connection] instances.
+  /// The connection service used to obtain active driver adapters.
   final DatabaseConnectionService _connectionService;
 
   /// The history service used to record query executions.
@@ -58,11 +60,11 @@ class QueryExecutionService {
     String sql,
   ) async {
     log.d(_tag, 'executeQuery($connectionId)');
-    final conn = _requireConnection(connectionId);
+    final driver = _requireDriver(connectionId);
     final stopwatch = Stopwatch()..start();
 
     try {
-      final result = await conn.execute(sql);
+      final result = await driver.execute(sql);
       stopwatch.stop();
 
       final queryResult = _buildResult(result, sql, stopwatch.elapsedMilliseconds);
@@ -96,10 +98,11 @@ class QueryExecutionService {
     }
   }
 
-  /// Executes a query with LIMIT/OFFSET pagination.
+  /// Executes a query with pagination.
   ///
-  /// Wraps the given [sql] in a subquery with `LIMIT` and `OFFSET` clauses,
-  /// and issues a parallel `COUNT(*)` to determine total rows.
+  /// Delegates pagination syntax to the driver adapter, which applies the
+  /// engine-specific pagination (LIMIT/OFFSET for PostgreSQL/MySQL/SQLite,
+  /// OFFSET FETCH for SQL Server).
   ///
   /// Throws [StateError] if no active connection exists for [connectionId].
   Future<QueryResult> executePagedQuery(
@@ -109,24 +112,30 @@ class QueryExecutionService {
     int offset = 0,
   }) async {
     log.d(_tag, 'executePagedQuery($connectionId, limit=$limit, offset=$offset)');
-    final conn = _requireConnection(connectionId);
+    final driver = _requireDriver(connectionId);
     final stopwatch = Stopwatch()..start();
 
     try {
       // Count total rows.
-      final countResult = await conn.execute(
+      final countResult = await driver.execute(
         'SELECT COUNT(*) FROM ($sql) AS _count_query',
       );
-      final totalRows = countResult.first.first as int;
+      final totalRows =
+          countResult.rows.isNotEmpty && countResult.rows.first.isNotEmpty
+              ? _toInt(countResult.rows.first.first)
+              : 0;
 
       // Execute the paged query.
-      final pagedSql = '$sql LIMIT $limit OFFSET $offset';
-      final result = await conn.execute(pagedSql);
+      final result = await driver.executePaged(
+        sql,
+        limit: limit,
+        offset: offset,
+      );
       stopwatch.stop();
 
       final queryResult = _buildResult(
         result,
-        pagedSql,
+        sql,
         stopwatch.elapsedMilliseconds,
         totalRows: totalRows,
       );
@@ -162,8 +171,8 @@ class QueryExecutionService {
 
   /// Browses a table with optional filtering, sorting, and pagination.
   ///
-  /// Builds a `SELECT * FROM schema.table` query with optional `WHERE`,
-  /// `ORDER BY`, `LIMIT`, and `OFFSET` clauses.
+  /// Uses the driver's dialect to quote identifiers appropriately for the
+  /// target database engine.
   ///
   /// Throws [StateError] if no active connection exists for [connectionId].
   Future<QueryResult> browseTable(
@@ -177,14 +186,15 @@ class QueryExecutionService {
     String? whereClause,
   }) async {
     log.d(_tag, 'browseTable($connectionId, $schemaName.$tableName)');
+    final driver = _requireDriver(connectionId);
 
-    final qualifiedTable = '"$schemaName"."$tableName"';
+    final qualifiedTable = driver.dialect.qualifyTable(schemaName, tableName);
     final buffer = StringBuffer('SELECT * FROM $qualifiedTable');
     if (whereClause != null && whereClause.isNotEmpty) {
       buffer.write(' WHERE $whereClause');
     }
     if (orderBy != null && orderBy.isNotEmpty) {
-      buffer.write(' ORDER BY "$orderBy"');
+      buffer.write(' ORDER BY ${driver.dialect.quoteIdentifier(orderBy)}');
       if (sortDirection != null) {
         buffer.write(' ${sortDirection.toJson()}');
       }
@@ -201,32 +211,21 @@ class QueryExecutionService {
 
   /// Cancels any running query on the connection identified by [connectionId].
   ///
-  /// Uses `pg_cancel_backend()` with the backend PID obtained from the
-  /// active connection. Returns `true` if the cancellation was sent
-  /// successfully, `false` otherwise.
+  /// Delegates to the driver's engine-specific cancellation mechanism.
+  /// Returns `true` if the cancellation was sent successfully.
   ///
   /// Throws [StateError] if no active connection exists for [connectionId].
   Future<bool> cancelQuery(String connectionId) async {
     log.i(_tag, 'cancelQuery($connectionId)');
-    final conn = _requireConnection(connectionId);
-
-    try {
-      final pidResult = await conn.execute('SELECT pg_backend_pid()');
-      final pid = pidResult.first.first as int;
-      final cancelResult = await conn.execute(
-        'SELECT pg_cancel_backend($pid)',
-      );
-      return cancelResult.first.first as bool;
-    } on Exception catch (e) {
-      log.e(_tag, 'Failed to cancel query on $connectionId', e);
-      return false;
-    }
+    final driver = _requireDriver(connectionId);
+    return driver.cancelQuery();
   }
 
   /// Returns the EXPLAIN plan for the given [sql].
   ///
   /// When [analyze] is `true`, prepends `EXPLAIN ANALYZE` (which actually
   /// executes the query); otherwise prepends `EXPLAIN` only.
+  /// Returns an empty string if the engine does not support EXPLAIN.
   ///
   /// Throws [StateError] if no active connection exists for [connectionId].
   Future<String> explainQuery(
@@ -235,12 +234,8 @@ class QueryExecutionService {
     bool analyze = false,
   }) async {
     log.d(_tag, 'explainQuery($connectionId, analyze=$analyze)');
-    final conn = _requireConnection(connectionId);
-
-    final prefix = analyze ? 'EXPLAIN ANALYZE' : 'EXPLAIN';
-    final result = await conn.execute('$prefix $sql');
-
-    return result.map((row) => row.first as String).join('\n');
+    final driver = _requireDriver(connectionId);
+    return driver.explainQuery(sql, analyze: analyze);
   }
 
   /// Returns the exact row count for a table, with an optional WHERE clause.
@@ -253,16 +248,19 @@ class QueryExecutionService {
     String? whereClause,
   }) async {
     log.d(_tag, 'countRows($connectionId, $schemaName.$tableName)');
-    final conn = _requireConnection(connectionId);
+    final driver = _requireDriver(connectionId);
 
-    final qualifiedTable = '"$schemaName"."$tableName"';
+    final qualifiedTable = driver.dialect.qualifyTable(schemaName, tableName);
     final buffer = StringBuffer('SELECT COUNT(*) FROM $qualifiedTable');
     if (whereClause != null && whereClause.isNotEmpty) {
       buffer.write(' WHERE $whereClause');
     }
 
-    final result = await conn.execute(buffer.toString());
-    return result.first.first as int;
+    final result = await driver.execute(buffer.toString());
+    if (result.rows.isNotEmpty && result.rows.first.isNotEmpty) {
+      return _toInt(result.rows.first.first) ?? 0;
+    }
+    return 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -278,8 +276,8 @@ class QueryExecutionService {
   Future<void> beginTransaction(String connectionId) async {
     if (isTransactionActive(connectionId)) return;
     log.i(_tag, 'BEGIN transaction on $connectionId');
-    final conn = _requireConnection(connectionId);
-    await conn.execute('BEGIN');
+    final driver = _requireDriver(connectionId);
+    await driver.execute('BEGIN');
     _transactionActive[connectionId] = true;
   }
 
@@ -293,8 +291,8 @@ class QueryExecutionService {
       throw StateError('No active transaction on $connectionId');
     }
     log.i(_tag, 'COMMIT on $connectionId');
-    final conn = _requireConnection(connectionId);
-    await conn.execute('COMMIT');
+    final driver = _requireDriver(connectionId);
+    await driver.execute('COMMIT');
     _transactionActive[connectionId] = false;
   }
 
@@ -308,8 +306,8 @@ class QueryExecutionService {
       throw StateError('No active transaction on $connectionId');
     }
     log.i(_tag, 'ROLLBACK on $connectionId');
-    final conn = _requireConnection(connectionId);
-    await conn.execute('ROLLBACK');
+    final driver = _requireDriver(connectionId);
+    await driver.execute('ROLLBACK');
     _transactionActive[connectionId] = false;
   }
 
@@ -326,9 +324,9 @@ class QueryExecutionService {
     if (!isTransactionActive(connectionId)) return;
     log.w(_tag, 'Auto-rollback on disconnect for $connectionId');
     try {
-      final conn = _connectionService.getConnection(connectionId);
-      if (conn != null) {
-        await conn.execute('ROLLBACK');
+      final driver = _connectionService.getDriver(connectionId);
+      if (driver != null) {
+        await driver.execute('ROLLBACK');
       }
     } on Object catch (e) {
       log.e(_tag, 'Auto-rollback failed for $connectionId', e);
@@ -340,43 +338,40 @@ class QueryExecutionService {
   // Internal Helpers
   // ---------------------------------------------------------------------------
 
-  /// Returns the active connection or throws [StateError].
-  pg.Connection _requireConnection(String connectionId) {
-    final connection = _connectionService.getConnection(connectionId);
-    if (connection == null) {
+  /// Returns the active driver or throws [StateError].
+  DatabaseDriverAdapter _requireDriver(String connectionId) {
+    final driver = _connectionService.getDriver(connectionId);
+    if (driver == null) {
       throw StateError('No active connection for $connectionId');
     }
-    return connection;
+    return driver;
   }
 
-  /// Builds a [QueryResult] from a [pg.Result].
-  ///
-  /// For SELECT queries the result contains column metadata and row data.
-  /// For DML queries, [affectedRows] is used as the row count.
+  /// Builds a [QueryResult] from a [DriverQueryResult].
   QueryResult _buildResult(
-    pg.Result result,
+    DriverQueryResult result,
     String sql,
     int executionTimeMs, {
     int? totalRows,
   }) {
     final isSelect = _isSelectQuery(sql);
 
-    if (isSelect) {
-      final columns = result.schema.columns
-          .map((col) => QueryColumn(
-                name: col.columnName,
-                typeName: col.type.toString(),
-                typeOid: col.typeOid,
-              ))
-          .toList();
-
-      final rows = result.map((row) => row.toList()).toList();
+    if (isSelect && result.columnNames.isNotEmpty) {
+      final columns = <QueryColumn>[];
+      for (var i = 0; i < result.columnNames.length; i++) {
+        columns.add(QueryColumn(
+          name: result.columnNames[i],
+          typeName: i < result.columnTypes.length
+              ? result.columnTypes[i]
+              : null,
+        ));
+      }
 
       return QueryResult(
         columns: columns,
-        rows: rows,
-        rowCount: rows.length,
-        totalRows: totalRows ?? rows.length,
+        rows: result.rows,
+        rowCount: result.rows.length,
+        totalRows: totalRows ?? result.rows.length,
         executionTimeMs: executionTimeMs,
         status: QueryStatus.completed,
         executedSql: sql,
@@ -399,5 +394,13 @@ class QueryExecutionService {
         trimmed.startsWith('WITH') ||
         trimmed.startsWith('TABLE') ||
         trimmed.startsWith('VALUES');
+  }
+
+  /// Safely converts a value to [int].
+  int? _toInt(Object? value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 }

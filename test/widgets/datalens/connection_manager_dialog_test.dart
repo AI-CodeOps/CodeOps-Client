@@ -210,8 +210,8 @@ void main() {
       await tester.tap(find.text('New Connection'));
       await tester.pumpAndSettle();
 
-      expect(find.text('SSL'), findsOneWidget);
-      expect(find.text('Disabled'), findsOneWidget);
+      expect(find.text('SSL', skipOffstage: false), findsOneWidget);
+      expect(find.text('Disabled', skipOffstage: false), findsOneWidget);
     });
 
     testWidgets('shows connection in list', (tester) async {

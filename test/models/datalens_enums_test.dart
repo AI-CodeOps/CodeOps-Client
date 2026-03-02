@@ -99,13 +99,29 @@ void main() {
   // DatabaseDriver
   // ---------------------------------------------------------------------------
   group('DatabaseDriver', () {
-    test('has 1 value', () {
-      expect(DatabaseDriver.values.length, 1);
+    test('has 5 values', () {
+      expect(DatabaseDriver.values.length, 5);
     });
 
     group('toJson', () {
       test('maps postgresql to POSTGRESQL', () {
         expect(DatabaseDriver.postgresql.toJson(), 'POSTGRESQL');
+      });
+
+      test('maps mysql to MYSQL', () {
+        expect(DatabaseDriver.mysql.toJson(), 'MYSQL');
+      });
+
+      test('maps mariadb to MARIADB', () {
+        expect(DatabaseDriver.mariadb.toJson(), 'MARIADB');
+      });
+
+      test('maps sqlite to SQLITE', () {
+        expect(DatabaseDriver.sqlite.toJson(), 'SQLITE');
+      });
+
+      test('maps sqlServer to SQL_SERVER', () {
+        expect(DatabaseDriver.sqlServer.toJson(), 'SQL_SERVER');
       });
     });
 
@@ -117,9 +133,28 @@ void main() {
         );
       });
 
+      test('maps MYSQL to mysql', () {
+        expect(DatabaseDriver.fromJson('MYSQL'), DatabaseDriver.mysql);
+      });
+
+      test('maps MARIADB to mariadb', () {
+        expect(DatabaseDriver.fromJson('MARIADB'), DatabaseDriver.mariadb);
+      });
+
+      test('maps SQLITE to sqlite', () {
+        expect(DatabaseDriver.fromJson('SQLITE'), DatabaseDriver.sqlite);
+      });
+
+      test('maps SQL_SERVER to sqlServer', () {
+        expect(
+          DatabaseDriver.fromJson('SQL_SERVER'),
+          DatabaseDriver.sqlServer,
+        );
+      });
+
       test('throws ArgumentError for invalid string', () {
         expect(
-          () => DatabaseDriver.fromJson('MYSQL'),
+          () => DatabaseDriver.fromJson('ORACLE'),
           throwsArgumentError,
         );
       });
@@ -128,6 +163,88 @@ void main() {
     group('displayName', () {
       test('postgresql returns PostgreSQL', () {
         expect(DatabaseDriver.postgresql.displayName, 'PostgreSQL');
+      });
+
+      test('mysql returns MySQL', () {
+        expect(DatabaseDriver.mysql.displayName, 'MySQL');
+      });
+
+      test('mariadb returns MariaDB', () {
+        expect(DatabaseDriver.mariadb.displayName, 'MariaDB');
+      });
+
+      test('sqlite returns SQLite', () {
+        expect(DatabaseDriver.sqlite.displayName, 'SQLite');
+      });
+
+      test('sqlServer returns SQL Server', () {
+        expect(DatabaseDriver.sqlServer.displayName, 'SQL Server');
+      });
+    });
+
+    group('defaultPort', () {
+      test('postgresql returns 5432', () {
+        expect(DatabaseDriver.postgresql.defaultPort, 5432);
+      });
+
+      test('mysql returns 3306', () {
+        expect(DatabaseDriver.mysql.defaultPort, 3306);
+      });
+
+      test('mariadb returns 3306', () {
+        expect(DatabaseDriver.mariadb.defaultPort, 3306);
+      });
+
+      test('sqlite returns null', () {
+        expect(DatabaseDriver.sqlite.defaultPort, isNull);
+      });
+
+      test('sqlServer returns 1433', () {
+        expect(DatabaseDriver.sqlServer.defaultPort, 1433);
+      });
+    });
+
+    group('isNetworkBased', () {
+      test('postgresql is network-based', () {
+        expect(DatabaseDriver.postgresql.isNetworkBased, true);
+      });
+
+      test('mysql is network-based', () {
+        expect(DatabaseDriver.mysql.isNetworkBased, true);
+      });
+
+      test('mariadb is network-based', () {
+        expect(DatabaseDriver.mariadb.isNetworkBased, true);
+      });
+
+      test('sqlite is NOT network-based', () {
+        expect(DatabaseDriver.sqlite.isNetworkBased, false);
+      });
+
+      test('sqlServer is network-based', () {
+        expect(DatabaseDriver.sqlServer.isNetworkBased, true);
+      });
+    });
+
+    group('defaultSchema', () {
+      test('postgresql returns public', () {
+        expect(DatabaseDriver.postgresql.defaultSchema, 'public');
+      });
+
+      test('mysql returns null', () {
+        expect(DatabaseDriver.mysql.defaultSchema, isNull);
+      });
+
+      test('mariadb returns null', () {
+        expect(DatabaseDriver.mariadb.defaultSchema, isNull);
+      });
+
+      test('sqlite returns main', () {
+        expect(DatabaseDriver.sqlite.defaultSchema, 'main');
+      });
+
+      test('sqlServer returns dbo', () {
+        expect(DatabaseDriver.sqlServer.defaultSchema, 'dbo');
       });
     });
 
@@ -239,8 +356,8 @@ void main() {
   // IndexType
   // ---------------------------------------------------------------------------
   group('IndexType', () {
-    test('has 6 values', () {
-      expect(IndexType.values.length, 6);
+    test('has 11 values', () {
+      expect(IndexType.values.length, 11);
     });
 
     group('toJson', () {
@@ -267,6 +384,26 @@ void main() {
       test('maps brin to BRIN', () {
         expect(IndexType.brin.toJson(), 'BRIN');
       });
+
+      test('maps fulltext to FULLTEXT', () {
+        expect(IndexType.fulltext.toJson(), 'FULLTEXT');
+      });
+
+      test('maps rtree to RTREE', () {
+        expect(IndexType.rtree.toJson(), 'RTREE');
+      });
+
+      test('maps clustered to CLUSTERED', () {
+        expect(IndexType.clustered.toJson(), 'CLUSTERED');
+      });
+
+      test('maps nonclustered to NONCLUSTERED', () {
+        expect(IndexType.nonclustered.toJson(), 'NONCLUSTERED');
+      });
+
+      test('maps other to OTHER', () {
+        expect(IndexType.other.toJson(), 'OTHER');
+      });
     });
 
     group('fromJson', () {
@@ -292,6 +429,26 @@ void main() {
 
       test('maps BRIN to brin', () {
         expect(IndexType.fromJson('BRIN'), IndexType.brin);
+      });
+
+      test('maps FULLTEXT to fulltext', () {
+        expect(IndexType.fromJson('FULLTEXT'), IndexType.fulltext);
+      });
+
+      test('maps RTREE to rtree', () {
+        expect(IndexType.fromJson('RTREE'), IndexType.rtree);
+      });
+
+      test('maps CLUSTERED to clustered', () {
+        expect(IndexType.fromJson('CLUSTERED'), IndexType.clustered);
+      });
+
+      test('maps NONCLUSTERED to nonclustered', () {
+        expect(IndexType.fromJson('NONCLUSTERED'), IndexType.nonclustered);
+      });
+
+      test('maps OTHER to other', () {
+        expect(IndexType.fromJson('OTHER'), IndexType.other);
       });
 
       test('throws ArgumentError for invalid string', () {
@@ -325,6 +482,26 @@ void main() {
 
       test('brin returns BRIN', () {
         expect(IndexType.brin.displayName, 'BRIN');
+      });
+
+      test('fulltext returns Full-Text', () {
+        expect(IndexType.fulltext.displayName, 'Full-Text');
+      });
+
+      test('rtree returns R-Tree', () {
+        expect(IndexType.rtree.displayName, 'R-Tree');
+      });
+
+      test('clustered returns Clustered', () {
+        expect(IndexType.clustered.displayName, 'Clustered');
+      });
+
+      test('nonclustered returns Non-Clustered', () {
+        expect(IndexType.nonclustered.displayName, 'Non-Clustered');
+      });
+
+      test('other returns Other', () {
+        expect(IndexType.other.displayName, 'Other');
       });
     });
 

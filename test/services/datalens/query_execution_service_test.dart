@@ -1,15 +1,15 @@
 // Tests for QueryExecutionService.
 //
-// Mocks DatabaseConnectionService, QueryHistoryService, and pg.Connection
-// to verify SQL execution, result building, pagination, table browsing,
-// EXPLAIN plans, row counting, cancellation, and error handling without
-// requiring a real PostgreSQL server.
+// Mocks DatabaseConnectionService, QueryHistoryService, and
+// DatabaseDriverAdapter to verify SQL execution, result building,
+// pagination, table browsing, EXPLAIN plans, row counting, cancellation,
+// transaction control, and error handling without a real database server.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:postgres/postgres.dart' as pg;
 
 import 'package:codeops/models/datalens_enums.dart';
 import 'package:codeops/services/datalens/database_connection_service.dart';
+import 'package:codeops/services/datalens/drivers/database_driver.dart';
 import 'package:codeops/services/datalens/query_execution_service.dart';
 import 'package:codeops/services/datalens/query_history_service.dart';
 
@@ -22,62 +22,27 @@ class MockDatabaseConnectionService extends Mock
 
 class MockQueryHistoryService extends Mock implements QueryHistoryService {}
 
-class MockPgConnection extends Mock implements pg.Connection {}
-
-// ---------------------------------------------------------------------------
-// Fakes for registerFallbackValue
-// ---------------------------------------------------------------------------
-
-class FakeSql extends Fake implements pg.Sql {}
-
-// ---------------------------------------------------------------------------
-// Test helpers — construct postgres Result objects
-// ---------------------------------------------------------------------------
-
-pg.ResultSchema _schema(List<String> columnNames) {
-  return pg.ResultSchema(
-    columnNames
-        .map((name) => pg.ResultSchemaColumn(
-              typeOid: 25, // text
-              type: pg.Type.text,
-              columnName: name,
-            ))
-        .toList(),
-  );
-}
-
-pg.ResultRow _row(pg.ResultSchema schema, List<Object?> values) {
-  return pg.ResultRow(values: values, schema: schema);
-}
-
-pg.Result _result(List<String> columns, List<List<Object?>> rows,
-    {int? affectedRows}) {
-  final schema = _schema(columns);
-  return pg.Result(
-    rows: rows.map((vals) => _row(schema, vals)).toList(),
-    affectedRows: affectedRows ?? rows.length,
-    schema: schema,
-  );
-}
+class MockDatabaseDriverAdapter extends Mock
+    implements DatabaseDriverAdapter {}
 
 void main() {
   late MockDatabaseConnectionService mockConnService;
   late MockQueryHistoryService mockHistoryService;
-  late MockPgConnection mockConn;
+  late MockDatabaseDriverAdapter mockDriver;
   late QueryExecutionService service;
 
   setUpAll(() {
-    registerFallbackValue(FakeSql());
     registerFallbackValue(QueryStatus.completed);
   });
 
   setUp(() {
     mockConnService = MockDatabaseConnectionService();
     mockHistoryService = MockQueryHistoryService();
-    mockConn = MockPgConnection();
+    mockDriver = MockDatabaseDriverAdapter();
     service = QueryExecutionService(mockConnService, mockHistoryService);
 
-    when(() => mockConnService.getConnection('conn-1')).thenReturn(mockConn);
+    when(() => mockConnService.getDriver('conn-1')).thenReturn(mockDriver);
+    when(() => mockDriver.dialect).thenReturn(SqlDialect.postgresql);
 
     // Default stub for recordExecution — always succeeds.
     when(() => mockHistoryService.recordExecution(
@@ -90,55 +55,24 @@ void main() {
         )).thenAnswer((_) async {});
   });
 
-  /// Stub for conn.execute — matches any SQL and optional parameters.
-  void stubExecute(pg.Result result) {
-    when(() => mockConn.execute(
-          any(),
-          parameters: any(named: 'parameters'),
-          ignoreRows: any(named: 'ignoreRows'),
-          queryMode: any(named: 'queryMode'),
-          timeout: any(named: 'timeout'),
-        )).thenAnswer((_) async => result);
-  }
-
-  /// Stubs sequential execute calls.
-  void stubExecuteSequence(List<pg.Result> results) {
-    var index = 0;
-    when(() => mockConn.execute(
-          any(),
-          parameters: any(named: 'parameters'),
-          ignoreRows: any(named: 'ignoreRows'),
-          queryMode: any(named: 'queryMode'),
-          timeout: any(named: 'timeout'),
-        )).thenAnswer((_) async {
-      final r = results[index];
-      if (index < results.length - 1) index++;
-      return r;
-    });
-  }
-
-  /// Stub for conn.execute that matches a specific SQL string.
-  void stubExecuteForSql(String sql, pg.Result result) {
-    when(() => mockConn.execute(
-          sql,
-          parameters: any(named: 'parameters'),
-          ignoreRows: any(named: 'ignoreRows'),
-          queryMode: any(named: 'queryMode'),
-          timeout: any(named: 'timeout'),
-        )).thenAnswer((_) async => result);
-  }
-
   // ---------------------------------------------------------------------------
   // executeQuery — SELECT
   // ---------------------------------------------------------------------------
   group('executeQuery', () {
     test('executes a SELECT and returns columns + rows', () async {
-      stubExecute(_result(['id', 'name'], [
-        [1, 'Alice'],
-        [2, 'Bob'],
-      ]));
+      when(() => mockDriver.execute('SELECT id, name FROM users'))
+          .thenAnswer((_) async => DriverQueryResult(
+                columnNames: ['id', 'name'],
+                columnTypes: ['int4', 'text'],
+                rows: [
+                  [1, 'Alice'],
+                  [2, 'Bob'],
+                ],
+                affectedRows: 2,
+              ));
 
-      final result = await service.executeQuery('conn-1', 'SELECT id, name FROM users');
+      final result =
+          await service.executeQuery('conn-1', 'SELECT id, name FROM users');
 
       expect(result.status, QueryStatus.completed);
       expect(result.columns, hasLength(2));
@@ -161,10 +95,11 @@ void main() {
     });
 
     test('executes a DML and returns affected rows', () async {
-      stubExecute(_result([], [], affectedRows: 5));
+      when(() => mockDriver.execute('UPDATE users SET active = true'))
+          .thenAnswer((_) async => const DriverQueryResult(affectedRows: 5));
 
-      final result =
-          await service.executeQuery('conn-1', 'UPDATE users SET active = true');
+      final result = await service.executeQuery(
+          'conn-1', 'UPDATE users SET active = true');
 
       expect(result.status, QueryStatus.completed);
       expect(result.rowCount, 5);
@@ -173,13 +108,8 @@ void main() {
     });
 
     test('returns failed result on exception', () async {
-      when(() => mockConn.execute(
-            any(),
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).thenThrow(pg.PgException('syntax error'));
+      when(() => mockDriver.execute('INVALID SQL'))
+          .thenThrow(Exception('syntax error'));
 
       final result =
           await service.executeQuery('conn-1', 'INVALID SQL');
@@ -199,7 +129,7 @@ void main() {
     });
 
     test('throws StateError when no active connection', () {
-      when(() => mockConnService.getConnection('unknown')).thenReturn(null);
+      when(() => mockConnService.getDriver('unknown')).thenReturn(null);
 
       expect(
         () => service.executeQuery('unknown', 'SELECT 1'),
@@ -212,17 +142,29 @@ void main() {
   // executePagedQuery
   // ---------------------------------------------------------------------------
   group('executePagedQuery', () {
-    test('wraps SQL with LIMIT/OFFSET and returns totalRows', () async {
-      // First call: COUNT(*), second call: paged SELECT.
-      stubExecuteSequence([
-        _result(['count'], [
-          [42]
-        ]),
-        _result(['id', 'name'], [
-          [1, 'Alice'],
-          [2, 'Bob'],
-        ]),
-      ]);
+    test('wraps SQL with pagination and returns totalRows', () async {
+      // COUNT query.
+      when(() => mockDriver.execute(any())).thenAnswer((_) async =>
+          DriverQueryResult(
+            columnNames: ['count'],
+            columnTypes: ['int8'],
+            rows: [[42]],
+            affectedRows: 1,
+          ));
+      // Paged query.
+      when(() => mockDriver.executePaged(
+            any(),
+            limit: any(named: 'limit'),
+            offset: any(named: 'offset'),
+          )).thenAnswer((_) async => DriverQueryResult(
+                columnNames: ['id', 'name'],
+                columnTypes: ['int4', 'text'],
+                rows: [
+                  [1, 'Alice'],
+                  [2, 'Bob'],
+                ],
+                affectedRows: 2,
+              ));
 
       final result = await service.executePagedQuery(
         'conn-1',
@@ -238,13 +180,8 @@ void main() {
     });
 
     test('returns failed result on exception', () async {
-      when(() => mockConn.execute(
-            any(),
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).thenThrow(pg.PgException('timeout'));
+      when(() => mockDriver.execute(any()))
+          .thenThrow(Exception('timeout'));
 
       final result = await service.executePagedQuery(
         'conn-1',
@@ -261,14 +198,23 @@ void main() {
   // ---------------------------------------------------------------------------
   group('browseTable', () {
     test('builds SELECT * with ORDER BY and WHERE', () async {
-      stubExecuteSequence([
-        _result(['count'], [
-          [100]
-        ]),
-        _result(['id', 'name'], [
-          [1, 'Alice'],
-        ]),
-      ]);
+      when(() => mockDriver.execute(any())).thenAnswer((_) async =>
+          DriverQueryResult(
+            columnNames: ['count'],
+            columnTypes: ['int8'],
+            rows: [[100]],
+            affectedRows: 1,
+          ));
+      when(() => mockDriver.executePaged(
+            any(),
+            limit: any(named: 'limit'),
+            offset: any(named: 'offset'),
+          )).thenAnswer((_) async => DriverQueryResult(
+                columnNames: ['id', 'name'],
+                columnTypes: ['int4', 'text'],
+                rows: [[1, 'Alice']],
+                affectedRows: 1,
+              ));
 
       final result = await service.browseTable(
         'conn-1',
@@ -295,14 +241,23 @@ void main() {
     });
 
     test('builds SELECT * without optional clauses', () async {
-      stubExecuteSequence([
-        _result(['count'], [
-          [5]
-        ]),
-        _result(['id'], [
-          [1],
-        ]),
-      ]);
+      when(() => mockDriver.execute(any())).thenAnswer((_) async =>
+          DriverQueryResult(
+            columnNames: ['count'],
+            columnTypes: ['int8'],
+            rows: [[5]],
+            affectedRows: 1,
+          ));
+      when(() => mockDriver.executePaged(
+            any(),
+            limit: any(named: 'limit'),
+            offset: any(named: 'offset'),
+          )).thenAnswer((_) async => DriverQueryResult(
+                columnNames: ['id'],
+                columnTypes: ['int4'],
+                rows: [[1]],
+                affectedRows: 1,
+              ));
 
       final result = await service.browseTable(
         'conn-1',
@@ -326,35 +281,23 @@ void main() {
   // cancelQuery
   // ---------------------------------------------------------------------------
   group('cancelQuery', () {
-    test('sends pg_cancel_backend and returns true', () async {
-      stubExecuteSequence([
-        _result(['pg_backend_pid'], [
-          [12345]
-        ]),
-        _result(['pg_cancel_backend'], [
-          [true]
-        ]),
-      ]);
+    test('delegates to driver and returns result', () async {
+      when(() => mockDriver.cancelQuery()).thenAnswer((_) async => true);
 
       final cancelled = await service.cancelQuery('conn-1');
       expect(cancelled, isTrue);
+      verify(() => mockDriver.cancelQuery()).called(1);
     });
 
-    test('returns false on exception', () async {
-      when(() => mockConn.execute(
-            any(),
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).thenThrow(pg.PgException('connection closed'));
+    test('returns false when driver returns false', () async {
+      when(() => mockDriver.cancelQuery()).thenAnswer((_) async => false);
 
       final cancelled = await service.cancelQuery('conn-1');
       expect(cancelled, isFalse);
     });
 
     test('throws StateError when no active connection', () {
-      when(() => mockConnService.getConnection('unknown')).thenReturn(null);
+      when(() => mockConnService.getDriver('unknown')).thenReturn(null);
 
       expect(
         () => service.cancelQuery('unknown'),
@@ -367,25 +310,25 @@ void main() {
   // explainQuery
   // ---------------------------------------------------------------------------
   group('explainQuery', () {
-    test('returns EXPLAIN plan as a single string', () async {
-      stubExecute(_result(['QUERY PLAN'], [
-        ['Seq Scan on users  (cost=0.00..1.05 rows=5 width=36)'],
-      ]));
+    test('delegates to driver without analyze', () async {
+      when(() => mockDriver.explainQuery('SELECT * FROM users', analyze: false))
+          .thenAnswer((_) async =>
+              'Seq Scan on users  (cost=0.00..1.05 rows=5 width=36)');
 
       final plan = await service.explainQuery(
         'conn-1',
         'SELECT * FROM users',
       );
 
-      expect(plan, 'Seq Scan on users  (cost=0.00..1.05 rows=5 width=36)');
+      expect(plan, contains('Seq Scan'));
+      verify(() =>
+              mockDriver.explainQuery('SELECT * FROM users', analyze: false))
+          .called(1);
     });
 
-    test('returns EXPLAIN ANALYZE plan when analyze is true', () async {
-      stubExecute(_result(['QUERY PLAN'], [
-        ['Seq Scan on users  (cost=0.00..1.05 rows=5) (actual time=0.01..0.02 rows=5 loops=1)'],
-        ['Planning Time: 0.05 ms'],
-        ['Execution Time: 0.08 ms'],
-      ]));
+    test('delegates to driver with analyze=true', () async {
+      when(() => mockDriver.explainQuery('SELECT * FROM users', analyze: true))
+          .thenAnswer((_) async => 'Seq Scan (actual time=0.01..0.02)');
 
       final plan = await service.explainQuery(
         'conn-1',
@@ -394,12 +337,10 @@ void main() {
       );
 
       expect(plan, contains('actual time'));
-      expect(plan, contains('Planning Time'));
-      expect(plan, contains('Execution Time'));
     });
 
     test('throws StateError when no active connection', () {
-      when(() => mockConnService.getConnection('unknown')).thenReturn(null);
+      when(() => mockConnService.getDriver('unknown')).thenReturn(null);
 
       expect(
         () => service.explainQuery('unknown', 'SELECT 1'),
@@ -413,21 +354,27 @@ void main() {
   // ---------------------------------------------------------------------------
   group('countRows', () {
     test('returns the row count for a table', () async {
-      stubExecute(_result(['count'], [
-        [42]
-      ]));
+      when(() => mockDriver.execute(any())).thenAnswer((_) async =>
+          DriverQueryResult(
+            columnNames: ['count'],
+            columnTypes: ['int8'],
+            rows: [[42]],
+            affectedRows: 1,
+          ));
 
       final count = await service.countRows('conn-1', 'public', 'users');
       expect(count, 42);
     });
 
     test('applies WHERE clause when provided', () async {
-      stubExecuteForSql(
-        'SELECT COUNT(*) FROM "public"."users" WHERE active = true',
-        _result(['count'], [
-          [10]
-        ]),
-      );
+      when(() => mockDriver.execute(
+          'SELECT COUNT(*) FROM "public"."users" WHERE active = true'))
+          .thenAnswer((_) async => DriverQueryResult(
+                columnNames: ['count'],
+                columnTypes: ['int8'],
+                rows: [[10]],
+                affectedRows: 1,
+              ));
 
       final count = await service.countRows(
         'conn-1',
@@ -440,7 +387,7 @@ void main() {
     });
 
     test('throws StateError when no active connection', () {
-      when(() => mockConnService.getConnection('unknown')).thenReturn(null);
+      when(() => mockConnService.getDriver('unknown')).thenReturn(null);
 
       expect(
         () => service.countRows('unknown', 'public', 'users'),
@@ -454,40 +401,30 @@ void main() {
   // ---------------------------------------------------------------------------
   group('Transaction control', () {
     test('beginTransaction executes BEGIN and marks active', () async {
-      stubExecute(_result([], []));
+      when(() => mockDriver.execute('BEGIN'))
+          .thenAnswer((_) async => const DriverQueryResult());
 
       expect(service.isTransactionActive('conn-1'), isFalse);
 
       await service.beginTransaction('conn-1');
 
       expect(service.isTransactionActive('conn-1'), isTrue);
-      verify(() => mockConn.execute(
-            'BEGIN',
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).called(1);
+      verify(() => mockDriver.execute('BEGIN')).called(1);
     });
 
     test('beginTransaction is no-op if transaction already active', () async {
-      stubExecute(_result([], []));
+      when(() => mockDriver.execute('BEGIN'))
+          .thenAnswer((_) async => const DriverQueryResult());
 
       await service.beginTransaction('conn-1');
       await service.beginTransaction('conn-1');
 
-      // Should only call BEGIN once.
-      verify(() => mockConn.execute(
-            'BEGIN',
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).called(1);
+      verify(() => mockDriver.execute('BEGIN')).called(1);
     });
 
     test('commit executes COMMIT and clears active flag', () async {
-      stubExecute(_result([], []));
+      when(() => mockDriver.execute(any()))
+          .thenAnswer((_) async => const DriverQueryResult());
 
       await service.beginTransaction('conn-1');
       expect(service.isTransactionActive('conn-1'), isTrue);
@@ -495,13 +432,7 @@ void main() {
       await service.commit('conn-1');
       expect(service.isTransactionActive('conn-1'), isFalse);
 
-      verify(() => mockConn.execute(
-            'COMMIT',
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).called(1);
+      verify(() => mockDriver.execute('COMMIT')).called(1);
     });
 
     test('commit throws StateError when no active transaction', () {
@@ -512,7 +443,8 @@ void main() {
     });
 
     test('rollback executes ROLLBACK and clears active flag', () async {
-      stubExecute(_result([], []));
+      when(() => mockDriver.execute(any()))
+          .thenAnswer((_) async => const DriverQueryResult());
 
       await service.beginTransaction('conn-1');
       expect(service.isTransactionActive('conn-1'), isTrue);
@@ -520,13 +452,7 @@ void main() {
       await service.rollback('conn-1');
       expect(service.isTransactionActive('conn-1'), isFalse);
 
-      verify(() => mockConn.execute(
-            'ROLLBACK',
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).called(1);
+      verify(() => mockDriver.execute('ROLLBACK')).called(1);
     });
 
     test('rollback throws StateError when no active transaction', () {
@@ -537,7 +463,8 @@ void main() {
     });
 
     test('autoRollbackOnDisconnect rolls back active transaction', () async {
-      stubExecute(_result([], []));
+      when(() => mockDriver.execute(any()))
+          .thenAnswer((_) async => const DriverQueryResult());
 
       await service.beginTransaction('conn-1');
       expect(service.isTransactionActive('conn-1'), isTrue);
@@ -545,26 +472,14 @@ void main() {
       await service.autoRollbackOnDisconnect('conn-1');
       expect(service.isTransactionActive('conn-1'), isFalse);
 
-      verify(() => mockConn.execute(
-            'ROLLBACK',
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          )).called(1);
+      verify(() => mockDriver.execute('ROLLBACK')).called(1);
     });
 
     test('autoRollbackOnDisconnect is no-op without active transaction',
         () async {
       await service.autoRollbackOnDisconnect('conn-1');
 
-      verifyNever(() => mockConn.execute(
-            any(),
-            parameters: any(named: 'parameters'),
-            ignoreRows: any(named: 'ignoreRows'),
-            queryMode: any(named: 'queryMode'),
-            timeout: any(named: 'timeout'),
-          ));
+      verifyNever(() => mockDriver.execute(any()));
     });
 
     test('isTransactionActive returns false for unknown connectionId', () {

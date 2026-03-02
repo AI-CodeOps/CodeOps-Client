@@ -67,6 +67,12 @@ class DatabaseConnection {
   /// Connection timeout in seconds.
   final int? connectionTimeout;
 
+  /// File path for SQLite database connections.
+  ///
+  /// Only used when [driver] is [DatabaseDriver.sqlite]. Network-based
+  /// drivers use [host] and [port] instead.
+  final String? filePath;
+
   /// Timestamp of last successful connection.
   final DateTime? lastConnectedAt;
 
@@ -91,6 +97,7 @@ class DatabaseConnection {
     this.sslMode,
     this.color,
     this.connectionTimeout,
+    this.filePath,
     this.lastConnectedAt,
     this.createdAt,
     this.updatedAt,

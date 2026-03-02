@@ -55,7 +55,7 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
   }
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +89,12 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
             await m.createTable(datalensConnections);
             await m.createTable(datalensQueryHistory);
             await m.createTable(datalensSavedQueries);
+          }
+          if (from < 9) {
+            await m.addColumn(
+              datalensConnections,
+              datalensConnections.filePath,
+            );
           }
         },
       );

@@ -1,12 +1,17 @@
-/// Service for managing PostgreSQL database connections in DataLens.
+/// Service for managing database connections in DataLens.
 ///
 /// Handles the full connection lifecycle: opening and closing live
-/// [Connection] instances via the `postgres` driver, persisting saved
+/// connections via database driver adapters, persisting saved
 /// connection configurations to the local Drift database, and exposing
 /// a reactive [statusStream] so the UI can observe connection state changes.
 ///
+/// Supports PostgreSQL, MySQL, MariaDB, SQLite, and SQL Server through
+/// the [DatabaseDriverAdapter] abstraction. The appropriate driver is
+/// selected automatically via [DriverFactory] based on the saved config's
+/// [DatabaseDriver] type.
+///
 /// This service does NOT go through the CodeOps server — connections are made
-/// directly from the desktop app to the target PostgreSQL instance.
+/// directly from the desktop app to the target database instance.
 library;
 
 import 'dart:async';
@@ -18,20 +23,23 @@ import '../../database/database.dart';
 import '../../models/datalens_enums.dart';
 import '../../models/datalens_models.dart';
 import '../logging/log_service.dart';
+import 'drivers/database_driver.dart';
+import 'drivers/driver_factory.dart';
+import 'drivers/postgresql_driver.dart';
 
-/// Manages PostgreSQL connections and persists connection configurations.
+/// Manages database connections and persists connection configurations.
 ///
-/// Maintains a map of active [pg.Connection] instances keyed by connection ID,
-/// a parallel map of [ConnectionStatus] values, and a broadcast stream that
-/// emits status changes for the UI layer.
+/// Maintains a map of active [DatabaseDriverAdapter] instances keyed by
+/// connection ID, a parallel map of [ConnectionStatus] values, and a
+/// broadcast stream that emits status changes for the UI layer.
 class DatabaseConnectionService {
   static const String _tag = 'DatabaseConnectionService';
 
   /// The local Drift database for persisting connection configs.
   final CodeOpsDatabase _db;
 
-  /// Live PostgreSQL connections keyed by connection config ID.
-  final Map<String, pg.Connection> _activeConnections = {};
+  /// Active driver adapters keyed by connection config ID.
+  final Map<String, DatabaseDriverAdapter> _activeDrivers = {};
 
   /// Current status of each connection keyed by connection config ID.
   final Map<String, ConnectionStatus> _connectionStatus = {};
@@ -56,15 +64,15 @@ class DatabaseConnectionService {
   // Connection Lifecycle
   // ---------------------------------------------------------------------------
 
-  /// Opens a live PostgreSQL connection using the saved config identified
+  /// Opens a live database connection using the saved config identified
   /// by [connectionId].
   ///
-  /// Reads the connection config from the local database, builds a
-  /// [pg.Endpoint], opens the connection, stores it in [_activeConnections],
-  /// and updates [lastConnectedAt].
+  /// Reads the connection config from the local database, creates the
+  /// appropriate driver adapter via [DriverFactory], opens the connection,
+  /// stores the driver in [_activeDrivers], and updates [lastConnectedAt].
   ///
   /// Throws [StateError] if the connection config is not found.
-  /// Throws on network / authentication failures from the postgres driver.
+  /// Throws on network / authentication failures from the driver.
   Future<void> connect(String connectionId) async {
     log.i(_tag, 'Connecting to $connectionId');
     _setStatus(connectionId, ConnectionStatus.connecting);
@@ -75,26 +83,11 @@ class DatabaseConnectionService {
         throw StateError('Connection config not found: $connectionId');
       }
 
-      final endpoint = pg.Endpoint(
-        host: config.host ?? 'localhost',
-        port: config.port ?? 5432,
-        database: config.database ?? '',
-        username: config.username,
-        password: config.password,
-      );
+      final driver =
+          DriverFactory.create(config.driver ?? DatabaseDriver.postgresql);
+      await driver.connect(config);
 
-      final settings = pg.ConnectionSettings(
-        sslMode: _mapSslMode(config.sslMode),
-        connectTimeout: Duration(seconds: config.connectionTimeout ?? 10),
-        applicationName: 'CodeOps DataLens',
-      );
-
-      final connection = await pg.Connection.open(
-        endpoint,
-        settings: settings,
-      );
-
-      _activeConnections[connectionId] = connection;
+      _activeDrivers[connectionId] = driver;
       _setStatus(connectionId, ConnectionStatus.connected);
       await updateLastConnectedAt(connectionId);
       log.i(_tag, 'Connected to $connectionId');
@@ -105,36 +98,25 @@ class DatabaseConnectionService {
     }
   }
 
-  /// Tests connectivity to a PostgreSQL server using the given [config]
+  /// Tests connectivity to a database server using the given [config]
   /// without persisting the connection.
   ///
-  /// Opens a temporary connection, executes `SELECT 1`, measures round-trip
-  /// latency, and closes the connection. Returns a record with
-  /// [success], an optional [error] message, and the measured [latency].
+  /// Opens a temporary connection via the appropriate driver, executes
+  /// `SELECT 1`, measures round-trip latency, and closes the connection.
+  /// Returns a record with [success], an optional [error] message, and
+  /// the measured [latency].
   Future<({bool success, String? error, Duration latency})> testConnection(
     DatabaseConnection config,
   ) async {
     log.d(_tag, 'Testing connection to ${config.host}:${config.port}');
     final stopwatch = Stopwatch()..start();
-    pg.Connection? connection;
+    DatabaseDriverAdapter? driver;
 
     try {
-      final endpoint = pg.Endpoint(
-        host: config.host ?? 'localhost',
-        port: config.port ?? 5432,
-        database: config.database ?? '',
-        username: config.username,
-        password: config.password,
-      );
-
-      final settings = pg.ConnectionSettings(
-        sslMode: _mapSslMode(config.sslMode),
-        connectTimeout: Duration(seconds: config.connectionTimeout ?? 10),
-        applicationName: 'CodeOps DataLens Test',
-      );
-
-      connection = await pg.Connection.open(endpoint, settings: settings);
-      await connection.execute('SELECT 1');
+      driver =
+          DriverFactory.create(config.driver ?? DatabaseDriver.postgresql);
+      await driver.connect(config);
+      await driver.execute('SELECT 1');
       stopwatch.stop();
       log.d(_tag, 'Test connection succeeded in ${stopwatch.elapsed}');
       return (success: true, error: null, latency: stopwatch.elapsed);
@@ -143,42 +125,55 @@ class DatabaseConnectionService {
       log.w(_tag, 'Test connection failed: $e');
       return (success: false, error: e.toString(), latency: stopwatch.elapsed);
     } finally {
-      await connection?.close();
+      await driver?.close();
     }
   }
 
   /// Closes the live connection identified by [connectionId] and removes it
-  /// from the active connections map.
+  /// from the active drivers map.
   ///
   /// No-op if no active connection exists for the given ID.
   Future<void> disconnect(String connectionId) async {
-    final connection = _activeConnections.remove(connectionId);
-    if (connection != null) {
+    final driver = _activeDrivers.remove(connectionId);
+    if (driver != null) {
       log.i(_tag, 'Disconnecting $connectionId');
-      await connection.close();
+      await driver.close();
       _setStatus(connectionId, ConnectionStatus.disconnected);
     }
   }
 
   /// Closes all active connections.
   Future<void> disconnectAll() async {
-    log.i(_tag, 'Disconnecting all (${_activeConnections.length} active)');
-    final ids = _activeConnections.keys.toList();
+    log.i(_tag, 'Disconnecting all (${_activeDrivers.length} active)');
+    final ids = _activeDrivers.keys.toList();
     for (final id in ids) {
       await disconnect(id);
     }
   }
 
+  /// Returns the active [DatabaseDriverAdapter] for [connectionId], or `null`
+  /// if none is active.
+  DatabaseDriverAdapter? getDriver(String connectionId) {
+    return _activeDrivers[connectionId];
+  }
+
   /// Returns the live [pg.Connection] for [connectionId], or `null` if none
-  /// is active.
+  /// is active or the driver is not PostgreSQL.
+  ///
+  /// **Deprecated:** Use [getDriver] instead. This method is retained for
+  /// backward compatibility with code that directly accesses the pg driver.
   pg.Connection? getConnection(String connectionId) {
-    return _activeConnections[connectionId];
+    final driver = _activeDrivers[connectionId];
+    if (driver is PostgresqlDriver) {
+      return driver.rawConnection;
+    }
+    return null;
   }
 
   /// Whether a live connection exists and is open for [connectionId].
   bool isConnected(String connectionId) {
-    final connection = _activeConnections[connectionId];
-    return connection != null && connection.isOpen;
+    final driver = _activeDrivers[connectionId];
+    return driver != null && driver.isOpen;
   }
 
   /// Returns the current [ConnectionStatus] for [connectionId].
@@ -192,31 +187,28 @@ class DatabaseConnectionService {
   // Server Introspection (requires active connection)
   // ---------------------------------------------------------------------------
 
-  /// Returns the PostgreSQL server version string for [connectionId].
+  /// Returns the database server version string for [connectionId].
   ///
   /// Throws [StateError] if no active connection exists.
   Future<String> getServerVersion(String connectionId) async {
-    final connection = _requireConnection(connectionId);
-    final result = await connection.execute('SHOW server_version');
-    return result.first.first as String;
+    final driver = _requireDriver(connectionId);
+    return driver.getServerVersion();
   }
 
   /// Returns the current database name for [connectionId].
   ///
   /// Throws [StateError] if no active connection exists.
   Future<String> getCurrentDatabase(String connectionId) async {
-    final connection = _requireConnection(connectionId);
-    final result = await connection.execute('SELECT current_database()');
-    return result.first.first as String;
+    final driver = _requireDriver(connectionId);
+    return driver.getCurrentDatabase();
   }
 
   /// Returns the current database user for [connectionId].
   ///
   /// Throws [StateError] if no active connection exists.
   Future<String> getCurrentUser(String connectionId) async {
-    final connection = _requireConnection(connectionId);
-    final result = await connection.execute('SELECT current_user');
-    return result.first.first as String;
+    final driver = _requireDriver(connectionId);
+    return driver.getCurrentUser();
   }
 
   // ---------------------------------------------------------------------------
@@ -307,22 +299,13 @@ class DatabaseConnectionService {
     }
   }
 
-  /// Returns the active connection or throws [StateError].
-  pg.Connection _requireConnection(String connectionId) {
-    final connection = _activeConnections[connectionId];
-    if (connection == null) {
+  /// Returns the active driver or throws [StateError].
+  DatabaseDriverAdapter _requireDriver(String connectionId) {
+    final driver = _activeDrivers[connectionId];
+    if (driver == null) {
       throw StateError('No active connection for $connectionId');
     }
-    return connection;
-  }
-
-  /// Maps a string SSL mode to the postgres driver's [pg.SslMode].
-  pg.SslMode _mapSslMode(String? sslMode) {
-    return switch (sslMode) {
-      'require' => pg.SslMode.require,
-      'verify-full' || 'verify-ca' => pg.SslMode.verifyFull,
-      _ => pg.SslMode.disable,
-    };
+    return driver;
   }
 
   /// Converts a Drift [DatalensConnection] row to a [DatabaseConnection].
@@ -341,6 +324,7 @@ class DatabaseConnectionService {
       sslMode: row.sslMode,
       color: row.color,
       connectionTimeout: row.connectionTimeout,
+      filePath: row.filePath,
       lastConnectedAt: row.lastConnectedAt,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -363,6 +347,7 @@ class DatabaseConnectionService {
       sslMode: Value(config.sslMode),
       color: Value(config.color),
       connectionTimeout: Value(config.connectionTimeout ?? 10),
+      filePath: Value(config.filePath),
       lastConnectedAt: Value(config.lastConnectedAt),
       createdAt: Value(config.createdAt ?? DateTime.now()),
       updatedAt: Value(config.updatedAt),

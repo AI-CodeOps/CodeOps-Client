@@ -12737,6 +12737,12 @@ class $DatalensConnectionsTable extends DatalensConnections
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(10));
+  static const VerificationMeta _filePathMeta =
+      const VerificationMeta('filePath');
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+      'file_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _lastConnectedAtMeta =
       const VerificationMeta('lastConnectedAt');
   @override
@@ -12770,6 +12776,7 @@ class $DatalensConnectionsTable extends DatalensConnections
         sslMode,
         color,
         connectionTimeout,
+        filePath,
         lastConnectedAt,
         createdAt,
         updatedAt
@@ -12847,6 +12854,10 @@ class $DatalensConnectionsTable extends DatalensConnections
           connectionTimeout.isAcceptableOrUnknown(
               data['connection_timeout']!, _connectionTimeoutMeta));
     }
+    if (data.containsKey('file_path')) {
+      context.handle(_filePathMeta,
+          filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta));
+    }
     if (data.containsKey('last_connected_at')) {
       context.handle(
           _lastConnectedAtMeta,
@@ -12898,6 +12909,8 @@ class $DatalensConnectionsTable extends DatalensConnections
           .read(DriftSqlType.string, data['${effectivePrefix}color']),
       connectionTimeout: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}connection_timeout'])!,
+      filePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_path']),
       lastConnectedAt: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}last_connected_at']),
       createdAt: attachedDatabase.typeMapping
@@ -12954,6 +12967,9 @@ class DatalensConnection extends DataClass
   /// Connection timeout in seconds.
   final int connectionTimeout;
 
+  /// File path for SQLite connections (null for network-based drivers).
+  final String? filePath;
+
   /// Timestamp of last successful connection.
   final DateTime? lastConnectedAt;
 
@@ -12976,6 +12992,7 @@ class DatalensConnection extends DataClass
       this.sslMode,
       this.color,
       required this.connectionTimeout,
+      this.filePath,
       this.lastConnectedAt,
       required this.createdAt,
       this.updatedAt});
@@ -13003,6 +13020,9 @@ class DatalensConnection extends DataClass
       map['color'] = Variable<String>(color);
     }
     map['connection_timeout'] = Variable<int>(connectionTimeout);
+    if (!nullToAbsent || filePath != null) {
+      map['file_path'] = Variable<String>(filePath);
+    }
     if (!nullToAbsent || lastConnectedAt != null) {
       map['last_connected_at'] = Variable<DateTime>(lastConnectedAt);
     }
@@ -13034,6 +13054,9 @@ class DatalensConnection extends DataClass
       color:
           color == null && nullToAbsent ? const Value.absent() : Value(color),
       connectionTimeout: Value(connectionTimeout),
+      filePath: filePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(filePath),
       lastConnectedAt: lastConnectedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastConnectedAt),
@@ -13061,6 +13084,7 @@ class DatalensConnection extends DataClass
       sslMode: serializer.fromJson<String?>(json['sslMode']),
       color: serializer.fromJson<String?>(json['color']),
       connectionTimeout: serializer.fromJson<int>(json['connectionTimeout']),
+      filePath: serializer.fromJson<String?>(json['filePath']),
       lastConnectedAt: serializer.fromJson<DateTime?>(json['lastConnectedAt']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
@@ -13083,6 +13107,7 @@ class DatalensConnection extends DataClass
       'sslMode': serializer.toJson<String?>(sslMode),
       'color': serializer.toJson<String?>(color),
       'connectionTimeout': serializer.toJson<int>(connectionTimeout),
+      'filePath': serializer.toJson<String?>(filePath),
       'lastConnectedAt': serializer.toJson<DateTime?>(lastConnectedAt),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
@@ -13103,6 +13128,7 @@ class DatalensConnection extends DataClass
           Value<String?> sslMode = const Value.absent(),
           Value<String?> color = const Value.absent(),
           int? connectionTimeout,
+          Value<String?> filePath = const Value.absent(),
           Value<DateTime?> lastConnectedAt = const Value.absent(),
           DateTime? createdAt,
           Value<DateTime?> updatedAt = const Value.absent()}) =>
@@ -13120,6 +13146,7 @@ class DatalensConnection extends DataClass
         sslMode: sslMode.present ? sslMode.value : this.sslMode,
         color: color.present ? color.value : this.color,
         connectionTimeout: connectionTimeout ?? this.connectionTimeout,
+        filePath: filePath.present ? filePath.value : this.filePath,
         lastConnectedAt: lastConnectedAt.present
             ? lastConnectedAt.value
             : this.lastConnectedAt,
@@ -13143,6 +13170,7 @@ class DatalensConnection extends DataClass
       connectionTimeout: data.connectionTimeout.present
           ? data.connectionTimeout.value
           : this.connectionTimeout,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
       lastConnectedAt: data.lastConnectedAt.present
           ? data.lastConnectedAt.value
           : this.lastConnectedAt,
@@ -13167,6 +13195,7 @@ class DatalensConnection extends DataClass
           ..write('sslMode: $sslMode, ')
           ..write('color: $color, ')
           ..write('connectionTimeout: $connectionTimeout, ')
+          ..write('filePath: $filePath, ')
           ..write('lastConnectedAt: $lastConnectedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -13189,6 +13218,7 @@ class DatalensConnection extends DataClass
       sslMode,
       color,
       connectionTimeout,
+      filePath,
       lastConnectedAt,
       createdAt,
       updatedAt);
@@ -13209,6 +13239,7 @@ class DatalensConnection extends DataClass
           other.sslMode == this.sslMode &&
           other.color == this.color &&
           other.connectionTimeout == this.connectionTimeout &&
+          other.filePath == this.filePath &&
           other.lastConnectedAt == this.lastConnectedAt &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -13228,6 +13259,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
   final Value<String?> sslMode;
   final Value<String?> color;
   final Value<int> connectionTimeout;
+  final Value<String?> filePath;
   final Value<DateTime?> lastConnectedAt;
   final Value<DateTime> createdAt;
   final Value<DateTime?> updatedAt;
@@ -13246,6 +13278,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
     this.sslMode = const Value.absent(),
     this.color = const Value.absent(),
     this.connectionTimeout = const Value.absent(),
+    this.filePath = const Value.absent(),
     this.lastConnectedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -13265,6 +13298,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
     this.sslMode = const Value.absent(),
     this.color = const Value.absent(),
     this.connectionTimeout = const Value.absent(),
+    this.filePath = const Value.absent(),
     this.lastConnectedAt = const Value.absent(),
     required DateTime createdAt,
     this.updatedAt = const Value.absent(),
@@ -13289,6 +13323,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
     Expression<String>? sslMode,
     Expression<String>? color,
     Expression<int>? connectionTimeout,
+    Expression<String>? filePath,
     Expression<DateTime>? lastConnectedAt,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -13308,6 +13343,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
       if (sslMode != null) 'ssl_mode': sslMode,
       if (color != null) 'color': color,
       if (connectionTimeout != null) 'connection_timeout': connectionTimeout,
+      if (filePath != null) 'file_path': filePath,
       if (lastConnectedAt != null) 'last_connected_at': lastConnectedAt,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -13329,6 +13365,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
       Value<String?>? sslMode,
       Value<String?>? color,
       Value<int>? connectionTimeout,
+      Value<String?>? filePath,
       Value<DateTime?>? lastConnectedAt,
       Value<DateTime>? createdAt,
       Value<DateTime?>? updatedAt,
@@ -13347,6 +13384,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
       sslMode: sslMode ?? this.sslMode,
       color: color ?? this.color,
       connectionTimeout: connectionTimeout ?? this.connectionTimeout,
+      filePath: filePath ?? this.filePath,
       lastConnectedAt: lastConnectedAt ?? this.lastConnectedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -13396,6 +13434,9 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
     if (connectionTimeout.present) {
       map['connection_timeout'] = Variable<int>(connectionTimeout.value);
     }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
     if (lastConnectedAt.present) {
       map['last_connected_at'] = Variable<DateTime>(lastConnectedAt.value);
     }
@@ -13427,6 +13468,7 @@ class DatalensConnectionsCompanion extends UpdateCompanion<DatalensConnection> {
           ..write('sslMode: $sslMode, ')
           ..write('color: $color, ')
           ..write('connectionTimeout: $connectionTimeout, ')
+          ..write('filePath: $filePath, ')
           ..write('lastConnectedAt: $lastConnectedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -20163,6 +20205,7 @@ typedef $$DatalensConnectionsTableCreateCompanionBuilder
   Value<String?> sslMode,
   Value<String?> color,
   Value<int> connectionTimeout,
+  Value<String?> filePath,
   Value<DateTime?> lastConnectedAt,
   required DateTime createdAt,
   Value<DateTime?> updatedAt,
@@ -20183,6 +20226,7 @@ typedef $$DatalensConnectionsTableUpdateCompanionBuilder
   Value<String?> sslMode,
   Value<String?> color,
   Value<int> connectionTimeout,
+  Value<String?> filePath,
   Value<DateTime?> lastConnectedAt,
   Value<DateTime> createdAt,
   Value<DateTime?> updatedAt,
@@ -20237,6 +20281,9 @@ class $$DatalensConnectionsTableFilterComposer
   ColumnFilters<int> get connectionTimeout => $composableBuilder(
       column: $table.connectionTimeout,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get lastConnectedAt => $composableBuilder(
       column: $table.lastConnectedAt,
@@ -20298,6 +20345,9 @@ class $$DatalensConnectionsTableOrderingComposer
       column: $table.connectionTimeout,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get lastConnectedAt => $composableBuilder(
       column: $table.lastConnectedAt,
       builder: (column) => ColumnOrderings(column));
@@ -20357,6 +20407,9 @@ class $$DatalensConnectionsTableAnnotationComposer
   GeneratedColumn<int> get connectionTimeout => $composableBuilder(
       column: $table.connectionTimeout, builder: (column) => column);
 
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
   GeneratedColumn<DateTime> get lastConnectedAt => $composableBuilder(
       column: $table.lastConnectedAt, builder: (column) => column);
 
@@ -20410,6 +20463,7 @@ class $$DatalensConnectionsTableTableManager extends RootTableManager<
             Value<String?> sslMode = const Value.absent(),
             Value<String?> color = const Value.absent(),
             Value<int> connectionTimeout = const Value.absent(),
+            Value<String?> filePath = const Value.absent(),
             Value<DateTime?> lastConnectedAt = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
@@ -20429,6 +20483,7 @@ class $$DatalensConnectionsTableTableManager extends RootTableManager<
             sslMode: sslMode,
             color: color,
             connectionTimeout: connectionTimeout,
+            filePath: filePath,
             lastConnectedAt: lastConnectedAt,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -20448,6 +20503,7 @@ class $$DatalensConnectionsTableTableManager extends RootTableManager<
             Value<String?> sslMode = const Value.absent(),
             Value<String?> color = const Value.absent(),
             Value<int> connectionTimeout = const Value.absent(),
+            Value<String?> filePath = const Value.absent(),
             Value<DateTime?> lastConnectedAt = const Value.absent(),
             required DateTime createdAt,
             Value<DateTime?> updatedAt = const Value.absent(),
@@ -20467,6 +20523,7 @@ class $$DatalensConnectionsTableTableManager extends RootTableManager<
             sslMode: sslMode,
             color: color,
             connectionTimeout: connectionTimeout,
+            filePath: filePath,
             lastConnectedAt: lastConnectedAt,
             createdAt: createdAt,
             updatedAt: updatedAt,
