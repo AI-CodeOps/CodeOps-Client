@@ -10,12 +10,15 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/datalens_enums.dart';
+import '../models/datalens_er_models.dart';
 import '../models/datalens_models.dart';
 import '../services/datalens/database_connection_service.dart';
 import '../services/datalens/query_execution_service.dart';
 import '../services/datalens/query_history_service.dart';
 import '../services/datalens/schema_introspection_service.dart';
 import '../services/datalens/data_editor_service.dart';
+import '../services/datalens/er_diagram_service.dart';
+import '../services/datalens/er_export_service.dart';
 import '../services/datalens/sql_autocomplete_service.dart';
 import 'auth_providers.dart';
 
@@ -62,6 +65,17 @@ final datalensDataEditorServiceProvider = Provider<DataEditorService>((ref) {
   final queryService = ref.watch(datalensQueryServiceProvider);
   final schemaService = ref.watch(datalensSchemaServiceProvider);
   return DataEditorService(queryService, schemaService);
+});
+
+/// ER diagram service — builds ER diagrams from schema metadata.
+final datalensErDiagramServiceProvider = Provider<ErDiagramService>((ref) {
+  final schemaService = ref.watch(datalensSchemaServiceProvider);
+  return ErDiagramService(schemaService);
+});
+
+/// ER export service — exports diagrams as PNG or SVG.
+final datalensErExportServiceProvider = Provider<ErExportService>((ref) {
+  return const ErExportService();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -118,6 +132,14 @@ final datalensFkRelationshipsProvider =
   final service = ref.watch(datalensSchemaServiceProvider);
   return service.getForeignKeys(connectionId, schema, table);
 });
+
+/// Current ER diagram notation style.
+final erNotationProvider =
+    StateProvider<ErNotation>((ref) => ErNotation.crowsFoot);
+
+/// Current ER diagram scope.
+final erDiagramScopeProvider =
+    StateProvider<ErDiagramScope>((ref) => ErDiagramScope.fullSchema);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data Providers — Connections

@@ -12,7 +12,10 @@ import 'package:codeops/services/datalens/query_execution_service.dart';
 import 'package:codeops/services/datalens/query_history_service.dart';
 import 'package:codeops/services/datalens/schema_introspection_service.dart';
 import 'package:codeops/services/datalens/data_editor_service.dart';
+import 'package:codeops/services/datalens/er_diagram_service.dart';
+import 'package:codeops/services/datalens/er_export_service.dart';
 import 'package:codeops/services/datalens/sql_autocomplete_service.dart';
+import 'package:codeops/models/datalens_er_models.dart';
 
 void main() {
   // ---------------------------------------------------------------------------
@@ -71,6 +74,24 @@ void main() {
       final service = container.read(datalensDataEditorServiceProvider);
 
       expect(service, isA<DataEditorService>());
+    });
+
+    test('erDiagramServiceProvider returns ErDiagramService', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final service = container.read(datalensErDiagramServiceProvider);
+
+      expect(service, isA<ErDiagramService>());
+    });
+
+    test('erExportServiceProvider returns ErExportService', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final service = container.read(datalensErExportServiceProvider);
+
+      expect(service, isA<ErExportService>());
     });
   });
 
@@ -167,6 +188,21 @@ void main() {
       addTearDown(container.dispose);
 
       expect(container.read(pendingChangesCountProvider), 0);
+    });
+
+    test('erNotationProvider defaults to crowsFoot', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(erNotationProvider), ErNotation.crowsFoot);
+    });
+
+    test('erDiagramScopeProvider defaults to fullSchema', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(
+          container.read(erDiagramScopeProvider), ErDiagramScope.fullSchema);
     });
   });
 
@@ -266,6 +302,26 @@ void main() {
       container.read(pendingChangesCountProvider.notifier).state = 5;
 
       expect(container.read(pendingChangesCountProvider), 5);
+    });
+
+    test('erNotationProvider can be changed to IDEF1X', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(erNotationProvider.notifier).state = ErNotation.idef1x;
+
+      expect(container.read(erNotationProvider), ErNotation.idef1x);
+    });
+
+    test('erDiagramScopeProvider can be changed', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(erDiagramScopeProvider.notifier).state =
+          ErDiagramScope.singleTableRelated;
+
+      expect(container.read(erDiagramScopeProvider),
+          ErDiagramScope.singleTableRelated);
     });
   });
 }
