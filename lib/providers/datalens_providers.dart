@@ -23,6 +23,8 @@ import '../services/datalens/import/csv_import_service.dart';
 import '../services/datalens/import/sql_script_import_service.dart';
 import '../services/datalens/import/table_transfer_service.dart';
 import '../services/datalens/sql_autocomplete_service.dart';
+import '../services/datalens/db_admin_service.dart';
+import '../models/datalens_admin_models.dart';
 import 'auth_providers.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,6 +101,12 @@ final tableTransferServiceProvider = Provider<TableTransferService>((ref) {
   final connectionService = ref.watch(datalensConnectionServiceProvider);
   final schemaService = ref.watch(datalensSchemaServiceProvider);
   return TableTransferService(connectionService, schemaService);
+});
+
+/// Database admin service — server monitoring, sessions, locks, stats.
+final dbAdminServiceProvider = Provider<DbAdminService>((ref) {
+  final connectionService = ref.watch(datalensConnectionServiceProvider);
+  return DbAdminService(connectionService);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -317,4 +325,53 @@ final datalensSavedQueriesProvider = FutureProvider<List<SavedQuery>>((ref) {
   if (connectionId == null) return [];
   final service = ref.watch(datalensHistoryServiceProvider);
   return service.getSavedQueries(connectionId);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data Providers — Database Administration
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Active sessions for the selected connection.
+final datalensActiveSessionsProvider =
+    FutureProvider<List<ActiveSession>>((ref) {
+  final connectionId = ref.watch(selectedConnectionIdProvider);
+  if (connectionId == null) return [];
+  final service = ref.watch(dbAdminServiceProvider);
+  return service.getActiveSessions(connectionId);
+});
+
+/// Table statistics for the selected schema.
+final datalensTableStatsProvider =
+    FutureProvider<List<TableStatInfo>>((ref) {
+  final connectionId = ref.watch(selectedConnectionIdProvider);
+  final schema = ref.watch(selectedSchemaProvider);
+  if (connectionId == null || schema == null) return [];
+  final service = ref.watch(dbAdminServiceProvider);
+  return service.getTableStats(connectionId, schema);
+});
+
+/// Lock information for the selected connection.
+final datalensLockInfoProvider = FutureProvider<List<LockInfo>>((ref) {
+  final connectionId = ref.watch(selectedConnectionIdProvider);
+  if (connectionId == null) return [];
+  final service = ref.watch(dbAdminServiceProvider);
+  return service.getLocks(connectionId);
+});
+
+/// Index usage statistics for the selected schema.
+final datalensIndexUsageProvider =
+    FutureProvider<List<IndexUsageInfo>>((ref) {
+  final connectionId = ref.watch(selectedConnectionIdProvider);
+  final schema = ref.watch(selectedSchemaProvider);
+  if (connectionId == null || schema == null) return [];
+  final service = ref.watch(dbAdminServiceProvider);
+  return service.getIndexUsage(connectionId, schema);
+});
+
+/// Server information for the selected connection.
+final datalensServerInfoProvider = FutureProvider<ServerInfo?>((ref) {
+  final connectionId = ref.watch(selectedConnectionIdProvider);
+  if (connectionId == null) return null;
+  final service = ref.watch(dbAdminServiceProvider);
+  return service.getServerInfo(connectionId);
 });

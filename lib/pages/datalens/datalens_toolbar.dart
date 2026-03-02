@@ -15,6 +15,7 @@ import '../../widgets/datalens/connection_manager_dialog.dart';
 import '../../widgets/datalens/import/csv_import_wizard.dart';
 import '../../widgets/datalens/import/sql_script_import_dialog.dart';
 import '../../widgets/datalens/import/table_transfer_dialog.dart';
+import 'db_admin_page.dart';
 
 /// Toolbar for the DataLens page.
 class DatalensToolbar extends ConsumerStatefulWidget {
@@ -262,6 +263,30 @@ class _DatalensToolbarState extends ConsumerState<DatalensToolbar> {
                     style: TextStyle(fontSize: 12, color: CodeOpsColors.textPrimary)),
               ),
             ],
+          ),
+
+          const SizedBox(width: 4),
+          Container(width: 1, height: 20, color: CodeOpsColors.border),
+          const SizedBox(width: 4),
+
+          // Admin
+          _ToolbarButton(
+            icon: Icons.admin_panel_settings,
+            tooltip: 'Database Administration',
+            onPressed: isConnected
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ProviderScope(
+                          parent: ProviderScope.containerOf(context),
+                          child: DbAdminPage(
+                            connectionId: selectedConnectionId,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                : null,
           ),
 
           const Spacer(),
