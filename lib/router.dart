@@ -69,6 +69,8 @@ import 'pages/fleet/solution_profile_list_page.dart';
 import 'pages/fleet/workstation_profile_detail_page.dart';
 import 'pages/fleet/workstation_profile_list_page.dart';
 import 'pages/datalens/datalens_page.dart';
+import 'pages/logger/alert_channels_page.dart';
+import 'pages/logger/alerts_page.dart';
 import 'pages/logger/log_search_page.dart';
 import 'pages/logger/log_traps_page.dart';
 import 'pages/logger/log_viewer_page.dart';
@@ -727,7 +729,7 @@ final GoRouter router = GoRouter(
           path: '/logger/alerts',
           name: 'logger-alerts',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Alerts'),
+            child: AlertsPage(),
           ),
         ),
         // 68. Logger — Alert Channels
@@ -735,7 +737,7 @@ final GoRouter router = GoRouter(
           path: '/logger/alerts/channels',
           name: 'logger-alert-channels',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Alert Channels'),
+            child: AlertChannelsPage(),
           ),
         ),
         // 69. Logger — Custom Dashboards
