@@ -148,5 +148,63 @@ void main() {
       expect(updated.url, 'http://new.url');
       expect(updated.id, 'tab-2');
     });
+
+    // ── expandedNodesProvider ────────────────────────────────────────────────
+
+    test('expandedNodesProvider starts empty', () {
+      expect(container.read(expandedNodesProvider), isEmpty);
+    });
+
+    test('expandedNodesProvider accepts node IDs', () {
+      container.read(expandedNodesProvider.notifier).state = {'col-1', 'col-2'};
+      expect(container.read(expandedNodesProvider), containsAll(['col-1', 'col-2']));
+    });
+
+    test('expandedNodesProvider can remove a node ID', () {
+      container.read(expandedNodesProvider.notifier).state = {'col-1', 'col-2'};
+      final nodes = container.read(expandedNodesProvider);
+      container.read(expandedNodesProvider.notifier).state =
+          Set.from(nodes)..remove('col-1');
+      expect(container.read(expandedNodesProvider), isNot(contains('col-1')));
+      expect(container.read(expandedNodesProvider), contains('col-2'));
+    });
+
+    // ── selectedNodeIdProvider ───────────────────────────────────────────────
+
+    test('selectedNodeIdProvider starts null', () {
+      expect(container.read(selectedNodeIdProvider), isNull);
+    });
+
+    test('selectedNodeIdProvider updates to a collection ID', () {
+      container.read(selectedNodeIdProvider.notifier).state = 'col-abc';
+      expect(container.read(selectedNodeIdProvider), 'col-abc');
+    });
+
+    test('selectedNodeIdProvider can be cleared back to null', () {
+      container.read(selectedNodeIdProvider.notifier).state = 'col-abc';
+      container.read(selectedNodeIdProvider.notifier).state = null;
+      expect(container.read(selectedNodeIdProvider), isNull);
+    });
+
+    // ── sidebarSortProvider ──────────────────────────────────────────────────
+
+    test('sidebarSortProvider starts as manual', () {
+      expect(container.read(sidebarSortProvider), SidebarSortOrder.manual);
+    });
+
+    test('sidebarSortProvider can switch to alphabetical', () {
+      container.read(sidebarSortProvider.notifier).state =
+          SidebarSortOrder.alphabetical;
+      expect(
+          container.read(sidebarSortProvider), SidebarSortOrder.alphabetical);
+    });
+
+    test('sidebarSortProvider can switch back to manual', () {
+      container.read(sidebarSortProvider.notifier).state =
+          SidebarSortOrder.alphabetical;
+      container.read(sidebarSortProvider.notifier).state =
+          SidebarSortOrder.manual;
+      expect(container.read(sidebarSortProvider), SidebarSortOrder.manual);
+    });
   });
 }

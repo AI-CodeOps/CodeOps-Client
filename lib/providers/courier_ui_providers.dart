@@ -123,3 +123,31 @@ final activeEnvironmentIdProvider = StateProvider<String?>((ref) => null);
 
 /// Whether the bottom console panel is visible.
 final consoleVisibleProvider = StateProvider<bool>((ref) => false);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sidebar Tree State (CCF-002)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Sort order for the collection sidebar.
+enum SidebarSortOrder {
+  /// Preserves the server-defined manual sort order.
+  manual,
+
+  /// Sorts collections and folders alphabetically by name.
+  alphabetical,
+}
+
+/// Set of node IDs (collections and folders) that are currently expanded
+/// in the sidebar tree.
+///
+/// Uses string IDs from [CollectionSummaryResponse.id] and
+/// [FolderTreeResponse.id].
+final expandedNodesProvider = StateProvider<Set<String>>((ref) => {});
+
+/// ID of the currently selected node (collection, folder, or request)
+/// in the sidebar tree, or null when nothing is selected.
+final selectedNodeIdProvider = StateProvider<String?>((ref) => null);
+
+/// Current sort order for the collection sidebar.
+final sidebarSortProvider =
+    StateProvider<SidebarSortOrder>((ref) => SidebarSortOrder.manual);
