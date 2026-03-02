@@ -1,6 +1,6 @@
 // Tests for AgentConfigService.
 //
-// Verifies agent seeding (idempotent, 13 agents), CRUD operations,
+// Verifies agent seeding (idempotent, 17 agents), CRUD operations,
 // file management, model caching, and built-in delete protection.
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';

@@ -309,7 +309,7 @@ class AgentConfigService {
   // Seed built-in agents
   // ---------------------------------------------------------------------------
 
-  /// Seeds the 13 built-in agent definitions if the table is empty.
+  /// Seeds the 17 built-in agent definitions if the table is empty.
   ///
   /// Idempotent: does nothing if agents already exist.
   Future<void> seedBuiltInAgents() async {
@@ -394,7 +394,7 @@ class _BuiltInAgentSpec {
   });
 }
 
-/// The 13 built-in agents: Vera (QA Manager) + 12 specialist agents.
+/// The 17 built-in agents: Vera (QA Manager) + 12 standard + 4 adversarial.
 final List<_BuiltInAgentSpec> _builtInAgentSpecs = [
   const _BuiltInAgentSpec(
     name: 'Vera',
@@ -474,5 +474,29 @@ final List<_BuiltInAgentSpec> _builtInAgentSpecs = [
     agentType: 'ARCHITECTURE',
     description: 'Evaluates system architecture, design patterns, and modularity',
     personaAsset: 'assets/personas/agent-architecture.md',
+  ),
+  const _BuiltInAgentSpec(
+    name: 'Chaos Monkey Agent',
+    agentType: 'CHAOS_MONKEY',
+    description: 'Mutation testing to verify test suite catches real bugs',
+    personaAsset: 'assets/personas/agent-chaos-monkey.md',
+  ),
+  const _BuiltInAgentSpec(
+    name: 'Hostile User Agent',
+    agentType: 'HOSTILE_USER',
+    description: 'Adversarial UX and API abuse testing',
+    personaAsset: 'assets/personas/agent-hostile-user.md',
+  ),
+  const _BuiltInAgentSpec(
+    name: 'Compliance Auditor Agent',
+    agentType: 'COMPLIANCE_AUDITOR',
+    description: 'Regulatory compliance and data traceability auditing',
+    personaAsset: 'assets/personas/agent-compliance-auditor.md',
+  ),
+  const _BuiltInAgentSpec(
+    name: 'Load Saboteur Agent',
+    agentType: 'LOAD_SABOTEUR',
+    description: 'Adversarial performance and resilience testing',
+    personaAsset: 'assets/personas/agent-load-saboteur.md',
   ),
 ];
