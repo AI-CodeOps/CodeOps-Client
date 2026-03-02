@@ -17,7 +17,9 @@ import 'query_history_service.dart';
 /// Executes SQL queries and records results in history.
 ///
 /// Obtains live [pg.Connection] instances from [DatabaseConnectionService]
-/// and delegates history persistence to [QueryHistoryService].
+/// and delegates history persistence to [QueryHistoryService]. Supports
+/// transaction control: auto-commit mode (default) or manual
+/// BEGIN/COMMIT/ROLLBACK.
 class QueryExecutionService {
   static const String _tag = 'QueryExecutionService';
 
@@ -26,6 +28,9 @@ class QueryExecutionService {
 
   /// The history service used to record query executions.
   final QueryHistoryService _historyService;
+
+  /// Tracks which connections have an active transaction.
+  final Map<String, bool> _transactionActive = {};
 
   /// Creates a [QueryExecutionService] with the given dependencies.
   QueryExecutionService(
@@ -258,6 +263,77 @@ class QueryExecutionService {
 
     final result = await conn.execute(buffer.toString());
     return result.first.first as int;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Transaction Control
+  // ---------------------------------------------------------------------------
+
+  /// Begins a new transaction on the given connection.
+  ///
+  /// Executes `BEGIN` and marks the connection as having an active
+  /// transaction. No-op if a transaction is already active.
+  ///
+  /// Throws [StateError] if no active connection exists for [connectionId].
+  Future<void> beginTransaction(String connectionId) async {
+    if (isTransactionActive(connectionId)) return;
+    log.i(_tag, 'BEGIN transaction on $connectionId');
+    final conn = _requireConnection(connectionId);
+    await conn.execute('BEGIN');
+    _transactionActive[connectionId] = true;
+  }
+
+  /// Commits the active transaction on the given connection.
+  ///
+  /// Executes `COMMIT` and clears the transaction-active flag.
+  ///
+  /// Throws [StateError] if no active connection or no active transaction.
+  Future<void> commit(String connectionId) async {
+    if (!isTransactionActive(connectionId)) {
+      throw StateError('No active transaction on $connectionId');
+    }
+    log.i(_tag, 'COMMIT on $connectionId');
+    final conn = _requireConnection(connectionId);
+    await conn.execute('COMMIT');
+    _transactionActive[connectionId] = false;
+  }
+
+  /// Rolls back the active transaction on the given connection.
+  ///
+  /// Executes `ROLLBACK` and clears the transaction-active flag.
+  ///
+  /// Throws [StateError] if no active connection or no active transaction.
+  Future<void> rollback(String connectionId) async {
+    if (!isTransactionActive(connectionId)) {
+      throw StateError('No active transaction on $connectionId');
+    }
+    log.i(_tag, 'ROLLBACK on $connectionId');
+    final conn = _requireConnection(connectionId);
+    await conn.execute('ROLLBACK');
+    _transactionActive[connectionId] = false;
+  }
+
+  /// Returns whether a transaction is currently active on [connectionId].
+  bool isTransactionActive(String connectionId) {
+    return _transactionActive[connectionId] ?? false;
+  }
+
+  /// Auto-rollbacks any active transaction on disconnect.
+  ///
+  /// Should be called when a connection is about to be closed. Issues
+  /// a best-effort ROLLBACK if a transaction is active.
+  Future<void> autoRollbackOnDisconnect(String connectionId) async {
+    if (!isTransactionActive(connectionId)) return;
+    log.w(_tag, 'Auto-rollback on disconnect for $connectionId');
+    try {
+      final conn = _connectionService.getConnection(connectionId);
+      if (conn != null) {
+        await conn.execute('ROLLBACK');
+      }
+    } on Object catch (e) {
+      log.e(_tag, 'Auto-rollback failed for $connectionId', e);
+    }
+    _transactionActive.remove(connectionId);
   }
 
   // ---------------------------------------------------------------------------

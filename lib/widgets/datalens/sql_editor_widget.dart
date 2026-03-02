@@ -12,6 +12,7 @@ import '../../theme/colors.dart';
 import '../scribe/scribe_editor.dart';
 import '../scribe/scribe_editor_controller.dart';
 import 'sql_editor_toolbar.dart';
+import 'transaction_control_bar.dart';
 
 /// A SQL text editor for a single editor tab.
 ///
@@ -49,6 +50,21 @@ class SqlEditorWidget extends StatefulWidget {
   /// Optional external controller for programmatic access.
   final ScribeEditorController? controller;
 
+  /// Whether auto-commit mode is enabled.
+  final bool autoCommit;
+
+  /// Called when the auto-commit toggle changes.
+  final ValueChanged<bool>? onAutoCommitChanged;
+
+  /// Whether a transaction is currently active.
+  final bool transactionActive;
+
+  /// Called when the COMMIT button is tapped.
+  final VoidCallback? onCommit;
+
+  /// Called when the ROLLBACK button is tapped.
+  final VoidCallback? onRollback;
+
   /// Creates a [SqlEditorWidget].
   const SqlEditorWidget({
     super.key,
@@ -62,6 +78,11 @@ class SqlEditorWidget extends StatefulWidget {
     this.onHistory,
     this.isRunning = false,
     this.controller,
+    this.autoCommit = true,
+    this.onAutoCommitChanged,
+    this.transactionActive = false,
+    this.onCommit,
+    this.onRollback,
   });
 
   @override
@@ -128,6 +149,16 @@ class _SqlEditorWidgetState extends State<SqlEditorWidget> {
           onFormat: widget.onFormat,
           onHistory: widget.onHistory,
           isRunning: widget.isRunning,
+        ),
+        const Divider(height: 1, color: CodeOpsColors.border),
+
+        // Transaction control bar
+        TransactionControlBar(
+          autoCommit: widget.autoCommit,
+          onAutoCommitChanged: widget.onAutoCommitChanged,
+          transactionActive: widget.transactionActive,
+          onCommit: widget.onCommit,
+          onRollback: widget.onRollback,
         ),
         const Divider(height: 1, color: CodeOpsColors.border),
 

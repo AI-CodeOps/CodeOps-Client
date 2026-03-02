@@ -89,6 +89,11 @@ class _SqlEditorPanelState extends ConsumerState<SqlEditorPanel> {
                 onExplain: _explainQuery,
                 onFormat: _formatSql,
                 isRunning: _activeTab.isRunning,
+                autoCommit: ref.watch(autoCommitProvider),
+                onAutoCommitChanged: _onAutoCommitChanged,
+                transactionActive: ref.watch(transactionActiveProvider),
+                onCommit: _commitTransaction,
+                onRollback: _rollbackTransaction,
               ),
               // Bottom — results
               SqlResultsPanel(
@@ -244,6 +249,9 @@ class _SqlEditorPanelState extends ConsumerState<SqlEditorPanel> {
   // ─────────────────────────────────────────────────────────────────────────
 
   /// Executes the current SQL content.
+  ///
+  /// When auto-commit is OFF, begins a transaction before the first
+  /// statement and marks the transaction as active.
   Future<void> _executeQuery() async {
     final connectionId = ref.read(selectedConnectionIdProvider);
     if (connectionId == null) return;
@@ -255,6 +263,15 @@ class _SqlEditorPanelState extends ConsumerState<SqlEditorPanel> {
 
     try {
       final service = ref.read(datalensQueryServiceProvider);
+      final isAutoCommit = ref.read(autoCommitProvider);
+
+      // Begin transaction if manual mode and no active transaction.
+      if (!isAutoCommit && !ref.read(transactionActiveProvider)) {
+        await service.beginTransaction(connectionId);
+        if (!mounted) return;
+        ref.read(transactionActiveProvider.notifier).state = true;
+      }
+
       final result = await service.executeQuery(connectionId, sql);
 
       if (!mounted) return;
@@ -300,6 +317,74 @@ class _SqlEditorPanelState extends ConsumerState<SqlEditorPanel> {
         status: QueryStatus.cancelled,
       );
     });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Transaction Control
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Toggles auto-commit mode.
+  void _onAutoCommitChanged(bool value) {
+    ref.read(autoCommitProvider.notifier).state = value;
+
+    // If turning auto-commit back ON and a transaction is active,
+    // auto-commit the pending transaction.
+    if (value) {
+      final connectionId = ref.read(selectedConnectionIdProvider);
+      if (connectionId != null &&
+          ref.read(transactionActiveProvider)) {
+        final service = ref.read(datalensQueryServiceProvider);
+        service.commit(connectionId).then((_) {
+          if (mounted) {
+            ref.read(transactionActiveProvider.notifier).state = false;
+          }
+        }).catchError((_) {});
+      }
+    }
+  }
+
+  /// Commits the active transaction.
+  Future<void> _commitTransaction() async {
+    final connectionId = ref.read(selectedConnectionIdProvider);
+    if (connectionId == null) return;
+
+    try {
+      final service = ref.read(datalensQueryServiceProvider);
+      await service.commit(connectionId);
+      if (!mounted) return;
+      ref.read(transactionActiveProvider.notifier).state = false;
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _activeTab.lastResult = QueryResult(
+          status: QueryStatus.failed,
+          error: 'COMMIT failed: $e',
+          executedSql: 'COMMIT',
+        );
+      });
+    }
+  }
+
+  /// Rolls back the active transaction.
+  Future<void> _rollbackTransaction() async {
+    final connectionId = ref.read(selectedConnectionIdProvider);
+    if (connectionId == null) return;
+
+    try {
+      final service = ref.read(datalensQueryServiceProvider);
+      await service.rollback(connectionId);
+      if (!mounted) return;
+      ref.read(transactionActiveProvider.notifier).state = false;
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _activeTab.lastResult = QueryResult(
+          status: QueryStatus.failed,
+          error: 'ROLLBACK failed: $e',
+          executedSql: 'ROLLBACK',
+        );
+      });
+    }
   }
 
   /// Runs EXPLAIN on the current SQL content.

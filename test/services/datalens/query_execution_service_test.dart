@@ -448,4 +448,127 @@ void main() {
       );
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Transaction Control
+  // ---------------------------------------------------------------------------
+  group('Transaction control', () {
+    test('beginTransaction executes BEGIN and marks active', () async {
+      stubExecute(_result([], []));
+
+      expect(service.isTransactionActive('conn-1'), isFalse);
+
+      await service.beginTransaction('conn-1');
+
+      expect(service.isTransactionActive('conn-1'), isTrue);
+      verify(() => mockConn.execute(
+            'BEGIN',
+            parameters: any(named: 'parameters'),
+            ignoreRows: any(named: 'ignoreRows'),
+            queryMode: any(named: 'queryMode'),
+            timeout: any(named: 'timeout'),
+          )).called(1);
+    });
+
+    test('beginTransaction is no-op if transaction already active', () async {
+      stubExecute(_result([], []));
+
+      await service.beginTransaction('conn-1');
+      await service.beginTransaction('conn-1');
+
+      // Should only call BEGIN once.
+      verify(() => mockConn.execute(
+            'BEGIN',
+            parameters: any(named: 'parameters'),
+            ignoreRows: any(named: 'ignoreRows'),
+            queryMode: any(named: 'queryMode'),
+            timeout: any(named: 'timeout'),
+          )).called(1);
+    });
+
+    test('commit executes COMMIT and clears active flag', () async {
+      stubExecute(_result([], []));
+
+      await service.beginTransaction('conn-1');
+      expect(service.isTransactionActive('conn-1'), isTrue);
+
+      await service.commit('conn-1');
+      expect(service.isTransactionActive('conn-1'), isFalse);
+
+      verify(() => mockConn.execute(
+            'COMMIT',
+            parameters: any(named: 'parameters'),
+            ignoreRows: any(named: 'ignoreRows'),
+            queryMode: any(named: 'queryMode'),
+            timeout: any(named: 'timeout'),
+          )).called(1);
+    });
+
+    test('commit throws StateError when no active transaction', () {
+      expect(
+        () => service.commit('conn-1'),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('rollback executes ROLLBACK and clears active flag', () async {
+      stubExecute(_result([], []));
+
+      await service.beginTransaction('conn-1');
+      expect(service.isTransactionActive('conn-1'), isTrue);
+
+      await service.rollback('conn-1');
+      expect(service.isTransactionActive('conn-1'), isFalse);
+
+      verify(() => mockConn.execute(
+            'ROLLBACK',
+            parameters: any(named: 'parameters'),
+            ignoreRows: any(named: 'ignoreRows'),
+            queryMode: any(named: 'queryMode'),
+            timeout: any(named: 'timeout'),
+          )).called(1);
+    });
+
+    test('rollback throws StateError when no active transaction', () {
+      expect(
+        () => service.rollback('conn-1'),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('autoRollbackOnDisconnect rolls back active transaction', () async {
+      stubExecute(_result([], []));
+
+      await service.beginTransaction('conn-1');
+      expect(service.isTransactionActive('conn-1'), isTrue);
+
+      await service.autoRollbackOnDisconnect('conn-1');
+      expect(service.isTransactionActive('conn-1'), isFalse);
+
+      verify(() => mockConn.execute(
+            'ROLLBACK',
+            parameters: any(named: 'parameters'),
+            ignoreRows: any(named: 'ignoreRows'),
+            queryMode: any(named: 'queryMode'),
+            timeout: any(named: 'timeout'),
+          )).called(1);
+    });
+
+    test('autoRollbackOnDisconnect is no-op without active transaction',
+        () async {
+      await service.autoRollbackOnDisconnect('conn-1');
+
+      verifyNever(() => mockConn.execute(
+            any(),
+            parameters: any(named: 'parameters'),
+            ignoreRows: any(named: 'ignoreRows'),
+            queryMode: any(named: 'queryMode'),
+            timeout: any(named: 'timeout'),
+          ));
+    });
+
+    test('isTransactionActive returns false for unknown connectionId', () {
+      expect(service.isTransactionActive('unknown'), isFalse);
+    });
+  });
 }

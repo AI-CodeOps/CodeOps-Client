@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:codeops/widgets/datalens/sql_editor_toolbar.dart';
 import 'package:codeops/widgets/datalens/sql_editor_widget.dart';
+import 'package:codeops/widgets/datalens/transaction_control_bar.dart';
 import 'package:codeops/widgets/scribe/scribe_editor.dart';
 
 Widget _createWidget({
@@ -106,6 +107,17 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.format_align_left), findsOneWidget);
+    });
+
+    testWidgets('shows TransactionControlBar', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1400, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(_createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TransactionControlBar), findsOneWidget);
+      expect(find.text('Auto-commit'), findsOneWidget);
     });
   });
 }

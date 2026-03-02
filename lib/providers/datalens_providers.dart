@@ -15,6 +15,7 @@ import '../services/datalens/database_connection_service.dart';
 import '../services/datalens/query_execution_service.dart';
 import '../services/datalens/query_history_service.dart';
 import '../services/datalens/schema_introspection_service.dart';
+import '../services/datalens/sql_autocomplete_service.dart';
 import 'auth_providers.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -46,6 +47,13 @@ final datalensQueryServiceProvider = Provider<QueryExecutionService>((ref) {
   final connectionService = ref.watch(datalensConnectionServiceProvider);
   final historyService = ref.watch(datalensHistoryServiceProvider);
   return QueryExecutionService(connectionService, historyService);
+});
+
+/// SQL autocomplete service — provides context-aware completions.
+final datalensAutocompleteServiceProvider =
+    Provider<SqlAutocompleteService>((ref) {
+  final schemaService = ref.watch(datalensSchemaServiceProvider);
+  return SqlAutocompleteService(schemaService);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -82,6 +90,12 @@ final datalensDataBrowserResultProvider =
 
 /// Data browser current page.
 final datalensDataBrowserPageProvider = StateProvider<int>((ref) => 0);
+
+/// Whether auto-commit mode is enabled (default: true).
+final autoCommitProvider = StateProvider<bool>((ref) => true);
+
+/// Whether a transaction is currently active on the selected connection.
+final transactionActiveProvider = StateProvider<bool>((ref) => false);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data Providers — Connections

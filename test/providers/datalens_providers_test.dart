@@ -11,6 +11,7 @@ import 'package:codeops/services/datalens/database_connection_service.dart';
 import 'package:codeops/services/datalens/query_execution_service.dart';
 import 'package:codeops/services/datalens/query_history_service.dart';
 import 'package:codeops/services/datalens/schema_introspection_service.dart';
+import 'package:codeops/services/datalens/sql_autocomplete_service.dart';
 
 void main() {
   // ---------------------------------------------------------------------------
@@ -51,6 +52,15 @@ void main() {
       final service = container.read(datalensHistoryServiceProvider);
 
       expect(service, isA<QueryHistoryService>());
+    });
+
+    test('autocompleteServiceProvider returns SqlAutocompleteService', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final service = container.read(datalensAutocompleteServiceProvider);
+
+      expect(service, isA<SqlAutocompleteService>());
     });
   });
 
@@ -127,6 +137,20 @@ void main() {
 
       expect(container.read(datalensDataBrowserPageProvider), 0);
     });
+
+    test('autoCommitProvider defaults to true', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(autoCommitProvider), true);
+    });
+
+    test('transactionActiveProvider defaults to false', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(transactionActiveProvider), false);
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -198,6 +222,24 @@ void main() {
       container.read(datalensDataBrowserPageProvider.notifier).state = 3;
 
       expect(container.read(datalensDataBrowserPageProvider), 3);
+    });
+
+    test('autoCommitProvider can be toggled', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(autoCommitProvider.notifier).state = false;
+
+      expect(container.read(autoCommitProvider), false);
+    });
+
+    test('transactionActiveProvider can be updated', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(transactionActiveProvider.notifier).state = true;
+
+      expect(container.read(transactionActiveProvider), true);
     });
   });
 }
