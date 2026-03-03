@@ -91,12 +91,15 @@ import 'pages/courier/request_history_page.dart';
 import 'pages/courier/run_results_page.dart';
 import 'pages/mcp/activity_feed_page.dart';
 import 'pages/mcp/context_viewer_page.dart';
+import 'pages/mcp/developer_profile_detail_page.dart';
+import 'pages/mcp/developer_profiles_page.dart';
 import 'pages/mcp/document_detail_page.dart';
 import 'pages/mcp/document_management_page.dart';
 import 'pages/mcp/document_versions_page.dart';
 import 'pages/mcp/mcp_dashboard_page.dart';
 import 'pages/mcp/session_detail_page.dart';
 import 'pages/mcp/session_list_page.dart';
+import 'pages/mcp/token_management_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
 import 'pages/settings_page.dart';
@@ -1019,7 +1022,7 @@ final GoRouter router = GoRouter(
           path: '/mcp/profiles',
           name: 'mcp-profiles',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Developer Profiles'),
+            child: DeveloperProfilesPage(),
           ),
         ),
         // 94. MCP — Developer Profile Detail
@@ -1027,8 +1030,8 @@ final GoRouter router = GoRouter(
           path: '/mcp/profiles/:profileId',
           name: 'mcp-profile-detail',
           pageBuilder: (context, state) => NoTransitionPage(
-            child: PlaceholderPage(
-              title: 'Profile ${state.pathParameters['profileId']}',
+            child: DeveloperProfileDetailPage(
+              profileId: state.pathParameters['profileId']!,
             ),
           ),
         ),
@@ -1036,8 +1039,10 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: '/mcp/profiles/:profileId/tokens',
           name: 'mcp-profile-tokens',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Token Management'),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: TokenManagementPage(
+              profileId: state.pathParameters['profileId']!,
+            ),
           ),
         ),
         // 96. MCP — Convention Manager
