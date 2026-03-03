@@ -101,6 +101,7 @@ import 'pages/mcp/mcp_dashboard_page.dart';
 import 'pages/mcp/session_detail_page.dart';
 import 'pages/mcp/session_list_page.dart';
 import 'pages/mcp/token_management_page.dart';
+import 'pages/mcp/mcp_connection_status_page.dart';
 import 'pages/mcp/tool_call_audit_log_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
@@ -1068,7 +1069,7 @@ final GoRouter router = GoRouter(
           path: '/mcp/status',
           name: 'mcp-status',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'MCP Connection Status'),
+            child: McpConnectionStatusPage(),
           ),
         ),
       ],
