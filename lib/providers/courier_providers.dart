@@ -14,6 +14,8 @@ import '../models/courier_enums.dart';
 import '../models/courier_models.dart';
 import '../models/health_snapshot.dart';
 import '../services/cloud/courier_api.dart';
+import '../services/courier/http_execution_service.dart';
+import '../services/courier/variable_resolution_service.dart';
 import 'auth_providers.dart';
 import 'team_providers.dart';
 
@@ -359,3 +361,24 @@ final courierCodeLanguagesProvider =
   final api = ref.watch(courierApiProvider);
   return api.getCodeLanguages();
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Courier Services (CCF-003)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Provides the [VariableResolutionService] singleton.
+///
+/// Resolves `{{variableName}}` tokens in URLs, headers, and bodies.
+final variableResolutionServiceProvider =
+    Provider<VariableResolutionService>((ref) => VariableResolutionService());
+
+/// Provides the [HttpExecutionService] singleton.
+///
+/// Fires HTTP requests directly from the desktop client via Dio.
+final httpExecutionServiceProvider =
+    Provider<HttpExecutionService>((ref) => HttpExecutionService());
+
+/// Stores the result of the last HTTP execution, or null when no request has
+/// been fired in the current session.
+final executionResultProvider =
+    StateProvider<HttpExecutionResult?>((ref) => null);

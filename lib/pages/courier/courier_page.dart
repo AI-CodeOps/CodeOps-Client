@@ -8,13 +8,13 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/courier_enums.dart';
 import '../../providers/courier_ui_providers.dart';
 import '../../theme/colors.dart';
 import '../../widgets/courier/collection_sidebar.dart';
 import '../../widgets/courier/courier_status_bar.dart';
 import '../../widgets/courier/courier_toolbar.dart';
 import '../../widgets/courier/request_builder.dart';
+import '../../widgets/courier/request_tab_bar.dart';
 import '../../widgets/courier/response_viewer.dart';
 
 /// The Courier module root — a Postman-style three-pane HTTP client.
@@ -23,6 +23,8 @@ import '../../widgets/courier/response_viewer.dart';
 /// ```
 /// ┌──────────────────────────────────────────────────────────┐
 /// │ CourierToolbar                                           │
+/// ├──────────────────────────────────────────────────────────┤
+/// │ RequestTabBar  (browser-style open-request tabs)         │
 /// ├───────────┬──────────────────────────┬───────────────────┤
 /// │ Collection│ Request Builder          │ Response Viewer   │
 /// │ Sidebar   │ [Tab bar · builder area] │                   │
@@ -93,8 +95,8 @@ class _CourierPageState extends ConsumerState<CourierPage> {
       children: [
         // ── Toolbar ─────────────────────────────────────────────────────────
         const CourierToolbar(),
-        // ── Request tab bar ─────────────────────────────────────────────────
-        const _OpenRequestTabBar(),
+        // ── Open request tab bar ─────────────────────────────────────────────
+        const RequestTabBar(),
         // ── Three panes ─────────────────────────────────────────────────────
         Expanded(
           child: Row(
@@ -125,201 +127,6 @@ class _CourierPageState extends ConsumerState<CourierPage> {
         // ── Status bar ──────────────────────────────────────────────────────
         const CourierStatusBar(),
       ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Open request tab bar (browser-style tabs above the request builder)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Horizontal bar showing open request tabs.
-///
-/// Each tab displays the HTTP method badge, request name, and a close button.
-/// Clicking a tab makes it active. The [+] button creates a new empty request.
-class _OpenRequestTabBar extends ConsumerWidget {
-  const _OpenRequestTabBar();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tabs = ref.watch(openRequestTabsProvider);
-    final activeId = ref.watch(activeRequestTabProvider);
-
-    return Container(
-      height: 36,
-      decoration: const BoxDecoration(
-        color: CodeOpsColors.background,
-        border: Border(
-          bottom: BorderSide(color: CodeOpsColors.border),
-          top: BorderSide(color: CodeOpsColors.border),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Scrollable tab list
-          Expanded(
-            child: tabs.isEmpty
-                ? const _EmptyTabHint()
-                : ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: tabs.length,
-                    separatorBuilder: (_, __) => Container(
-                      width: 1,
-                      color: CodeOpsColors.border,
-                    ),
-                    itemBuilder: (_, index) {
-                      final tab = tabs[index];
-                      return _RequestTab(
-                        tab: tab,
-                        isActive: tab.id == activeId,
-                        onTap: () {
-                          ref
-                              .read(activeRequestTabProvider.notifier)
-                              .state = tab.id;
-                        },
-                        onClose: () {
-                          final updated =
-                              tabs.where((t) => t.id != tab.id).toList();
-                          ref.read(openRequestTabsProvider.notifier).state =
-                              updated;
-                          if (activeId == tab.id) {
-                            ref
-                                .read(activeRequestTabProvider.notifier)
-                                .state = updated.isEmpty ? null : updated.last.id;
-                          }
-                        },
-                      );
-                    },
-                  ),
-          ),
-          // New tab button
-          SizedBox(
-            width: 36,
-            child: IconButton(
-              key: const Key('new_tab_button'),
-              icon: const Icon(Icons.add, size: 16),
-              color: CodeOpsColors.textSecondary,
-              tooltip: 'New Request',
-              onPressed: () {
-                // CCF-003 implements the actual new-tab creation.
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyTabHint extends StatelessWidget {
-  const _EmptyTabHint();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'No open requests — click + to create one',
-        style: TextStyle(
-          fontSize: 11,
-          color: CodeOpsColors.textTertiary,
-        ),
-      ),
-    );
-  }
-}
-
-class _RequestTab extends StatelessWidget {
-  final RequestTab tab;
-  final bool isActive;
-  final VoidCallback onTap;
-  final VoidCallback onClose;
-
-  const _RequestTab({
-    required this.tab,
-    required this.isActive,
-    required this.onTap,
-    required this.onClose,
-  });
-
-  Color _methodColor(CourierHttpMethod m) => switch (m) {
-        CourierHttpMethod.get => const Color(0xFF4ADE80),
-        CourierHttpMethod.post => const Color(0xFFFBBF24),
-        CourierHttpMethod.put => const Color(0xFF60A5FA),
-        CourierHttpMethod.patch => const Color(0xFFA78BFA),
-        CourierHttpMethod.delete => const Color(0xFFEF4444),
-        CourierHttpMethod.head => const Color(0xFF34D399),
-        CourierHttpMethod.options => const Color(0xFF94A3B8),
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: isActive ? CodeOpsColors.surface : Colors.transparent,
-          border: isActive
-              ? const Border(
-                  top: BorderSide(color: CodeOpsColors.primary, width: 2),
-                )
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Method badge
-            Text(
-              tab.method.displayName,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                color: _methodColor(tab.method),
-              ),
-            ),
-            const SizedBox(width: 6),
-            // Tab name
-            Flexible(
-              child: Text(
-                tab.name,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isActive
-                      ? CodeOpsColors.textPrimary
-                      : CodeOpsColors.textSecondary,
-                ),
-              ),
-            ),
-            if (tab.isDirty) ...[
-              const SizedBox(width: 4),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: CodeOpsColors.warning,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
-            const SizedBox(width: 4),
-            // Close button
-            InkWell(
-              onTap: onClose,
-              borderRadius: BorderRadius.circular(4),
-              child: const Padding(
-                padding: EdgeInsets.all(2),
-                child: Icon(
-                  Icons.close,
-                  size: 12,
-                  color: CodeOpsColors.textTertiary,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

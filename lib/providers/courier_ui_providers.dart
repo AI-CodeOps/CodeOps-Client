@@ -151,3 +151,182 @@ final selectedNodeIdProvider = StateProvider<String?>((ref) => null);
 /// Current sort order for the collection sidebar.
 final sidebarSortProvider =
     StateProvider<SidebarSortOrder>((ref) => SidebarSortOrder.manual);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Request Edit State (CCF-003)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Sentinel used to distinguish "not set" from null in copyWith.
+const _absent = Object();
+
+/// Per-request connection and transport settings.
+class RequestSettingsState {
+  /// Whether to follow 3xx redirects automatically.
+  final bool followRedirects;
+
+  /// Request timeout in milliseconds.
+  final int timeoutMs;
+
+  /// Whether to verify SSL/TLS certificates.
+  final bool sslVerify;
+
+  /// Optional HTTP proxy URL.
+  final String? proxyUrl;
+
+  /// Creates a [RequestSettingsState] with defaults.
+  const RequestSettingsState({
+    this.followRedirects = true,
+    this.timeoutMs = 30000,
+    this.sslVerify = true,
+    this.proxyUrl,
+  });
+
+  /// Returns a copy with optionally updated fields.
+  RequestSettingsState copyWith({
+    bool? followRedirects,
+    int? timeoutMs,
+    bool? sslVerify,
+    Object? proxyUrl = _absent,
+  }) {
+    return RequestSettingsState(
+      followRedirects: followRedirects ?? this.followRedirects,
+      timeoutMs: timeoutMs ?? this.timeoutMs,
+      sslVerify: sslVerify ?? this.sslVerify,
+      proxyUrl: identical(proxyUrl, _absent) ? this.proxyUrl : proxyUrl as String?,
+    );
+  }
+}
+
+/// Editable state for the request currently displayed in the builder.
+///
+/// Tracks the method, URL, dirty flag, and transport settings for the active
+/// request tab. Updated by the URL bar and settings panel as the user edits.
+class RequestEditState {
+  /// HTTP method currently selected.
+  final CourierHttpMethod method;
+
+  /// URL currently entered (may contain unresolved `{{variables}}`).
+  final String url;
+
+  /// Whether the state has unsaved changes relative to the server.
+  final bool isDirty;
+
+  /// Transport and connection settings for this request.
+  final RequestSettingsState settings;
+
+  /// Creates a [RequestEditState] with defaults.
+  const RequestEditState({
+    this.method = CourierHttpMethod.get,
+    this.url = '',
+    this.isDirty = false,
+    this.settings = const RequestSettingsState(),
+  });
+
+  /// Returns a copy with optionally updated fields.
+  RequestEditState copyWith({
+    CourierHttpMethod? method,
+    String? url,
+    bool? isDirty,
+    RequestSettingsState? settings,
+  }) {
+    return RequestEditState(
+      method: method ?? this.method,
+      url: url ?? this.url,
+      isDirty: isDirty ?? this.isDirty,
+      settings: settings ?? this.settings,
+    );
+  }
+}
+
+/// Manages [RequestEditState] mutations.
+class RequestEditNotifier extends StateNotifier<RequestEditState> {
+  /// Creates a [RequestEditNotifier] with default state.
+  RequestEditNotifier() : super(const RequestEditState());
+
+  /// Sets the HTTP method and marks the state dirty.
+  void setMethod(CourierHttpMethod method) =>
+      state = state.copyWith(method: method, isDirty: true);
+
+  /// Sets the URL and marks the state dirty.
+  void setUrl(String url) => state = state.copyWith(url: url, isDirty: true);
+
+  /// Updates transport settings without affecting the dirty flag.
+  void setSettings(RequestSettingsState settings) =>
+      state = state.copyWith(settings: settings);
+
+  /// Loads a complete state (e.g. when switching tabs) and marks it clean.
+  void load(RequestEditState newState) =>
+      state = newState.copyWith(isDirty: false);
+
+  /// Clears the dirty flag after a successful save.
+  void markClean() => state = state.copyWith(isDirty: false);
+
+  /// Resets to defaults (used when a new empty tab is opened).
+  void reset() => state = const RequestEditState();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Execution State (CCF-003)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Status of an HTTP execution initiated from the request builder.
+enum ExecutionStatus {
+  /// No execution in progress; waiting for user action.
+  idle,
+
+  /// Request has been sent and is awaiting a response.
+  running,
+
+  /// Response received successfully (check executionResultProvider).
+  done,
+
+  /// Execution ended with an error (see [ExecutionState.error]).
+  error,
+}
+
+/// Tracks whether an HTTP execution is in progress, completed, or errored.
+class ExecutionState {
+  /// Current execution status.
+  final ExecutionStatus status;
+
+  /// Error message when [status] is [ExecutionStatus.error], otherwise null.
+  final String? error;
+
+  /// Creates an [ExecutionState].
+  const ExecutionState({
+    this.status = ExecutionStatus.idle,
+    this.error,
+  });
+}
+
+/// Manages [ExecutionState] transitions.
+class ExecutionNotifier extends StateNotifier<ExecutionState> {
+  /// Creates an [ExecutionNotifier] in the idle state.
+  ExecutionNotifier() : super(const ExecutionState());
+
+  /// Transitions to [ExecutionStatus.running].
+  void setRunning() =>
+      state = const ExecutionState(status: ExecutionStatus.running);
+
+  /// Transitions to [ExecutionStatus.done].
+  void setDone() =>
+      state = const ExecutionState(status: ExecutionStatus.done);
+
+  /// Transitions to [ExecutionStatus.error] with [error] message.
+  void setError(String error) =>
+      state = ExecutionState(status: ExecutionStatus.error, error: error);
+
+  /// Resets to [ExecutionStatus.idle].
+  void reset() => state = const ExecutionState();
+}
+
+/// The editable state of the active request (method, URL, settings, dirty flag).
+final activeRequestStateProvider =
+    StateNotifierProvider<RequestEditNotifier, RequestEditState>(
+        (ref) => RequestEditNotifier());
+
+/// Whether an HTTP execution is currently in progress.
+final executionStateProvider =
+    StateNotifierProvider<ExecutionNotifier, ExecutionState>(
+        (ref) => ExecutionNotifier());
+
