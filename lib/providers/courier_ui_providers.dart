@@ -457,3 +457,66 @@ final authJwtPayloadProvider = StateProvider<String>((ref) => '{}');
 /// JWT generated token (read-only display).
 final authJwtGeneratedTokenProvider = StateProvider<String>((ref) => '');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Script Edit State (CCF-007)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Pre-request script content for the active request tab.
+///
+/// Populated from [RequestScriptResponse] where `scriptType == PRE_REQUEST`
+/// when a request is loaded.
+final scriptPreRequestProvider = StateProvider<String>((ref) => '');
+
+/// Post-response script content for the active request tab.
+///
+/// Populated from [RequestScriptResponse] where `scriptType == POST_RESPONSE`
+/// when a request is loaded.
+final scriptPostResponseProvider = StateProvider<String>((ref) => '');
+
+/// Test script content for the active request tab.
+///
+/// Tests are a dedicated post-response script containing `courier.test()`
+/// assertions. Stored separately from the post-response script for UI clarity.
+final scriptTestsProvider = StateProvider<String>((ref) => '');
+
+/// Console output entries from script execution.
+///
+/// Each entry is a [ConsoleEntry] with timestamp, type (log/error/test), and
+/// message. Cleared by the "Clear Console" button.
+final scriptConsoleProvider =
+    StateProvider<List<ConsoleEntry>>((ref) => []);
+
+/// A single entry in the script execution console.
+class ConsoleEntry {
+  /// When this entry was produced.
+  final DateTime timestamp;
+
+  /// Entry type: `log`, `error`, `testPass`, or `testFail`.
+  final ConsoleEntryType type;
+
+  /// Display message.
+  final String message;
+
+  /// Creates a [ConsoleEntry].
+  const ConsoleEntry({
+    required this.timestamp,
+    required this.type,
+    required this.message,
+  });
+}
+
+/// Type of console output entry.
+enum ConsoleEntryType {
+  /// Standard `console.log()` output.
+  log,
+
+  /// Script execution error.
+  error,
+
+  /// A passing test assertion.
+  testPass,
+
+  /// A failing test assertion.
+  testFail,
+}
+

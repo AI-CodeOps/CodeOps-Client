@@ -4,9 +4,8 @@
 /// Save dropdown), the request sub-tab bar (Params | Headers | Body | Auth |
 /// Scripts | Tests | Settings), and the tab content area.
 ///
-/// Sub-tab content panels for Params, Headers, Body, Auth, Scripts, and Tests
-/// are stubs — CCF-004+ fills in each editor. The Settings panel is fully
-/// implemented via [RequestSettingsPanel].
+/// Sub-tab content panels: Params, Headers, Body, Auth, Scripts, Tests, and
+/// Settings are all fully implemented.
 library;
 
 import 'dart:async';
@@ -27,6 +26,8 @@ import 'body_tab.dart';
 import 'headers_tab.dart';
 import 'params_tab.dart';
 import 'request_settings_panel.dart';
+import 'scripts_tab.dart';
+import 'tests_tab.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // RequestBuilder
@@ -105,8 +106,8 @@ class _RequestBuilderState extends ConsumerState<RequestBuilder>
               HeadersTab(),
               BodyTab(),
               AuthTab(),
-              _ScriptsPanel(),
-              _TestsPanel(),
+              ScriptsTab(),
+              TestsTab(),
               RequestSettingsPanel(),
             ],
           ),
@@ -623,8 +624,10 @@ class _SubTabBar extends ConsumerWidget {
         .length;
     final hasBody = ref.watch(bodyTypeProvider) != BodyType.none;
     final hasAuth = ref.watch(authTypeProvider) != AuthType.noAuth;
-    const hasScripts = false;
-    const hasTests = false;
+    final hasScripts =
+        ref.watch(scriptPreRequestProvider).isNotEmpty ||
+            ref.watch(scriptPostResponseProvider).isNotEmpty;
+    final hasTests = ref.watch(scriptTestsProvider).isNotEmpty;
 
     return Container(
       color: CodeOpsColors.surface,
@@ -706,38 +709,3 @@ class _SubTabBar extends ConsumerWidget {
 // Sub-tab content stubs (CCF-004+ implements each editor)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ScriptsPanel extends StatelessWidget {
-  const _ScriptsPanel();
-
-  @override
-  Widget build(BuildContext context) =>
-      _StubPanel(key: const Key('scripts_panel'), label: 'Scripts');
-}
-
-class _TestsPanel extends StatelessWidget {
-  const _TestsPanel();
-
-  @override
-  Widget build(BuildContext context) =>
-      _StubPanel(key: const Key('tests_panel'), label: 'Tests');
-}
-
-/// Placeholder shown for sub-tab panels not yet implemented.
-class _StubPanel extends StatelessWidget {
-  final String label;
-
-  const _StubPanel({super.key, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 13,
-          color: CodeOpsColors.textTertiary,
-        ),
-      ),
-    );
-  }
-}
