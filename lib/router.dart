@@ -89,6 +89,7 @@ import 'pages/courier/environment_manager_page.dart';
 import 'pages/courier/import_page.dart';
 import 'pages/courier/request_history_page.dart';
 import 'pages/courier/run_results_page.dart';
+import 'pages/mcp/activity_feed_page.dart';
 import 'pages/mcp/mcp_dashboard_page.dart';
 import 'pages/mcp/session_detail_page.dart';
 import 'pages/mcp/session_list_page.dart';
@@ -968,7 +969,7 @@ final GoRouter router = GoRouter(
           path: '/mcp/activity',
           name: 'mcp-activity',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Activity Feed'),
+            child: ActivityFeedPage(),
           ),
         ),
         // 89. MCP — Documents
