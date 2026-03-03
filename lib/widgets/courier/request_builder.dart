@@ -22,6 +22,7 @@ import '../../providers/courier_ui_providers.dart';
 import '../../providers/team_providers.dart';
 import '../../services/courier/http_execution_service.dart';
 import '../../theme/colors.dart';
+import 'body_tab.dart';
 import 'headers_tab.dart';
 import 'params_tab.dart';
 import 'request_settings_panel.dart';
@@ -101,7 +102,7 @@ class _RequestBuilderState extends ConsumerState<RequestBuilder>
             children: const [
               ParamsTab(),
               HeadersTab(),
-              _BodyPanel(),
+              BodyTab(),
               _AuthPanel(),
               _ScriptsPanel(),
               _TestsPanel(),
@@ -619,6 +620,7 @@ class _SubTabBar extends ConsumerWidget {
         .watch(requestHeadersProvider)
         .where((p) => p.enabled && p.key.isNotEmpty)
         .length;
+    final hasBody = ref.watch(bodyTypeProvider) != BodyType.none;
     const hasScripts = false;
     const hasTests = false;
 
@@ -639,7 +641,7 @@ class _SubTabBar extends ConsumerWidget {
         tabs: [
           _subTab('Params', badge: paramCount > 0 ? paramCount : null),
           _subTab('Headers', badge: headerCount > 0 ? headerCount : null),
-          _subTab('Body'),
+          _subTab('Body', dot: hasBody),
           _subTab('Auth'),
           _subTab('Scripts', dot: hasScripts),
           _subTab('Tests', dot: hasTests),
@@ -701,14 +703,6 @@ class _SubTabBar extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-tab content stubs (CCF-004+ implements each editor)
 // ─────────────────────────────────────────────────────────────────────────────
-
-class _BodyPanel extends StatelessWidget {
-  const _BodyPanel();
-
-  @override
-  Widget build(BuildContext context) =>
-      _StubPanel(key: const Key('body_panel'), label: 'Body');
-}
 
 class _AuthPanel extends StatelessWidget {
   const _AuthPanel();

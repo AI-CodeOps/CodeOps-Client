@@ -355,3 +355,38 @@ final requestHeadersProvider =
 final pathVariablesProvider =
     StateProvider<Map<String, String>>((ref) => {});
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Body Edit State (CCF-005)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The selected body type for the active request tab.
+///
+/// Defaults to [BodyType.none]. Updated by the body type selector radio row.
+final bodyTypeProvider = StateProvider<BodyType>((ref) => BodyType.none);
+
+/// Raw body content for raw-type bodies (JSON, XML, HTML, Text, YAML).
+///
+/// Populated from [RequestBodyResponse.rawContent] when a request is loaded.
+final bodyRawContentProvider = StateProvider<String>((ref) => '');
+
+/// Form data pairs for form-data and x-www-form-urlencoded bodies.
+///
+/// Populated from [RequestBodyResponse.formData] when a request is loaded.
+final bodyFormDataProvider =
+    StateProvider<List<KeyValuePair>>((ref) => []);
+
+/// GraphQL query string for GraphQL body type.
+///
+/// Populated from [RequestBodyResponse.graphqlQuery] when a request is loaded.
+final bodyGraphqlQueryProvider = StateProvider<String>((ref) => '');
+
+/// GraphQL variables JSON string for GraphQL body type.
+///
+/// Populated from [RequestBodyResponse.graphqlVariables] when loaded.
+final bodyGraphqlVariablesProvider = StateProvider<String>((ref) => '');
+
+/// Binary file name for binary body type.
+///
+/// Populated from [RequestBodyResponse.binaryFileName] when loaded.
+final bodyBinaryFileNameProvider = StateProvider<String>((ref) => '');
+
