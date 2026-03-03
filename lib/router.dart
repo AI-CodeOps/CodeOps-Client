@@ -1,4 +1,4 @@
-/// GoRouter configuration with all 84 application routes.
+/// GoRouter configuration with all 98 application routes.
 ///
 /// Uses an [AuthNotifier] listenable connected to [AuthService] for
 /// reactive auth state. Unauthenticated users are redirected to `/login`.
@@ -89,6 +89,7 @@ import 'pages/courier/environment_manager_page.dart';
 import 'pages/courier/import_page.dart';
 import 'pages/courier/request_history_page.dart';
 import 'pages/courier/run_results_page.dart';
+import 'pages/mcp/mcp_dashboard_page.dart';
 import 'pages/relay/relay_page.dart';
 import 'pages/scribe_page.dart';
 import 'pages/settings_page.dart';
@@ -118,7 +119,7 @@ class AuthNotifier extends ChangeNotifier {
 /// [AuthService] updates this when auth state changes.
 final AuthNotifier authNotifier = AuthNotifier();
 
-/// The application router with all 84 routes.
+/// The application router with all 98 routes.
 final GoRouter router = GoRouter(
   initialLocation: '/login',
   refreshListenable: authNotifier,
@@ -932,6 +933,126 @@ final GoRouter router = GoRouter(
               },
             ),
           ],
+        ),
+        // 85. MCP — Dashboard
+        GoRoute(
+          path: '/mcp',
+          name: 'mcp',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: McpDashboardPage(),
+          ),
+        ),
+        // 86. MCP — Sessions
+        GoRoute(
+          path: '/mcp/sessions',
+          name: 'mcp-sessions',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'MCP Sessions'),
+          ),
+        ),
+        // 87. MCP — Session Detail
+        GoRoute(
+          path: '/mcp/sessions/:sessionId',
+          name: 'mcp-session-detail',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Session ${state.pathParameters['sessionId']}',
+            ),
+          ),
+        ),
+        // 88. MCP — Activity Feed
+        GoRoute(
+          path: '/mcp/activity',
+          name: 'mcp-activity',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Activity Feed'),
+          ),
+        ),
+        // 89. MCP — Documents
+        GoRoute(
+          path: '/mcp/documents',
+          name: 'mcp-documents',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Document Management'),
+          ),
+        ),
+        // 90. MCP — Document Detail
+        GoRoute(
+          path: '/mcp/documents/:documentId',
+          name: 'mcp-document-detail',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Document ${state.pathParameters['documentId']}',
+            ),
+          ),
+        ),
+        // 91. MCP — Document Versions
+        GoRoute(
+          path: '/mcp/documents/:documentId/versions',
+          name: 'mcp-document-versions',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Document Versions',
+            ),
+          ),
+        ),
+        // 92. MCP — Context Viewer
+        GoRoute(
+          path: '/mcp/context',
+          name: 'mcp-context',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Context Viewer'),
+          ),
+        ),
+        // 93. MCP — Developer Profiles
+        GoRoute(
+          path: '/mcp/profiles',
+          name: 'mcp-profiles',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Developer Profiles'),
+          ),
+        ),
+        // 94. MCP — Developer Profile Detail
+        GoRoute(
+          path: '/mcp/profiles/:profileId',
+          name: 'mcp-profile-detail',
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: PlaceholderPage(
+              title: 'Profile ${state.pathParameters['profileId']}',
+            ),
+          ),
+        ),
+        // 95. MCP — Token Management
+        GoRoute(
+          path: '/mcp/profiles/:profileId/tokens',
+          name: 'mcp-profile-tokens',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Token Management'),
+          ),
+        ),
+        // 96. MCP — Convention Manager
+        GoRoute(
+          path: '/mcp/conventions',
+          name: 'mcp-conventions',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Convention Manager'),
+          ),
+        ),
+        // 97. MCP — Tool Call Audit Log
+        GoRoute(
+          path: '/mcp/audit-log',
+          name: 'mcp-audit-log',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'Tool Call Audit Log'),
+          ),
+        ),
+        // 98. MCP — Connection Status
+        GoRoute(
+          path: '/mcp/status',
+          name: 'mcp-status',
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: PlaceholderPage(title: 'MCP Connection Status'),
+          ),
         ),
       ],
     ),

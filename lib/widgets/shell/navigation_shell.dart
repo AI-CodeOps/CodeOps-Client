@@ -356,6 +356,14 @@ class _Sidebar extends ConsumerWidget {
                   currentPath: currentPath,
                   collapsed: collapsed,
                 ),
+                _SectionHeader('MCP', collapsed),
+                _NavItem(
+                  icon: Icons.psychology,
+                  label: 'MCP',
+                  path: '/mcp',
+                  currentPath: currentPath,
+                  collapsed: collapsed,
+                ),
               ],
             ),
           ),
@@ -832,6 +840,15 @@ class _TopBar extends StatelessWidget {
       '/courier/codegen': 'Code Generation',
       '/courier/import': 'Import',
       '/datalens': 'DataLens',
+      '/mcp': 'MCP Dashboard',
+      '/mcp/sessions': 'MCP Sessions',
+      '/mcp/activity': 'Activity Feed',
+      '/mcp/documents': 'Documents',
+      '/mcp/context': 'Context Viewer',
+      '/mcp/profiles': 'Developer Profiles',
+      '/mcp/conventions': 'Conventions',
+      '/mcp/audit-log': 'Audit Log',
+      '/mcp/status': 'Connection Status',
       '/logger': 'Logger',
       '/logger/viewer': 'Log Viewer',
       '/logger/search': 'Log Search',
@@ -848,6 +865,15 @@ class _TopBar extends StatelessWidget {
     if (path.startsWith('/logger/traces/')) return 'Trace Detail';
     if (path.startsWith('/logger/dashboards/')) return 'Dashboard Detail';
     if (path.startsWith('/logger/traps/')) return 'Trap Editor';
+    if (path.startsWith('/mcp/sessions/')) return 'Session Detail';
+    if (path.startsWith('/mcp/documents/') && path.endsWith('/versions')) {
+      return 'Document Versions';
+    }
+    if (path.startsWith('/mcp/documents/')) return 'Document Detail';
+    if (path.startsWith('/mcp/profiles/') && path.endsWith('/tokens')) {
+      return 'Token Management';
+    }
+    if (path.startsWith('/mcp/profiles/')) return 'Profile Detail';
     if (path.startsWith('/relay/')) return 'Relay';
     if (path.startsWith('/courier/request/')) return 'Courier';
     if (path.startsWith('/courier/collection/')) return 'Courier';
