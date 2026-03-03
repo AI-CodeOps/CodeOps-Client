@@ -90,6 +90,7 @@ import 'pages/courier/import_page.dart';
 import 'pages/courier/request_history_page.dart';
 import 'pages/courier/run_results_page.dart';
 import 'pages/mcp/activity_feed_page.dart';
+import 'pages/mcp/context_viewer_page.dart';
 import 'pages/mcp/document_detail_page.dart';
 import 'pages/mcp/document_management_page.dart';
 import 'pages/mcp/document_versions_page.dart';
@@ -1010,7 +1011,7 @@ final GoRouter router = GoRouter(
           path: '/mcp/context',
           name: 'mcp-context',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Context Viewer'),
+            child: ContextViewerPage(),
           ),
         ),
         // 93. MCP — Developer Profiles
