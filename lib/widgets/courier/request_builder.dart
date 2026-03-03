@@ -16,6 +16,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/courier_enums.dart';
 import '../../models/courier_models.dart';
+import '../../models/registry_enums.dart';
 import '../../providers/courier_providers.dart';
 import '../../providers/courier_ui_providers.dart';
 import '../../providers/team_providers.dart';
@@ -175,6 +176,8 @@ class _UrlBar extends ConsumerStatefulWidget {
 class _UrlBarState extends ConsumerState<_UrlBar> {
   late final TextEditingController _urlController;
   Timer? _autoSaveTimer;
+  bool _showSuggestions = false;
+  final _urlFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -196,6 +199,7 @@ class _UrlBarState extends ConsumerState<_UrlBar> {
   @override
   void dispose() {
     _urlController.dispose();
+    _urlFocusNode.dispose();
     _autoSaveTimer?.cancel();
     super.dispose();
   }
@@ -425,120 +429,148 @@ class _UrlBarState extends ConsumerState<_UrlBar> {
         ref.watch(executionStateProvider.select((s) => s.status));
     final isRunning = execStatus == ExecutionStatus.running;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      child: Row(
-        children: [
-          // Method dropdown.
-          _MethodDropdown(
-            method: editState.method,
-            onChanged: (m) {
-              ref.read(activeRequestStateProvider.notifier).setMethod(m);
-              _syncMethodToTab(m);
-              _scheduleAutoSave();
-            },
-          ),
-          const SizedBox(width: 8),
-          // URL field.
-          Expanded(
-            child: CallbackShortcuts(
-              bindings: {
-                const SingleActivator(LogicalKeyboardKey.enter): () {
-                  if (!isRunning) _send();
-                },
-              },
-              child: TextField(
-                key: const Key('url_field'),
-                controller: _urlController,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: CodeOpsColors.textPrimary,
-                  fontFamily: 'monospace',
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Enter URL or paste cURL',
-                  hintStyle: const TextStyle(
-                    fontSize: 13,
-                    color: CodeOpsColors.textTertiary,
-                  ),
-                  filled: true,
-                  fillColor: CodeOpsColors.background,
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: CodeOpsColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: const BorderSide(color: CodeOpsColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide:
-                        const BorderSide(color: CodeOpsColors.primary),
-                  ),
-                ),
-                onChanged: (v) {
-                  // Detect pasted cURL commands.
-                  if (v.trimLeft().startsWith('curl ')) {
-                    _detectAndImportCurl(v);
-                    return;
-                  }
-                  ref.read(activeRequestStateProvider.notifier).setUrl(v);
-                  _syncUrlToTab(v);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Row(
+            children: [
+              // Method dropdown.
+              _MethodDropdown(
+                method: editState.method,
+                onChanged: (m) {
+                  ref.read(activeRequestStateProvider.notifier).setMethod(m);
+                  _syncMethodToTab(m);
                   _scheduleAutoSave();
                 },
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Send / Cancel button.
-          isRunning
-              ? OutlinedButton(
-                  key: const Key('cancel_button'),
-                  onPressed: _cancel,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: CodeOpsColors.error,
-                    side: const BorderSide(color: CodeOpsColors.error),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+              const SizedBox(width: 8),
+              // URL field.
+              Expanded(
+                child: CallbackShortcuts(
+                  bindings: {
+                    const SingleActivator(LogicalKeyboardKey.enter): () {
+                      setState(() => _showSuggestions = false);
+                      if (!isRunning) _send();
+                    },
+                  },
+                  child: TextField(
+                    key: const Key('url_field'),
+                    controller: _urlController,
+                    focusNode: _urlFocusNode,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: CodeOpsColors.textPrimary,
+                      fontFamily: 'monospace',
                     ),
-                  ),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                )
-              : ElevatedButton(
-                  key: const Key('send_button'),
-                  onPressed:
-                      editState.url.trim().isNotEmpty ? _send : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: CodeOpsColors.primary,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        CodeOpsColors.primary.withAlpha(76),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                    decoration: InputDecoration(
+                      hintText: 'Enter URL or paste cURL',
+                      hintStyle: const TextStyle(
+                        fontSize: 13,
+                        color: CodeOpsColors.textTertiary,
+                      ),
+                      filled: true,
+                      fillColor: CodeOpsColors.background,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide:
+                            const BorderSide(color: CodeOpsColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide:
+                            const BorderSide(color: CodeOpsColors.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide:
+                            const BorderSide(color: CodeOpsColors.primary),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Send',
-                    style: TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600),
+                    onChanged: (v) {
+                      // Detect pasted cURL commands.
+                      if (v.trimLeft().startsWith('curl ')) {
+                        _detectAndImportCurl(v);
+                        return;
+                      }
+                      ref.read(activeRequestStateProvider.notifier).setUrl(v);
+                      _syncUrlToTab(v);
+                      _scheduleAutoSave();
+                      // Show suggestions when typing a URL prefix.
+                      setState(() => _showSuggestions =
+                          v.startsWith('http') && v.length >= 4);
+                    },
                   ),
                 ),
-          const SizedBox(width: 4),
-          // Save dropdown.
-          _SaveDropdown(onSave: _save),
-        ],
-      ),
+              ),
+              const SizedBox(width: 8),
+              // Send / Cancel button.
+              isRunning
+                  ? OutlinedButton(
+                      key: const Key('cancel_button'),
+                      onPressed: _cancel,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: CodeOpsColors.error,
+                        side: const BorderSide(color: CodeOpsColors.error),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
+                    )
+                  : ElevatedButton(
+                      key: const Key('send_button'),
+                      onPressed:
+                          editState.url.trim().isNotEmpty ? _send : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CodeOpsColors.primary,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor:
+                            CodeOpsColors.primary.withAlpha(76),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        'Send',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+              const SizedBox(width: 4),
+              // Save dropdown.
+              _SaveDropdown(onSave: _save),
+            ],
+          ),
+        ),
+
+        // ── Registry URL suggestions ─────────────────────────────────
+        if (_showSuggestions)
+          _RegistryUrlSuggestions(
+            key: const Key('url_suggestions'),
+            currentUrl: editState.url,
+            onSelect: (url) {
+              _urlController.text = url;
+              _urlController.selection =
+                  TextSelection.collapsed(offset: url.length);
+              ref.read(activeRequestStateProvider.notifier).setUrl(url);
+              _syncUrlToTab(url);
+              setState(() => _showSuggestions = false);
+            },
+            onDismiss: () => setState(() => _showSuggestions = false),
+          ),
+      ],
     );
   }
 
@@ -790,6 +822,149 @@ class _SubTabBar extends ConsumerWidget {
     }
     return Tab(text: label, height: 36);
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Registry URL suggestions overlay (CCF-014)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Inline suggestion list showing registered service base URLs and API routes.
+///
+/// Appears below the URL field when the user types an `http` prefix. Reads
+/// services from [registryServicesForCourierProvider] and filters by current
+/// URL text.
+class _RegistryUrlSuggestions extends ConsumerWidget {
+  final String currentUrl;
+  final void Function(String url) onSelect;
+  final VoidCallback onDismiss;
+
+  const _RegistryUrlSuggestions({
+    super.key,
+    required this.currentUrl,
+    required this.onSelect,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final servicesAsync = ref.watch(registryServicesForCourierProvider);
+    final services = servicesAsync.valueOrNull ?? [];
+
+    if (services.isEmpty) return const SizedBox.shrink();
+
+    // Build suggestions: base URLs from registered services.
+    final suggestions = <_UrlSuggestion>[];
+    for (final service in services) {
+      final portsAsync =
+          ref.watch(servicePortsForCourierProvider(service.id));
+      final ports = portsAsync.valueOrNull ?? [];
+      for (final port in ports) {
+        if (port.portType == PortType.httpApi) {
+          final baseUrl = 'http://localhost:${port.portNumber}';
+          if (baseUrl.contains(currentUrl) ||
+              currentUrl.startsWith(baseUrl)) {
+            suggestions.add(_UrlSuggestion(
+              url: baseUrl,
+              label: service.name,
+              isRoute: false,
+            ));
+
+            // If user has typed past the base URL, suggest routes.
+            if (currentUrl.startsWith(baseUrl)) {
+              final routesAsync =
+                  ref.watch(serviceApiRoutesProvider(service.id));
+              final routes = routesAsync.valueOrNull ?? [];
+              for (final route in routes) {
+                final fullUrl = '$baseUrl${route.routePrefix}';
+                if (fullUrl.startsWith(currentUrl)) {
+                  suggestions.add(_UrlSuggestion(
+                    url: fullUrl,
+                    label: '${route.routePrefix} (${route.httpMethods ?? 'ANY'})',
+                    isRoute: true,
+                  ));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (suggestions.isEmpty) return const SizedBox.shrink();
+
+    // Limit to 8 suggestions.
+    final limited = suggestions.take(8).toList();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: CodeOpsColors.surface,
+        border: Border.all(color: CodeOpsColors.border),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      constraints: const BoxConstraints(maxHeight: 200),
+      child: ListView.builder(
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        itemCount: limited.length,
+        itemBuilder: (_, i) {
+          final s = limited[i];
+          return InkWell(
+            onTap: () => onSelect(s.url),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    s.isRoute ? Icons.route : Icons.dns_outlined,
+                    size: 12,
+                    color: s.isRoute
+                        ? CodeOpsColors.secondary
+                        : CodeOpsColors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      s.url,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: CodeOpsColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    s.label,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: CodeOpsColors.textTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// URL suggestion entry.
+class _UrlSuggestion {
+  final String url;
+  final String label;
+  final bool isRoute;
+
+  const _UrlSuggestion({
+    required this.url,
+    required this.label,
+    required this.isRoute,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -13,10 +13,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/courier_enums.dart';
 import '../models/courier_models.dart';
 import '../models/health_snapshot.dart';
+import '../models/registry_models.dart';
 import '../services/cloud/courier_api.dart';
 import '../services/courier/http_execution_service.dart';
 import '../services/courier/variable_resolution_service.dart';
 import 'auth_providers.dart';
+import 'registry_providers.dart';
 import 'team_providers.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -400,3 +402,42 @@ final httpExecutionServiceProvider =
 /// been fired in the current session.
 final executionResultProvider =
     StateProvider<HttpExecutionResult?>((ref) => null);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Registry Integration (CCF-014)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Re-exports registry services for Courier's service discovery panel.
+///
+/// Returns all active services registered in the Registry for the current
+/// team. Consumed by [RegistryServicePanel].
+final registryServicesForCourierProvider =
+    FutureProvider<List<ServiceRegistrationResponse>>((ref) {
+  final teamId = ref.watch(selectedTeamIdProvider);
+  if (teamId == null) return [];
+  final api = ref.watch(registryApiProvider);
+  return api
+      .getServicesForTeam(teamId)
+      .then((page) => page.content);
+});
+
+/// Fetches API routes for a single service.
+///
+/// Used by the service discovery panel and URL autocomplete to suggest
+/// registered route prefixes for a given service.
+final serviceApiRoutesProvider =
+    FutureProvider.family<List<ApiRouteResponse>, String>(
+        (ref, serviceId) {
+  final api = ref.watch(registryApiProvider);
+  return api.getRoutesForService(serviceId);
+});
+
+/// Fetches ports for a single service (dev environment).
+///
+/// Used to construct base URLs like `http://localhost:{port}`.
+final servicePortsForCourierProvider =
+    FutureProvider.family<List<PortAllocationResponse>, String>(
+        (ref, serviceId) {
+  final api = ref.watch(registryApiProvider);
+  return api.getPortsForService(serviceId, environment: 'dev');
+});
