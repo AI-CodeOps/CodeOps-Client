@@ -390,3 +390,70 @@ final bodyGraphqlVariablesProvider = StateProvider<String>((ref) => '');
 /// Populated from [RequestBodyResponse.binaryFileName] when loaded.
 final bodyBinaryFileNameProvider = StateProvider<String>((ref) => '');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth Edit State (CCF-006)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// The selected auth type for the active request tab.
+///
+/// Defaults to [AuthType.noAuth]. Updated by the auth type dropdown.
+final authTypeProvider = StateProvider<AuthType>((ref) => AuthType.noAuth);
+
+/// API Key header name (e.g. `X-API-Key`).
+final authApiKeyHeaderProvider = StateProvider<String>((ref) => '');
+
+/// API Key value (supports `{{variables}}`).
+final authApiKeyValueProvider = StateProvider<String>((ref) => '');
+
+/// Where to add the API Key: `header` or `query`.
+final authApiKeyAddToProvider = StateProvider<String>((ref) => 'header');
+
+/// Bearer token value (supports `{{variables}}`).
+final authBearerTokenProvider = StateProvider<String>((ref) => '');
+
+/// Bearer token prefix (default `Bearer`).
+final authBearerPrefixProvider = StateProvider<String>((ref) => 'Bearer');
+
+/// Basic auth username.
+final authBasicUsernameProvider = StateProvider<String>((ref) => '');
+
+/// Basic auth password.
+final authBasicPasswordProvider = StateProvider<String>((ref) => '');
+
+/// OAuth 2.0 authorization URL.
+final authOAuth2AuthUrlProvider = StateProvider<String>((ref) => '');
+
+/// OAuth 2.0 access token URL.
+final authOAuth2TokenUrlProvider = StateProvider<String>((ref) => '');
+
+/// OAuth 2.0 client ID.
+final authOAuth2ClientIdProvider = StateProvider<String>((ref) => '');
+
+/// OAuth 2.0 client secret.
+final authOAuth2ClientSecretProvider = StateProvider<String>((ref) => '');
+
+/// OAuth 2.0 scope.
+final authOAuth2ScopeProvider = StateProvider<String>((ref) => '');
+
+/// OAuth 2.0 callback/redirect URI.
+final authOAuth2CallbackUrlProvider =
+    StateProvider<String>((ref) => 'https://localhost/callback');
+
+/// OAuth 2.0 access token (obtained from token exchange).
+final authOAuth2AccessTokenProvider = StateProvider<String>((ref) => '');
+
+/// OAuth 2.0 grant type string stored for server persistence.
+final authOAuth2GrantTypeProvider = StateProvider<String>((ref) => '');
+
+/// JWT signing algorithm.
+final authJwtAlgorithmProvider = StateProvider<String>((ref) => 'HS256');
+
+/// JWT secret or private key.
+final authJwtSecretProvider = StateProvider<String>((ref) => '');
+
+/// JWT payload as JSON string.
+final authJwtPayloadProvider = StateProvider<String>((ref) => '{}');
+
+/// JWT generated token (read-only display).
+final authJwtGeneratedTokenProvider = StateProvider<String>((ref) => '');
+
