@@ -91,6 +91,7 @@ import 'pages/courier/request_history_page.dart';
 import 'pages/courier/run_results_page.dart';
 import 'pages/mcp/activity_feed_page.dart';
 import 'pages/mcp/context_viewer_page.dart';
+import 'pages/mcp/convention_manager_page.dart';
 import 'pages/mcp/developer_profile_detail_page.dart';
 import 'pages/mcp/developer_profiles_page.dart';
 import 'pages/mcp/document_detail_page.dart';
@@ -1050,7 +1051,7 @@ final GoRouter router = GoRouter(
           path: '/mcp/conventions',
           name: 'mcp-conventions',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: PlaceholderPage(title: 'Convention Manager'),
+            child: ConventionManagerPage(),
           ),
         ),
         // 97. MCP — Tool Call Audit Log
