@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/datalens_models.dart';
 import '../../providers/datalens_providers.dart';
 import '../../theme/colors.dart';
+import '../../pages/datalens/er_diagram_page.dart';
 import '../../widgets/shared/empty_state.dart';
 import 'columns_tab.dart';
 import 'data_browser_tab.dart';
@@ -60,11 +61,7 @@ class TablePropertiesPanel extends ConsumerWidget {
             child: switch (selectedTab) {
               0 => _buildPropertiesTab(tableInfo, ref),
               1 => const DataBrowserTab(),
-              2 => const EmptyState(
-                  icon: Icons.schema_outlined,
-                  title: 'ER Diagram',
-                  subtitle: 'Coming soon.',
-                ),
+              2 => ErDiagramPage(focusTable: selectedTableName),
               _ => const SizedBox.shrink(),
             },
           ),
