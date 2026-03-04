@@ -97,21 +97,21 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
   Future<String> getServerVersion() async {
     final conn = _requireConnection();
     final result = await conn.execute('SHOW server_version');
-    return result.first.first as String;
+    return result.first.first.toString();
   }
 
   @override
   Future<String> getCurrentDatabase() async {
     final conn = _requireConnection();
     final result = await conn.execute('SELECT current_database()');
-    return result.first.first as String;
+    return result.first.first.toString();
   }
 
   @override
   Future<String> getCurrentUser() async {
     final conn = _requireConnection();
     final result = await conn.execute('SELECT current_user');
-    return result.first.first as String;
+    return result.first.first.toString();
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -140,8 +140,8 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     return result.map((row) {
       final m = row.toColumnMap();
       return SchemaInfo(
-        name: m['schema_name'] as String?,
-        owner: m['schema_owner'] as String?,
+        name: _str(m['schema_name']),
+        owner: _str(m['schema_owner']),
         tableCount: m['table_count'] as int?,
         viewCount: m['view_count'] as int?,
         sequenceCount: m['sequence_count'] as int?,
@@ -181,17 +181,17 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
       final m = row.toColumnMap();
       return TableInfo(
         schemaName: schemaName,
-        tableName: m['table_name'] as String?,
-        tableComment: m['comment'] as String?,
-        objectType: _mapRelKind(m['rel_kind'] as String?),
+        tableName: _str(m['table_name']),
+        tableComment: _str(m['comment']),
+        objectType: _mapRelKind(_str(m['rel_kind'])),
         rowEstimate: _toInt(m['row_estimate']),
-        tableSize: m['table_size'] as String?,
-        totalSize: m['total_size'] as String?,
-        owner: m['owner'] as String?,
+        tableSize: _str(m['table_size']),
+        totalSize: _str(m['total_size']),
+        owner: _str(m['owner']),
         hasRls: m['has_rls'] as bool?,
         isPartitioned: m['is_partitioned'] as bool?,
-        partitionKey: m['partition_key'] as String?,
-        tablespace: m['tablespace'] as String?,
+        partitionKey: _str(m['partition_key']),
+        tablespace: _str(m['tablespace']),
       );
     }).toList();
   }
@@ -218,7 +218,7 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
       ''', types: [pg.Type.text, pg.Type.text]),
       parameters: [schemaName, tableName],
     );
-    final pkColumns = pkResult.map((r) => r.first as String).toSet();
+    final pkColumns = pkResult.map((r) => r.first.toString()).toSet();
 
     // Foreign key columns.
     final fkResult = await conn.execute(
@@ -234,7 +234,7 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
       ''', types: [pg.Type.text, pg.Type.text]),
       parameters: [schemaName, tableName],
     );
-    final fkColumns = fkResult.map((r) => r.first as String).toSet();
+    final fkColumns = fkResult.map((r) => r.first.toString()).toSet();
 
     // Full column metadata.
     final result = await conn.execute(
@@ -266,24 +266,24 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
 
     return result.map((row) {
       final m = row.toColumnMap();
-      final colName = m['column_name'] as String?;
-      final colDefault = m['column_default'] as String?;
-      final isIdentity = (m['is_identity'] as String?) == 'YES';
+      final colName = _str(m['column_name']);
+      final colDefault = _str(m['column_default']);
+      final isIdentity = (_str(m['is_identity'])) == 'YES';
 
       return ColumnInfo(
         columnName: colName,
         ordinalPosition: m['ordinal_position'] as int?,
-        dataType: m['data_type'] as String?,
-        udtName: m['udt_name'] as String?,
-        isNullable: (m['is_nullable'] as String?) == 'YES',
+        dataType: _str(m['data_type']),
+        udtName: _str(m['udt_name']),
+        isNullable: (_str(m['is_nullable'])) == 'YES',
         columnDefault: colDefault,
         isIdentity: isIdentity,
-        identityGeneration: m['identity_generation'] as String?,
+        identityGeneration: _str(m['identity_generation']),
         characterMaxLength: m['character_maximum_length'] as int?,
         numericPrecision: m['numeric_precision'] as int?,
         numericScale: m['numeric_scale'] as int?,
-        collation: m['collation_name'] as String?,
-        comment: m['comment'] as String?,
+        collation: _str(m['collation_name']),
+        comment: _str(m['comment']),
         category: _categorizeColumn(
           colName, colDefault, isIdentity, pkColumns, fkColumns,
         ),
@@ -328,12 +328,12 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     return result.map((row) {
       final m = row.toColumnMap();
       return ConstraintInfo(
-        constraintName: m['constraint_name'] as String?,
-        constraintType: _mapConstraintType(m['constraint_type'] as String?),
+        constraintName: _str(m['constraint_name']),
+        constraintType: _mapConstraintType(_str(m['constraint_type'])),
         columns: _toStringList(m['columns']),
-        checkExpression: m['check_clause'] as String?,
-        isDeferrable: (m['is_deferrable'] as String?) == 'YES',
-        isDeferred: (m['initially_deferred'] as String?) == 'YES',
+        checkExpression: _str(m['check_clause']),
+        isDeferrable: (_str(m['is_deferrable'])) == 'YES',
+        isDeferred: (_str(m['initially_deferred'])) == 'YES',
       );
     }).toList();
   }
@@ -379,13 +379,13 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     return result.map((row) {
       final m = row.toColumnMap();
       return ForeignKeyInfo(
-        constraintName: m['constraint_name'] as String?,
+        constraintName: _str(m['constraint_name']),
         columns: _toStringList(m['columns']),
-        referencedSchema: m['ref_schema'] as String?,
-        referencedTable: m['ref_table'] as String?,
+        referencedSchema: _str(m['ref_schema']),
+        referencedTable: _str(m['ref_table']),
         referencedColumns: _toStringList(m['ref_columns']),
-        onUpdate: m['update_rule'] as String?,
-        onDelete: m['delete_rule'] as String?,
+        onUpdate: _str(m['update_rule']),
+        onDelete: _str(m['delete_rule']),
       );
     }).toList();
   }
@@ -431,13 +431,13 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     return result.map((row) {
       final m = row.toColumnMap();
       return ForeignKeyInfo(
-        constraintName: m['constraint_name'] as String?,
+        constraintName: _str(m['constraint_name']),
         columns: _toStringList(m['columns']),
-        referencedSchema: m['src_schema'] as String?,
-        referencedTable: m['src_table'] as String?,
+        referencedSchema: _str(m['src_schema']),
+        referencedTable: _str(m['src_table']),
         referencedColumns: _toStringList(m['ref_columns']),
-        onUpdate: m['update_rule'] as String?,
-        onDelete: m['delete_rule'] as String?,
+        onUpdate: _str(m['update_rule']),
+        onDelete: _str(m['delete_rule']),
       );
     }).toList();
   }
@@ -481,14 +481,14 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     return result.map((row) {
       final m = row.toColumnMap();
       return IndexInfo(
-        indexName: m['index_name'] as String?,
-        indexType: _mapIndexType(m['index_type'] as String?),
+        indexName: _str(m['index_name']),
+        indexType: _mapIndexType(_str(m['index_type'])),
         columns: _toStringList(m['columns']),
         isUnique: m['is_unique'] as bool?,
         isPrimary: m['is_primary'] as bool?,
-        indexSize: m['index_size'] as String?,
-        condition: m['condition'] as String?,
-        tablespace: m['tablespace'] as String?,
+        indexSize: _str(m['index_size']),
+        condition: _str(m['condition']),
+        tablespace: _str(m['tablespace']),
         isValid: m['is_valid'] as bool?,
       );
     }).toList();
@@ -530,17 +530,17 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     return result.map((row) {
       final m = row.toColumnMap();
       return SequenceInfo(
-        sequenceName: m['sequence_name'] as String?,
-        schemaName: m['sequence_schema'] as String?,
-        dataType: m['data_type'] as String?,
+        sequenceName: _str(m['sequence_name']),
+        schemaName: _str(m['sequence_schema']),
+        dataType: _str(m['data_type']),
         startValue: _toInt(m['start_value']),
         minValue: _toInt(m['minimum_value']),
         maxValue: _toInt(m['maximum_value']),
         increment: _toInt(m['increment']),
         currentValue: _toInt(m['current_value']),
-        isCycled: (m['cycle_option'] as String?) == 'YES',
-        ownedByTable: m['owned_by_table'] as String?,
-        ownedByColumn: m['owned_by_column'] as String?,
+        isCycled: (_str(m['cycle_option'])) == 'YES',
+        ownedByTable: _str(m['owned_by_table']),
+        ownedByColumn: _str(m['owned_by_column']),
       );
     }).toList();
   }
@@ -702,7 +702,7 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     final result = await conn.execute(
       'SELECT pg_size_pretty(pg_database_size(current_database()))',
     );
-    return result.first.first as String;
+    return result.first.first.toString();
   }
 
   @override
@@ -735,14 +735,14 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     return result.map((row) {
       final m = row.toColumnMap();
       return TableInfo(
-        schemaName: m['schema_name'] as String?,
-        tableName: m['table_name'] as String?,
-        tableComment: m['comment'] as String?,
-        objectType: _mapRelKind(m['rel_kind'] as String?),
+        schemaName: _str(m['schema_name']),
+        tableName: _str(m['table_name']),
+        tableComment: _str(m['comment']),
+        objectType: _mapRelKind(_str(m['rel_kind'])),
         rowEstimate: _toInt(m['row_estimate']),
-        tableSize: m['table_size'] as String?,
-        totalSize: m['total_size'] as String?,
-        owner: m['owner'] as String?,
+        tableSize: _str(m['table_size']),
+        totalSize: _str(m['total_size']),
+        owner: _str(m['owner']),
       );
     }).toList();
   }
@@ -774,7 +774,7 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
     final conn = _requireConnection();
     final prefix = analyze ? 'EXPLAIN ANALYZE' : 'EXPLAIN';
     final result = await conn.execute('$prefix $sql');
-    return result.map((row) => row.first as String).join('\n');
+    return result.map((row) => row.first.toString()).join('\n');
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -876,6 +876,14 @@ class PostgresqlDriver implements DatabaseDriverAdapter {
         trimmed.startsWith('WITH') ||
         trimmed.startsWith('TABLE') ||
         trimmed.startsWith('VALUES');
+  }
+
+  /// Safely converts a column value to [String], handling `UndecodedBytes`
+  /// from the `postgres` package which cannot be cast directly to [String].
+  String? _str(Object? value) {
+    if (value == null) return null;
+    if (value is String) return value;
+    return value.toString();
   }
 
   int? _toInt(Object? value) {
