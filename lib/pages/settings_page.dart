@@ -710,7 +710,7 @@ class _AboutSection extends ConsumerWidget {
         Text('About', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 24),
         _InfoRow('App Version', AppConstants.appVersion),
-        _InfoRow('Server URL', AppConstants.apiBaseUrl),
+        _InfoRow('Server URL', ref.watch(serverUrlProvider)),
         _InfoRow(
           'Server Health',
           metricsAsync.when(

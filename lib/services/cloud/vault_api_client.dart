@@ -44,9 +44,19 @@ class VaultApiClient {
     '/seal/status',
   ];
 
+  /// The server base URL used for token refresh (CodeOps-Server, not Vault).
+  final String _serverBaseUrl;
+
   /// Creates a [VaultApiClient] configured with the given [secureStorage].
-  VaultApiClient({required SecureStorageService secureStorage})
-      : _secureStorage = secureStorage {
+  ///
+  /// [serverBaseUrl] overrides [AppConstants.apiBaseUrl] for the token
+  /// refresh interceptor. The Vault base URL itself stays as
+  /// [AppConstants.vaultApiBaseUrl] (Vault is a separate local service).
+  VaultApiClient({
+    required SecureStorageService secureStorage,
+    String? serverBaseUrl,
+  })  : _secureStorage = secureStorage,
+        _serverBaseUrl = serverBaseUrl ?? AppConstants.apiBaseUrl {
     _dio = Dio(BaseOptions(
       baseUrl:
           '${AppConstants.vaultApiBaseUrl}${AppConstants.vaultApiPrefix}',
@@ -155,7 +165,7 @@ class VaultApiClient {
             // Refresh via CodeOps-Server (not Vault).
             final refreshDio = Dio(BaseOptions(
               baseUrl:
-                  '${AppConstants.apiBaseUrl}${AppConstants.apiPrefix}',
+                  '$_serverBaseUrl${AppConstants.apiPrefix}',
               headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',

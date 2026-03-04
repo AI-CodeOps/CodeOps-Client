@@ -34,6 +34,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
+  // Server URL
+  final _serverUrlController = TextEditingController();
+
   // Sign-in form
   final _signInFormKey = GlobalKey<FormState>();
   final _signInEmailController = TextEditingController();
@@ -59,6 +62,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
     _tabController.addListener(() {
       if (mounted) setState(() => _errorMessage = null);
     });
+    _serverUrlController.text = ref.read(serverUrlProvider);
     _restoreRememberedCredentials();
   }
 
@@ -81,6 +85,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
   @override
   void dispose() {
     _tabController.dispose();
+    _serverUrlController.dispose();
     _signInEmailController.dispose();
     _signInPasswordController.dispose();
     _registerNameController.dispose();
@@ -88,6 +93,25 @@ class _LoginPageState extends ConsumerState<LoginPage>
     _registerPasswordController.dispose();
     _registerConfirmController.dispose();
     super.dispose();
+  }
+
+  void _applyServerUrl() {
+    final url = _serverUrlController.text.trim();
+    if (url.isEmpty) return;
+
+    final uri = Uri.tryParse(url);
+    if (uri == null ||
+        (!uri.isScheme('http') && !uri.isScheme('https')) ||
+        uri.host.isEmpty) {
+      setState(() => _errorMessage = 'Invalid server URL. Use http:// or https://');
+      return;
+    }
+
+    // Strip trailing slash for consistency.
+    final normalized = url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+    ref.read(serverUrlProvider.notifier).state = normalized;
+    ref.read(secureStorageProvider).setServerUrl(normalized);
+    setState(() => _errorMessage = null);
   }
 
   Future<void> _handleSignIn() async {
@@ -197,7 +221,71 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     color: CodeOpsColors.textTertiary,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+
+                // Server URL field
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.dns_outlined,
+                      size: 16,
+                      color: CodeOpsColors.textTertiary,
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      'Server',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: CodeOpsColors.textTertiary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SizedBox(
+                        height: 32,
+                        child: TextField(
+                          controller: _serverUrlController,
+                          style: const TextStyle(fontSize: 12),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              borderSide: const BorderSide(
+                                color: CodeOpsColors.border,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              borderSide: const BorderSide(
+                                color: CodeOpsColors.border,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        iconSize: 18,
+                        tooltip: 'Apply server URL',
+                        icon: const Icon(
+                          Icons.check_circle_outline,
+                          color: CodeOpsColors.textTertiary,
+                        ),
+                        onPressed: _applyServerUrl,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
                 // Card with tabs
                 Container(

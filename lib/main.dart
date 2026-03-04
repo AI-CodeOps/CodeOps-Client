@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
+import 'providers/auth_providers.dart';
+import 'services/auth/secure_storage.dart';
 import 'services/logging/log_config.dart';
 import 'services/logging/log_service.dart';
 
@@ -33,7 +35,17 @@ void main() async {
     await windowManager.focus();
   });
 
+  // Seed the server URL provider from persisted storage.
+  final storage = SecureStorageService();
+  final savedUrl = await storage.getServerUrl();
+
   log.i('App', 'CodeOps starting');
 
-  runApp(const ProviderScope(child: CodeOpsApp()));
+  runApp(ProviderScope(
+    overrides: [
+      if (savedUrl != null && savedUrl.isNotEmpty)
+        serverUrlProvider.overrideWith((ref) => savedUrl),
+    ],
+    child: const CodeOpsApp(),
+  ));
 }

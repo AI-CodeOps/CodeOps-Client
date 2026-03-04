@@ -19,12 +19,21 @@ import '../../utils/constants.dart';
 /// Handles subscriptions to channels, DMs, presence, and events.
 /// Auto-reconnects on disconnect with exponential backoff.
 class RelayWebSocketService {
+  /// Optional override for the WebSocket URL.
+  final String? _webSocketUrl;
+
   WebSocketChannel? _channel;
   Timer? _heartbeatTimer;
   Timer? _reconnectTimer;
   int _reconnectAttempts = 0;
   bool _intentionalDisconnect = false;
   String? _accessToken;
+
+  /// Creates a [RelayWebSocketService].
+  ///
+  /// When [webSocketUrl] is provided it replaces
+  /// [AppConstants.relayWebSocketUrl] for the connection endpoint.
+  RelayWebSocketService({String? webSocketUrl}) : _webSocketUrl = webSocketUrl;
 
   final _connectionStateController =
       StreamController<RelayWebSocketState>.broadcast();
@@ -59,8 +68,9 @@ class RelayWebSocketService {
     _setState(RelayWebSocketState.connecting);
 
     try {
+      final wsUrl = _webSocketUrl ?? AppConstants.relayWebSocketUrl;
       final uri = Uri.parse(
-        '${AppConstants.relayWebSocketUrl}?token=$accessToken',
+        '$wsUrl?token=$accessToken',
       );
       _channel = WebSocketChannel.connect(uri);
       await _channel!.ready;

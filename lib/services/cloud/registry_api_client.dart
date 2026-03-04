@@ -34,12 +34,19 @@ class RegistryApiClient {
   /// Callback invoked when token refresh fails (triggers logout).
   VoidCallback? onAuthFailure;
 
+  /// The effective server base URL used for token refresh.
+  final String _serverBaseUrl;
+
   /// Creates a [RegistryApiClient] configured with the given [secureStorage].
-  RegistryApiClient({required SecureStorageService secureStorage})
-      : _secureStorage = secureStorage {
+  ///
+  /// When [baseUrl] is provided it replaces [AppConstants.apiBaseUrl]
+  /// as the server origin for all requests (including token refresh).
+  RegistryApiClient({required SecureStorageService secureStorage, String? baseUrl})
+      : _secureStorage = secureStorage,
+        _serverBaseUrl = baseUrl ?? AppConstants.apiBaseUrl {
     _dio = Dio(BaseOptions(
       baseUrl:
-          '${AppConstants.apiBaseUrl}${AppConstants.apiPrefix}/registry',
+          '$_serverBaseUrl${AppConstants.apiPrefix}/registry',
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 15),
@@ -140,7 +147,7 @@ class RegistryApiClient {
             // Refresh via CodeOps-Server (not Registry).
             final refreshDio = Dio(BaseOptions(
               baseUrl:
-                  '${AppConstants.apiBaseUrl}${AppConstants.apiPrefix}',
+                  '$_serverBaseUrl${AppConstants.apiPrefix}',
               headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',

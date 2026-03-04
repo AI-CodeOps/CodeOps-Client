@@ -34,8 +34,16 @@ final relayApiProvider = Provider<RelayApiService>((ref) {
 });
 
 /// Provides the [RelayWebSocketService] singleton.
+///
+/// Derives the WebSocket URL from [serverUrlProvider] by replacing the
+/// HTTP scheme with `ws` and appending `/ws/relay`.
 final relayWebSocketProvider = Provider<RelayWebSocketService>((ref) {
-  final service = RelayWebSocketService();
+  final serverUrl = ref.watch(serverUrlProvider);
+  final wsUrl = serverUrl
+          .replaceFirst('https://', 'wss://')
+          .replaceFirst('http://', 'ws://') +
+      '/ws/relay';
+  final service = RelayWebSocketService(webSocketUrl: wsUrl);
   ref.onDispose(() => service.dispose());
   return service;
 });

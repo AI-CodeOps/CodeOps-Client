@@ -13,16 +13,28 @@ import '../models/user.dart';
 import '../services/auth/auth_service.dart';
 import '../services/auth/secure_storage.dart';
 import '../services/cloud/api_client.dart';
+import '../utils/constants.dart';
 
 /// Provides the [SecureStorageService] singleton.
 final secureStorageProvider = Provider<SecureStorageService>(
   (ref) => SecureStorageService(),
 );
 
+/// Provides the user-configured server URL (runtime-editable).
+///
+/// Defaults to [AppConstants.apiBaseUrl]. Overridden at startup from
+/// persisted storage, and updated from the login page server URL field.
+final serverUrlProvider =
+    StateProvider<String>((ref) => AppConstants.apiBaseUrl);
+
 /// Provides the [ApiClient] singleton, configured with secure storage.
+///
+/// Rebuilds whenever [serverUrlProvider] changes so all API calls
+/// target the user-configured server.
 final apiClientProvider = Provider<ApiClient>((ref) {
   final secureStorage = ref.watch(secureStorageProvider);
-  return ApiClient(secureStorage: secureStorage);
+  final baseUrl = ref.watch(serverUrlProvider);
+  return ApiClient(secureStorage: secureStorage, baseUrl: baseUrl);
 });
 
 /// Provides the local Drift database singleton.
