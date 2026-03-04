@@ -15,7 +15,7 @@ class AppConstants {
   static const String appVersion = '1.0.0';
 
   /// CodeOps-Server base URL (core + registry + logger + courier modules).
-  static const String apiBaseUrl = 'http://localhost:8090';
+  static const String apiBaseUrl = 'http://codeops-server.employbridgeai.com:8090';
 
   /// API path prefix for all endpoints.
   static const String apiPrefix = '/api/v1';
@@ -134,6 +134,9 @@ class AppConstants {
 
   /// Debounce duration in milliseconds for agent config auto-save.
   static const int agentConfigSaveDebounceMs = 500;
+
+  /// Secure storage key for the user-configured server URL.
+  static const String keyServerUrl = 'server_url';
 
   /// Secure storage key for the "Remember Me" toggle state.
   static const String keyRememberMe = 'remember_me';
@@ -415,7 +418,7 @@ class AppConstants {
   // -------------------------------------------------------------------------
 
   /// WebSocket URL for real-time Relay messaging.
-  static const String relayWebSocketUrl = 'ws://localhost:8090/ws/relay';
+  static const String relayWebSocketUrl = 'ws://codeops-server.employbridgeai.com:8090/ws/relay';
 
   /// Heartbeat interval in seconds for Relay WebSocket keep-alive.
   static const int relayHeartbeatIntervalSeconds = 30;

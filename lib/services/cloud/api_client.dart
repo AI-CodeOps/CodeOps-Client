@@ -44,10 +44,14 @@ class ApiClient {
   ];
 
   /// Creates an [ApiClient] configured with the given [secureStorage].
-  ApiClient({required SecureStorageService secureStorage})
+  ///
+  /// When [baseUrl] is provided it replaces [AppConstants.apiBaseUrl]
+  /// as the server origin for all requests.
+  ApiClient({required SecureStorageService secureStorage, String? baseUrl})
       : _secureStorage = secureStorage {
+    final effectiveBase = baseUrl ?? AppConstants.apiBaseUrl;
     _dio = Dio(BaseOptions(
-      baseUrl: '${AppConstants.apiBaseUrl}${AppConstants.apiPrefix}',
+      baseUrl: '$effectiveBase${AppConstants.apiPrefix}',
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 15),

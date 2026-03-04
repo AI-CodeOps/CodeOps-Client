@@ -76,6 +76,14 @@ class SecureStorageService {
     await (await _storage).remove(key);
   }
 
+  /// Reads the configured server URL, or null if using the default.
+  Future<String?> getServerUrl() async =>
+      (await _storage).getString(AppConstants.keyServerUrl);
+
+  /// Persists the configured server URL to storage.
+  Future<void> setServerUrl(String url) async =>
+      (await _storage).setString(AppConstants.keyServerUrl, url);
+
   /// Reads the Anthropic API key, or null if not stored.
   Future<String?> getAnthropicApiKey() async =>
       (await _storage).getString(AppConstants.keyAnthropicApiKey);
@@ -91,7 +99,8 @@ class SecureStorageService {
   /// Clears session data on logout, preserving "Remember Me" credentials
   /// and the Anthropic API key.
   Future<void> clearAll() async {
-    log.d('SecureStorage', 'Clear all (preserving remember-me + API key)');
+    log.d('SecureStorage',
+        'Clear all (preserving remember-me + API key + server URL)');
     final prefs = await _storage;
 
     // Preserve remember-me data across logout.
@@ -101,6 +110,9 @@ class SecureStorageService {
 
     // Preserve Anthropic API key across logout.
     final anthropicKey = prefs.getString(AppConstants.keyAnthropicApiKey);
+
+    // Preserve server URL across logout.
+    final serverUrl = prefs.getString(AppConstants.keyServerUrl);
 
     await prefs.clear();
 
@@ -118,6 +130,11 @@ class SecureStorageService {
     // Restore Anthropic API key.
     if (anthropicKey != null) {
       await prefs.setString(AppConstants.keyAnthropicApiKey, anthropicKey);
+    }
+
+    // Restore server URL.
+    if (serverUrl != null) {
+      await prefs.setString(AppConstants.keyServerUrl, serverUrl);
     }
   }
 }

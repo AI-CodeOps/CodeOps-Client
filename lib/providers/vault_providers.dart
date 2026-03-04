@@ -25,11 +25,16 @@ import 'team_providers.dart';
 /// Provides the [VaultApiClient] singleton, configured for port 8097.
 ///
 /// Watches [selectedTeamIdProvider] so the `X-Team-Id` header is always
-/// in sync with the currently selected team.
+/// in sync with the currently selected team. Passes [serverUrlProvider]
+/// as the token-refresh server origin.
 final vaultApiClientProvider = Provider<VaultApiClient>((ref) {
   final secureStorage = ref.watch(secureStorageProvider);
   final teamId = ref.watch(selectedTeamIdProvider);
-  final client = VaultApiClient(secureStorage: secureStorage);
+  final serverBaseUrl = ref.watch(serverUrlProvider);
+  final client = VaultApiClient(
+    secureStorage: secureStorage,
+    serverBaseUrl: serverBaseUrl,
+  );
   client.teamId = teamId;
   return client;
 });

@@ -28,9 +28,13 @@ import 'team_providers.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Provides the [RegistryApiClient] singleton for Registry module endpoints.
+///
+/// Rebuilds when [serverUrlProvider] changes so the client targets
+/// the user-configured server.
 final registryApiClientProvider = Provider<RegistryApiClient>((ref) {
   final secureStorage = ref.watch(secureStorageProvider);
-  return RegistryApiClient(secureStorage: secureStorage);
+  final baseUrl = ref.watch(serverUrlProvider);
+  return RegistryApiClient(secureStorage: secureStorage, baseUrl: baseUrl);
 });
 
 /// Provides the [RegistryApi] singleton for all Registry API calls.
