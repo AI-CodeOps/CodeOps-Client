@@ -33,6 +33,12 @@ class VaultApiClient {
   /// Callback invoked when token refresh fails (triggers logout).
   VoidCallback? onAuthFailure;
 
+  /// The active team ID sent as `X-Team-Id` on every authenticated request.
+  ///
+  /// CodeOps-Server JWTs do not carry a team claim, so the Vault server
+  /// reads the team context from this header instead.
+  String? teamId;
+
   /// Paths that do not require an Authorization header.
   static const _publicPaths = [
     '/seal/status',
@@ -107,12 +113,15 @@ class VaultApiClient {
   InterceptorsWrapper _authInterceptor() => InterceptorsWrapper(
         onRequest: (options, handler) async {
           final isPublic = _publicPaths.any(
-            (p) => options.path.contains(p),
+            (p) => options.path.startsWith(p),
           );
           if (!isPublic) {
             final token = await _secureStorage.getAuthToken();
             if (token != null) {
               options.headers['Authorization'] = 'Bearer $token';
+            }
+            if (teamId != null) {
+              options.headers['X-Team-Id'] = teamId;
             }
           }
           handler.next(options);
@@ -127,7 +136,7 @@ class VaultApiClient {
           }
 
           final path = error.requestOptions.path;
-          if (_publicPaths.any((p) => path.contains(p))) {
+          if (_publicPaths.any((p) => path.startsWith(p))) {
             return handler.next(error);
           }
 

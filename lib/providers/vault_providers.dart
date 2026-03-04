@@ -16,15 +16,22 @@ import '../models/vault_models.dart';
 import '../services/cloud/vault_api.dart';
 import '../services/cloud/vault_api_client.dart';
 import 'auth_providers.dart';
+import 'team_providers.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Core Singleton Providers
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Provides the [VaultApiClient] singleton, configured for port 8097.
+///
+/// Watches [selectedTeamIdProvider] so the `X-Team-Id` header is always
+/// in sync with the currently selected team.
 final vaultApiClientProvider = Provider<VaultApiClient>((ref) {
   final secureStorage = ref.watch(secureStorageProvider);
-  return VaultApiClient(secureStorage: secureStorage);
+  final teamId = ref.watch(selectedTeamIdProvider);
+  final client = VaultApiClient(secureStorage: secureStorage);
+  client.teamId = teamId;
+  return client;
 });
 
 /// Provides the [VaultApi] singleton for all Vault API calls.
