@@ -32,7 +32,10 @@ class ApiClient {
   /// Callback invoked when token refresh fails (triggers logout).
   VoidCallback? onAuthFailure;
 
-  /// Paths that do not require an Authorization header.
+  /// Path prefixes that do not require an Authorization header.
+  ///
+  /// Matched with [String.startsWith] to avoid false positives
+  /// (e.g. `/fleet/health/summary` must NOT match `/health`).
   static const _publicPaths = [
     '/auth/login',
     '/auth/register',
@@ -127,7 +130,7 @@ class ApiClient {
   InterceptorsWrapper _authInterceptor() => InterceptorsWrapper(
         onRequest: (options, handler) async {
           final isPublic = _publicPaths.any(
-            (p) => options.path.contains(p),
+            (p) => options.path.startsWith(p),
           );
           if (!isPublic) {
             final token = await _secureStorage.getAuthToken();
@@ -148,7 +151,7 @@ class ApiClient {
 
           // Don't attempt refresh for auth endpoints
           final path = error.requestOptions.path;
-          if (_publicPaths.any((p) => path.contains(p))) {
+          if (_publicPaths.any((p) => path.startsWith(p))) {
             return handler.next(error);
           }
 

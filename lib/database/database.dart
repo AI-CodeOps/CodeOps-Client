@@ -66,13 +66,13 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
             await m.createTable(clonedRepos);
           }
           if (from < 3) {
-            await m.addColumn(qaJobs, qaJobs.configJson);
+            await _safeAddColumn(m, qaJobs, qaJobs.configJson);
           }
           if (from < 4) {
-            await m.addColumn(qaJobs, qaJobs.summaryMd);
-            await m.addColumn(qaJobs, qaJobs.startedByName);
-            await m.addColumn(findings, findings.statusChangedBy);
-            await m.addColumn(findings, findings.statusChangedAt);
+            await _safeAddColumn(m, qaJobs, qaJobs.summaryMd);
+            await _safeAddColumn(m, qaJobs, qaJobs.startedByName);
+            await _safeAddColumn(m, findings, findings.statusChangedBy);
+            await _safeAddColumn(m, findings, findings.statusChangedAt);
           }
           if (from < 5) {
             await m.createTable(anthropicModels);
@@ -92,7 +92,8 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
             await m.createTable(datalensSavedQueries);
           }
           if (from < 9) {
-            await m.addColumn(
+            await _safeAddColumn(
+              m,
               datalensConnections,
               datalensConnections.filePath,
             );
@@ -102,6 +103,23 @@ class CodeOpsDatabase extends _$CodeOpsDatabase {
           }
         },
       );
+
+  /// Adds a column to a table, ignoring the error if the column already exists.
+  ///
+  /// SQLite does not support `ADD COLUMN IF NOT EXISTS`, so a partial migration
+  /// that created the column but failed to bump `user_version` would crash on
+  /// the next app launch. This wrapper makes `addColumn` idempotent.
+  static Future<void> _safeAddColumn(
+    Migrator m,
+    TableInfo table,
+    GeneratedColumn column,
+  ) async {
+    try {
+      await m.addColumn(table, column);
+    } on Object catch (_) {
+      // Column already exists — safe to ignore.
+    }
+  }
 
   /// Deletes all rows from every table.
   ///

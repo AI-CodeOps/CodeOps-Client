@@ -117,6 +117,9 @@ class HealthSchedule {
 }
 
 /// Generic paginated response wrapper.
+///
+/// Handles both Spring's built-in `Page` format (fields: `number`, `last`)
+/// and CodeOps custom `PageResponse` format (fields: `page`, `isLast`).
 @JsonSerializable(genericArgumentFactories: true)
 class PageResponse<T> {
   /// List of items in the current page.
@@ -158,11 +161,23 @@ class PageResponse<T> {
       );
 
   /// Deserializes a [PageResponse] from a JSON map.
+  ///
+  /// Supports both Spring `Page` (`number`/`last`) and CodeOps
+  /// `PageResponse` (`page`/`isLast`) field names.
   factory PageResponse.fromJson(
     Map<String, dynamic> json,
     T Function(Object? json) fromJsonT,
-  ) =>
-      _$PageResponseFromJson(json, fromJsonT);
+  ) {
+    return PageResponse<T>(
+      content:
+          (json['content'] as List<dynamic>).map(fromJsonT).toList(),
+      page: ((json['number'] ?? json['page']) as num).toInt(),
+      size: (json['size'] as num).toInt(),
+      totalElements: (json['totalElements'] as num).toInt(),
+      totalPages: (json['totalPages'] as num).toInt(),
+      isLast: (json['last'] ?? json['isLast']) as bool,
+    );
+  }
 
   /// Serializes this [PageResponse] to a JSON map.
   Map<String, dynamic> toJson(Object? Function(T value) toJsonT) =>
